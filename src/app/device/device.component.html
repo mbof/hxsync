@@ -1,0 +1,11 @@
+@if (connectionState != DCS.Connected) {
+<button
+  [disabled]="connectionState === DCS.Connecting"
+  (click)="deviceMgr.connect()"
+  >Connect</button>
+} @else {
+  <button
+  (click)="deviceMgr.disconnect()"
+  >Disconnect</button>
+}
+<p>Device state is {{this.connectionState}}</p>
