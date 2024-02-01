@@ -1,4 +1,4 @@
-/// <reference types="w3c-web-usb" />
+/// <reference types="w3c-web-serial" />
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
@@ -9,63 +9,98 @@ export enum DeviceConnectionState {
   Connected = 2,
 }
 
+export enum DeviceMode {
+  Unknown = 0,
+  CP = 1,
+  NMEA = 2,
+}
+
 @Injectable({
   providedIn: 'root'
 })
 export class DevicemgrService {
-  readonly usb: USB;
+
+  readonly serial: Serial;
   private _connectionState = new BehaviorSubject<DeviceConnectionState>(
     DeviceConnectionState.Disconnected);
   connectionState$ = this._connectionState.asObservable();
-  device?: USBDevice;
+  port?: SerialPort;
+  reader?: ReadableStreamDefaultReader;
+  writer?: WritableStreamDefaultWriter;
+  readonly encoder: TextEncoder = new TextEncoder();
+  readonly decoder: TextDecoder = new TextDecoder('utf-8');
+  mode: DeviceMode = DeviceMode.Unknown;
+
   constructor() {
-    this.usb = navigator.usb;
+    this.serial = navigator.serial;
   }
+
   getConnectionState(): DeviceConnectionState {
     return this._connectionState.getValue();
   }
-  connect() {
+
+  async connect() {
     if (this.getConnectionState() != DeviceConnectionState.Disconnected) {
-      console.log(`Cannot connect from state: ${this.getConnectionState()}`);
-      return;
+      throw new Error(`Cannot connect from state: ${this.getConnectionState()}`);
     }
-    this._connectionState.next(DeviceConnectionState.Connecting);
-    this.usb.requestDevice(
-      {
-        filters: [{ "vendorId": 9898, "productId": 30 }]
-      }
-    ).then((device) => {
-      this.device = device;
+    try {
+      this._connectionState.next(DeviceConnectionState.Connecting);
+      this.port = await this.serial.requestPort({
+        filters: [{ "usbVendorId": 9898, "usbProductId": 30 }]
+      });
+      this.port.addEventListener('disconnect', (ev) => this.disconnect());
+      await this.port.open({ baudRate: 9600 });
+      this.reader = this.port?.readable?.getReader();
+      this.writer = this.port?.writable?.getWriter();
+      await this.detectDeviceMode();
       this._connectionState.next(DeviceConnectionState.Connected);
       console.log('Connected');
-    }).catch((e) => {
-      this._connectionState.next(DeviceConnectionState.Disconnected);
-      this.device = undefined;
-      console.error(`Disconnected: ${e}`);
-    });
-    this.usb.addEventListener('disconnect', (ev) => {
-      if (ev.device == this.device) {
-        console.log('Detected disconnection');
-        this.disconnect();
-      }
-      console.log('Detected disconnection of a different device');
-    });
+    } catch(e) {
+      console.error(`Error while connecting: ${e}`);
+      await this.disconnect();
+    };
   }
-  disconnect() {
-    if (this.getConnectionState() != DeviceConnectionState.Connected) {
-      console.log(`Cannot disconnect from state: ${this.getConnectionState()}`);
-      return;
+
+  async disconnect() {
+    try {
+      await this.writer?.close();
+      await this.reader?.cancel();
+      this.reader?.releaseLock();
+      this.writer?.releaseLock();
+      await this.port?.forget();
+      this.port = undefined;
+      this.reader = undefined;
+      this.writer = undefined;
+      this.mode = DeviceMode.Unknown;
+      this._connectionState.next(DeviceConnectionState.Disconnected);
+      console.log('Disconnected');
+    } catch(e) {
+      this.port = undefined;
+      console.error(`Error while forgetting: ${e}`);
+    };
+  }
+
+  async write(s: string) {
+    return this.writer?.write(this.encoder.encode(s));
+  }
+
+  async read(): Promise<string> {
+    const readResult = await this.reader?.read();
+    if (readResult?.done) {
+      throw new Error('Read is all done');        
     }
-    this.device?.forget()
-      .then(() => {
-        this.device = undefined;
-        this._connectionState.next(DeviceConnectionState.Disconnected);
-        console.log('Disconnected');
-      })
-      .catch((e) => {
-        this.device = undefined;
-        console.error(`Error while forgetting: ${e}`);
-      });
+    return this.decoder.decode(readResult?.value);
+  }
+
+  async detectDeviceMode() {
+    await this.write('P?');
+    const ans = await this.read();
+    if (ans[0] == '@') {
+      this.mode = DeviceMode.CP;
+    } else if (ans[0] == 'P' || ans[0] == '$') {
+      this.mode = DeviceMode.NMEA;
+    }
+    console.log(`Detected mode ${this.mode}`);
   }
 
 }

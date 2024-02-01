@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
 
+// debug with: x = ng.getComponent(document.querySelector('app-device'))
+
 @Component({
   selector: 'app-device',
   standalone: true,
