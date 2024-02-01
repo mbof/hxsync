@@ -63,8 +63,12 @@ export class DevicemgrService {
 
   async disconnect() {
     try {
-      await this.writer?.close();
-      await this.reader?.cancel();
+      if (!this.writer?.closed) {
+        await this.writer?.close();
+      }
+      if (!this.reader?.closed) {
+        await this.reader?.cancel();
+      }
       this.reader?.releaseLock();
       this.writer?.releaseLock();
       await this.port?.forget();
