@@ -2,6 +2,7 @@
 
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
+import { ChunkReader } from './chunkreader';
 
 export enum DeviceConnectionState {
   Disconnected = 0,
@@ -25,7 +26,8 @@ export class DevicemgrService {
     DeviceConnectionState.Disconnected);
   connectionState$ = this._connectionState.asObservable();
   port?: SerialPort;
-  reader?: ReadableStreamDefaultReader;
+  private _streamReader?: ReadableStreamDefaultReader;
+  reader?: ChunkReader;
   writer?: WritableStreamDefaultWriter;
   readonly encoder: TextEncoder = new TextEncoder();
   readonly decoder: TextDecoder = new TextDecoder('utf-8');
@@ -50,7 +52,8 @@ export class DevicemgrService {
       });
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
       await this.port.open({ baudRate: 9600 });
-      this.reader = this.port?.readable?.getReader();
+      this._streamReader = this.port?.readable?.getReader();
+      this.reader = new ChunkReader(this._streamReader!);
       this.writer = this.port?.writable?.getWriter();
       await this.detectDeviceMode();
       this._connectionState.next(DeviceConnectionState.Connected);
@@ -66,13 +69,14 @@ export class DevicemgrService {
       if (!this.writer?.closed) {
         await this.writer?.close();
       }
-      if (!this.reader?.closed) {
-        await this.reader?.cancel();
+      if (!this._streamReader?.closed) {
+        await this._streamReader?.cancel();
       }
-      this.reader?.releaseLock();
+      this._streamReader?.releaseLock();
       this.writer?.releaseLock();
       await this.port?.forget();
       this.port = undefined;
+      this._streamReader = undefined;
       this.reader = undefined;
       this.writer = undefined;
       this.mode = DeviceMode.Unknown;
@@ -88,17 +92,17 @@ export class DevicemgrService {
     return this.writer?.write(this.encoder.encode(s));
   }
 
-  async read(): Promise<string> {
-    const readResult = await this.reader?.read();
-    if (readResult?.done) {
-      throw new Error('Read is all done');        
-    }
-    return this.decoder.decode(readResult?.value);
+  async read(length: number): Promise<string> {
+    return this.reader!.read(length);
+  }
+
+  async readline(): Promise<string> {
+    return this.reader!.readline();
   }
 
   async detectDeviceMode() {
     await this.write('P?');
-    const ans = await this.read();
+    const ans = await this.read(1);
     if (ans[0] == '@') {
       this.mode = DeviceMode.CP;
     } else if (ans[0] == 'P' || ans[0] == '$') {
