@@ -1,30 +1,29 @@
-import { Message } from './message';
+import { Message, hex, hexarr, unhex } from './message';
 
 const encoder = new TextEncoder();
 
 describe('Message', () => {
   // Message parsing tests
   it('should parse a CP message with no arguments', () => {
-    let m = new Message({ bytes: encoder.encode('#CMDOK\r\n') });
+    let m = new Message({ encoded: '#CMDOK\r\n' });
     expect(m.type).toBe('#CMDOK');
     expect(m.validate()).toBeTrue();
   });
   it('should parse a CP message with a checksum', () => {
-    let m = new Message({ bytes: encoder.encode('#CVRRQ\t6E\r\n') });
+    let m = new Message({ encoded: '#CVRRQ\t6E\r\n' });
     expect(m.type).toBe('#CVRRQ');
     expect(m.checksum_recv).toBe('6E');
     expect(m.validate()).toBeTrue();
   });
   it('should parse a CP message with a checksum and arguments', () => {
-    let m = new Message({ bytes: encoder.encode(
-      '#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\t11\r\n') });
+    let m = new Message({ encoded: '#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\t11\r\n' });
     expect(m.type).toBe('#CEPDT');
     expect(m.checksum_recv).toBe('11');
     expect(m.args).toEqual(['0100', '0A', '414D3035374E32FFFFFF'])
     expect(m.validate()).toBeTrue();
   });
   it('should parse a NMEA message', () => {
-    let m = new Message({ bytes: encoder.encode('$PMTK001,622,3*36\r\n') });
+    let m = new Message({ encoded: '$PMTK001,622,3*36\r\n' });
     expect(m.type).toBe('$PMTK');
     expect(m.checksum_recv).toBe('36');
     expect(m.args).toEqual(['001', '622', '3'])
@@ -33,16 +32,15 @@ describe('Message', () => {
 
   // Message checksum validation tests
   it('should detect a CP message with a wrong checksum', () => {
-    let m = new Message({ bytes: encoder.encode('#CVRRQ\tFF\r\n') });
+    let m = new Message({ encoded: '#CVRRQ\tFF\r\n' });
     expect(m.validate()).toBeFalse();
   });
   it('should detect a CP message with a wrong checksum', () => {
-    let m = new Message({ bytes: encoder.encode(
-      '#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\tAA\r\n') });
+    let m = new Message({ encoded: '#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\tAA\r\n' });
     expect(m.validate()).toBeFalse();
   });
   it('should detect a NMEA message with a wrong checksum', () => {
-    let m = new Message({ bytes: encoder.encode('$PMTK001,622,3*72\r\n') });
+    let m = new Message({ encoded: '$PMTK001,622,3*72\r\n' });
     expect(m.validate()).toBeFalse();
   });
 
@@ -66,5 +64,23 @@ describe('Message', () => {
   it('should properly encode a NMEA message with 3 arguments', () => {
     let m = new Message({type: '$PMTK', args: ['001', '183', '3']});
     expect(m.toString()).toBe('$PMTK001,183,3*3A\r\n');
+  });
+});
+
+describe('hex', () => {
+  it('should format a hex string properly', () => {
+    expect(hex(170, 4)).toBe('00AA');
+  });
+});
+
+describe('hexarr', () => {
+  it('should format a bytes array properly', () => {
+    expect(hexarr(new Uint8Array([192, 255, 238]))).toBe('C0FFEE');
+  });
+});
+
+describe('unhex', () => {
+  it('should parse a hex string properly', () => {
+    expect(unhex('C0FFEE')).toEqual(new Uint8Array([192, 255, 238]));
   });
 });

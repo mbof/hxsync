@@ -41,4 +41,7 @@ export class ChunkReader {
       await this._getNextChunk();
     }
   }
+  flush() {
+    this.chunk = '';
+  }
 }

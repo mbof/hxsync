@@ -100,6 +100,10 @@ export class DevicemgrService {
     return this.reader!.readline();
   }
 
+  flushInput() {
+    this.reader!.flush();  
+  }
+
   async detectDeviceMode() {
     await this.write('P?');
     const ans = await this.read(1);

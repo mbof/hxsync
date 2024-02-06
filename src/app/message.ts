@@ -4,20 +4,32 @@ const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 const unaryTypes = ["#CMDOK", "#CMDER", "#CMDUN", "#CMDSM", "#CMDSY"];
 
+export function hex(n: number, digits: number): string {
+  return n.toString(16).toUpperCase().padStart(digits, '0');
+}
+
+export function hexarr(bytes: Uint8Array): string {
+  return bytes.reduce((str: string, byte: number) => str + hex(byte, 2), '');
+}
+
+export function unhex(hexString: string): Uint8Array {
+  return Uint8Array.from(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+}
+
 function checksum(type: string, args: string[]): string | undefined {
   if (unaryTypes.includes(type)) {
     return undefined;
   }
+  let check: Uint8Array;
   if (type[0] == '#') {
-    let check = encoder.encode([type].concat(args).join('\t') + '\t');
-    let s = check.reduce((previous, current) => current == 33 ? previous : previous ^ current);
-    return s.toString(16).toUpperCase().padStart(2, '0');
+    check = encoder.encode([type].concat(args).join('\t') + '\t');
   } else if (type[0] == '$') {
-    let check = encoder.encode([type.slice(1)] + args.join(','));
-    let s = check.reduce((previous, current) => current == 33 ? previous : previous ^ current);
-    return s.toString(16).toUpperCase().padStart(2, '0');
+    check = encoder.encode([type.slice(1)] + args.join(','));
+  } else {
+    return undefined;
   }
-  return undefined;
+  let s = check.reduce((previous, current) => current == 33 ? previous : previous ^ current);
+  return hex(s, 2);
 }
 
 export class Message {
@@ -26,14 +38,14 @@ export class Message {
   readonly checksum_recv: string | undefined;
   readonly checksum_calc: string | undefined;
 
-  constructor({ bytes, type, args }:
+  constructor({ encoded, type, args }:
     {
-      bytes?: ArrayBuffer | undefined;
+      encoded?: string | undefined;
       type?: string | undefined;
       args?: Array<string> | undefined;
     }) {
     this.args = args || [];
-    if (!bytes) {
+    if (!encoded) {
       if (!type) {
         throw new Error('Missing message type');
       }
@@ -41,10 +53,9 @@ export class Message {
       this.checksum_calc = checksum(type, this.args);
       return;
     }
-    let text = decoder.decode(bytes);
-    if (text[0] == '#') {
+    if (encoded[0] == '#') {
       // CP mode command message
-      let components = text.replace(/[\r\n]*$/, '').split('\t');
+      let components = encoded.replace(/[\r\n]*$/, '').split('\t');
       this.type = components[0];
       if (components.length > 1) {
         this.checksum_recv = components.at(-1);
@@ -53,14 +64,14 @@ export class Message {
       if (components.length > 2) {
         this.args = components.slice(1, -1);
       }
-    } else if (text[0] == '$') {
+    } else if (encoded[0] == '$') {
       // NMEA sentence
-      this.type = text.slice(0, 5);
-      let components = text.slice(5).replace(/[\r\n]*$/, '').split('*');
+      this.type = encoded.slice(0, 5);
+      let components = encoded.slice(5).replace(/[\r\n]*$/, '').split('*');
       this.checksum_recv = components[1];
       this.args = components[0].split(',');
     } else {
-      throw new Error(`Invalid message ${text}`);
+      throw new Error(`Invalid message ${encoded}`);
     }
     this.checksum_calc = checksum(this.type, this.args);
   }
