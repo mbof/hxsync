@@ -1,6 +1,12 @@
 # Nghx
 
-This project was generated with [Angular CLI](https://github.com/angular/angular-cli) version 17.1.2.
+This project is an Angular web application that connects to the Standard Horizon HX890
+portable VHF radios using the WebSerial API. As of this writing, it only supports the 
+following functions:
+* reading the MMSI from the terminal
+* reading waypoints from the terminal
+
+It is very incomplete, and could break your device. **Use at your own risk!**
 
 ## Development server
 
