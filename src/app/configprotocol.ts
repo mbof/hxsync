@@ -29,15 +29,17 @@ export class ConfigProtocol {
     } else {
       await asyncWithTimeout(this.dev.write(str), timeoutMs);
     }
+    console.log(`Wrote command ${JSON.stringify(str)}`);
   }
 
   async receiveMessage(timeoutMs?: number | undefined) {
     let line;
     if (!timeoutMs) {
-      let line = await this.dev.readline();
+      line = await this.dev.readline();
     } else {
-      let line = await asyncWithTimeout(this.dev.readline(), timeoutMs);
+      line = await asyncWithTimeout(this.dev.readline(), timeoutMs);
     }
+    console.log(`Received line ${line}`);
     return new Message({encoded: line});
   }
 
@@ -53,7 +55,7 @@ export class ConfigProtocol {
       if (ans2.type != '#CEPSD') {
         throw new Error('Device did not return status');
       }
-      let radio_status = ans2.args[0];
+      radio_status = ans2.args[0];
       if (radio_status != '00') {
         console.log(`Waiting for radio, state=${radio_status}`);
       }

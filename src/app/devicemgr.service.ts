@@ -3,6 +3,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ChunkReader } from './chunkreader';
+import { ConfigProtocol } from './configprotocol';
 
 export enum DeviceConnectionState {
   Disconnected = 0,
@@ -25,6 +26,10 @@ export class DevicemgrService {
   private _connectionState = new BehaviorSubject<DeviceConnectionState>(
     DeviceConnectionState.Disconnected);
   connectionState$ = this._connectionState.asObservable();
+  private _busyWriteState = new BehaviorSubject<boolean>(false);
+  private _busyReadState = new BehaviorSubject<boolean>(false);
+  busyWriteState$ = this._busyWriteState.asObservable();
+  busyReadState$ = this._busyReadState.asObservable();
   port?: SerialPort;
   private _streamReader?: ReadableStreamDefaultReader;
   reader?: ChunkReader;
@@ -32,6 +37,7 @@ export class DevicemgrService {
   readonly encoder: TextEncoder = new TextEncoder();
   readonly decoder: TextDecoder = new TextDecoder('utf-8');
   mode: DeviceMode = DeviceMode.Unknown;
+  readonly configProtocol: ConfigProtocol = new ConfigProtocol(this);
 
   constructor() {
     this.serial = navigator.serial;
@@ -89,15 +95,23 @@ export class DevicemgrService {
   }
 
   async write(s: string) {
-    return this.writer?.write(this.encoder.encode(s));
+    this._busyWriteState.next(true);
+    await this.writer?.write(this.encoder.encode(s));
+    this._busyWriteState.next(false);
   }
 
   async read(length: number): Promise<string> {
-    return this.reader!.read(length);
+    this._busyReadState.next(true);
+    let ans = await this.reader!.read(length);
+    this._busyReadState.next(false);
+    return ans;
   }
 
   async readline(): Promise<string> {
-    return this.reader!.readline();
+    this._busyReadState.next(true);
+    let line = await this.reader!.readline();
+    this._busyReadState.next(false);
+    return line;
   }
 
   flushInput() {
