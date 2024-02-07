@@ -1,5 +1,7 @@
+import { BehaviorSubject } from 'rxjs';
 import { DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
+import { Waypoint, waypointFromConfig } from './waypoint';
 
 
 async function asyncWithTimeout<T>(asyncPromise: Promise<T>, timeoutMs: number): Promise<T> {
@@ -18,8 +20,16 @@ async function asyncWithTimeout<T>(asyncPromise: Promise<T>, timeoutMs: number):
   })
 }
 
+export type Config = {
+  mmsi?: string;
+  waypoints?: Array<Waypoint>;
+  atis?: string;
+};
+
 export class ConfigProtocol {
   constructor(private dev: DevicemgrService) { };
+
+  config: BehaviorSubject<Config> = new BehaviorSubject({ });
 
   async sendMessage(
       type: string, args?: Array<string> | undefined, timeoutMs?: number | undefined) {
@@ -89,5 +99,31 @@ export class ConfigProtocol {
     if (ans.type != '#CMDOK') {
       throw new Error('Device did not acknowledge write');
     }
+  }
+
+  async readMmsi() {
+    let mmsiBytes = await this.readConfigMemory(0x00b0, 6);
+    let mmsi = hexarr(mmsiBytes).slice(0, 9);
+    this.config.next({...this.config.getValue(), mmsi: mmsi});
+  }
+
+  async readWaypoints() {
+    let wpBegin = 0xD700; // 0x4300 on other models
+    let wpNum = 250; // 200 on other models
+    let wpEnd = wpBegin + 32 * wpNum; // = 0xF640;
+    let wpChunkSize = 0x40;
+    let wpData = new Uint8Array(wpEnd - wpBegin);
+    for (var address = wpBegin; address < wpEnd; address += wpChunkSize) {
+      wpData.set(await this.readConfigMemory(address, wpChunkSize), address - wpBegin);
+    }
+    let waypoints = [];
+    for (var waypointId = 0; waypointId < wpNum; waypointId += 1) {
+      let wpOffset = waypointId * 32;
+      let waypoint = waypointFromConfig(wpData.slice(wpOffset, wpOffset + 32), wpBegin + wpOffset);
+      if (waypoint) {
+        waypoints.push(waypoint);
+      }
+    }
+    this.config.next({...this.config.getValue(), waypoints: waypoints});
   }
 }

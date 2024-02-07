@@ -2,6 +2,7 @@ import { Component } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hexarr } from '../message';
+import { Config } from '../configprotocol';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -20,11 +21,12 @@ export class DeviceComponent {
   writeStateSubscription?: Subscription;
   writeState: boolean = false;
   readonly DCS = DeviceConnectionState;
-  mmsi: BehaviorSubject<string> = new BehaviorSubject('');
-  mmsiSubscription?: Subscription;
+  configSubscription?: Subscription;
+  config: BehaviorSubject<Config>;
 
   constructor(public deviceMgr: DevicemgrService) {
     this.connectionState = deviceMgr.getConnectionState();
+    this.config = this.deviceMgr.configProtocol.config;
   }
 
   ngOnInit() {
@@ -37,11 +39,13 @@ export class DeviceComponent {
     this.writeStateSubscription = this.deviceMgr.busyWriteState$.subscribe(
       writeState => this.writeState = writeState
     );
-    this.mmsiSubscription = this.mmsi.asObservable().subscribe();
+    this.configSubscription = this.deviceMgr.configProtocol.config.asObservable().subscribe();
   }
 
-  async readConfig() {
-    let mmsiBytes = await this.deviceMgr.configProtocol.readConfigMemory(0x00b0, 6);
-    this.mmsi.next(hexarr(mmsiBytes));
+  async readMMSI() {
+    await this.deviceMgr.configProtocol.readMmsi();
+  }
+  async readWaypoints() {
+    await this.deviceMgr.configProtocol.readWaypoints();
   }
 }

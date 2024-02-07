@@ -5,20 +5,33 @@
   >Connect</button>
 } @else {
   <button
-  (click)="readConfig()"
-  >Read config</button>
+  (click)="readMMSI()"
+  >Read MMSI</button>
+  <button
+  (click)="readWaypoints()"
+  >Read waypoints</button>
   <button
   (click)="deviceMgr.disconnect()"
   >Disconnect</button>
 }
 <p>Device state is {{this.connectionState}}.
-   @if (this.readState) {
+</p>
+<p>
+  @if (this.readState) {
     READING
    }
+</p><p>
    @if (this.writeState) {
     WRITING
    }
 </p>
-@if (this.mmsi.getValue() > '') {
-  <p>MMSI is {{this.mmsi.getValue()}}.</p>
+@if (this.config.getValue().mmsi) {
+  <p>MMSI is {{ this.config.getValue().mmsi }}.</p>
+}
+@if (this.config.getValue().waypoints) {
+  <p> Waypoints are
+    @for (wp of this.config.getValue().waypoints; track wp) {
+     <li>{{ wp.toString() }}</li>
+    }
+  </p>
 }
