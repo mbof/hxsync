@@ -19,6 +19,7 @@
     "@angular/platform-browser-dynamic": "^17.1.0",
     "@angular/router": "^17.1.0",
     "@types/w3c-web-serial": "^1.0.6",
+    "binary-parser": "^2.2.1",
     "file-saver": "^2.0.5",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0",
