@@ -85,6 +85,9 @@ export class DevicemgrService {
       this.writer = undefined;
       this.mode = DeviceMode.Unknown;
       this._connectionState.next(DeviceConnectionState.Disconnected);
+      this.configProtocol.config.next({});
+      this._busyReadState.next(false);
+      this._busyWriteState.next(false);
       console.log('Disconnected');
     } catch (e) {
       this.port = undefined;
@@ -113,7 +116,9 @@ export class DevicemgrService {
   }
 
   flushInput() {
-    this.reader!.flush();
+    if (this.reader) {
+      this.reader.flush();
+    }
   }
 
   async detectDeviceMode() {
