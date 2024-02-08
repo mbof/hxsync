@@ -1,8 +1,8 @@
-import { reduce } from "rxjs";
+import { reduce } from 'rxjs';
 
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
-const unaryTypes = ["#CMDOK", "#CMDER", "#CMDUN", "#CMDSM", "#CMDSY"];
+const unaryTypes = ['#CMDOK', '#CMDER', '#CMDUN', '#CMDSM', '#CMDSY'];
 
 export function hex(n: number, digits: number): string {
   return n.toString(16).toUpperCase().padStart(digits, '0');
@@ -28,7 +28,7 @@ function checksum(type: string, args: string[]): string | undefined {
   } else {
     return undefined;
   }
-  let s = check.reduce((previous, current) => current == 33 ? previous : previous ^ current);
+  let s = check.reduce((previous, current) => (current == 33 ? previous : previous ^ current));
   return hex(s, 2);
 }
 
@@ -38,12 +38,15 @@ export class Message {
   readonly checksum_recv: string | undefined;
   readonly checksum_calc: string | undefined;
 
-  constructor({ encoded, type, args }:
-    {
-      encoded?: string | undefined;
-      type?: string | undefined;
-      args?: Array<string> | undefined;
-    }) {
+  constructor({
+    encoded,
+    type,
+    args
+  }: {
+    encoded?: string | undefined;
+    type?: string | undefined;
+    args?: Array<string> | undefined;
+  }) {
     this.args = args || [];
     if (!encoded) {
       if (!type) {
@@ -67,7 +70,10 @@ export class Message {
     } else if (encoded[0] == '$') {
       // NMEA sentence
       this.type = encoded.slice(0, 5);
-      let components = encoded.slice(5).replace(/[\r\n]*$/, '').split('*');
+      let components = encoded
+        .slice(5)
+        .replace(/[\r\n]*$/, '')
+        .split('*');
       this.checksum_recv = components[1];
       this.args = components[0].split(',');
     } else {
@@ -82,10 +88,7 @@ export class Message {
     }
     let checksum = this.checksum_recv || this.checksum_calc;
     if (this.type[0] == '#') {
-      return [this.type].
-        concat(this.args).
-        concat([checksum]).
-        join('\t') + '\r\n';
+      return [this.type].concat(this.args).concat([checksum]).join('\t') + '\r\n';
     } else if (this.type[0] == '$') {
       return [this.type] + this.args.join(',') + `*${checksum}\r\n`;
     }

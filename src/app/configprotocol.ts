@@ -3,21 +3,17 @@ import { DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
 import { Waypoint, waypointFromConfig } from './waypoint';
 
-
 async function asyncWithTimeout<T>(asyncPromise: Promise<T>, timeoutMs: number): Promise<T> {
   let timeoutHandle: any;
 
   const timeoutPromise = new Promise<T>((_resolve, reject) => {
-    timeoutHandle = setTimeout(
-      () => reject(new Error('Timeout')),
-      timeoutMs
-    );
+    timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
   });
 
-  return Promise.race([asyncPromise, timeoutPromise]).then(result => {
+  return Promise.race([asyncPromise, timeoutPromise]).then((result) => {
     clearTimeout(timeoutHandle);
     return result;
-  })
+  });
 }
 
 export type Config = {
@@ -27,13 +23,12 @@ export type Config = {
 };
 
 export class ConfigProtocol {
-  constructor(private dev: DevicemgrService) { };
+  constructor(private dev: DevicemgrService) {}
 
-  config: BehaviorSubject<Config> = new BehaviorSubject({ });
+  config: BehaviorSubject<Config> = new BehaviorSubject({});
 
-  async sendMessage(
-      type: string, args?: Array<string> | undefined, timeoutMs?: number | undefined) {
-    let str = new Message({type: type, args: args}).toString();
+  async sendMessage(type: string, args?: Array<string> | undefined, timeoutMs?: number | undefined) {
+    let str = new Message({ type: type, args: args }).toString();
     if (!timeoutMs) {
       await this.dev.write(str);
     } else {
@@ -50,7 +45,7 @@ export class ConfigProtocol {
       line = await asyncWithTimeout(this.dev.readline(), timeoutMs);
     }
     console.log(`Received line ${line}`);
-    return new Message({encoded: line});
+    return new Message({ encoded: line });
   }
 
   async waitForReady_() {
@@ -104,11 +99,11 @@ export class ConfigProtocol {
   async readMmsi() {
     let mmsiBytes = await this.readConfigMemory(0x00b0, 6);
     let mmsi = hexarr(mmsiBytes).slice(0, 9);
-    this.config.next({...this.config.getValue(), mmsi: mmsi});
+    this.config.next({ ...this.config.getValue(), mmsi: mmsi });
   }
 
   async readWaypoints() {
-    let wpBegin = 0xD700; // 0x4300 on other models
+    let wpBegin = 0xd700; // 0x4300 on other models
     let wpNum = 250; // 200 on other models
     let wpEnd = wpBegin + 32 * wpNum; // = 0xF640;
     let wpChunkSize = 0x40;
@@ -124,6 +119,6 @@ export class ConfigProtocol {
         waypoints.push(waypoint);
       }
     }
-    this.config.next({...this.config.getValue(), waypoints: waypoints});
+    this.config.next({ ...this.config.getValue(), waypoints: waypoints });
   }
 }

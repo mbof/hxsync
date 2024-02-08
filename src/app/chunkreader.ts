@@ -1,9 +1,9 @@
 const decoder = new TextDecoder('utf-8');
 
 export class ChunkReader {
-  private chunk: string = "";
+  private chunk: string = '';
   private pos: number = 0;
-  constructor(private reader: ReadableStreamDefaultReader) { };
+  constructor(private reader: ReadableStreamDefaultReader) {}
   private async _getNextChunk() {
     let chunk_bytes = await this.reader.read();
     if (chunk_bytes.done) {
@@ -13,7 +13,7 @@ export class ChunkReader {
     this.pos = 0;
   }
   async read(length: number): Promise<string> {
-    var ans = "";
+    var ans = '';
     while (true) {
       if (this.pos + length - ans.length <= this.chunk.length) {
         let next_pos = this.pos + length - ans.length;
@@ -27,7 +27,7 @@ export class ChunkReader {
     }
   }
   async readline(): Promise<string> {
-    var ans = "";
+    var ans = '';
     while (true) {
       if (this.pos < this.chunk.length) {
         let newline_pos = this.chunk.indexOf('\n', this.pos);

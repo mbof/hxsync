@@ -1,17 +1,19 @@
-import { hex, hexarr, unhex } from "./message"
+import { hex, hexarr, unhex } from './message';
 
 export class Waypoint {
-  constructor(public wp: {
-    id: number
-    name: string
-    lat_deg: number
-    lat_dir: string
-    lat_min: number
-    lon_deg: number
-    lon_dir: string
-    lon_min: number
-    address?: number
-  }) { };
+  constructor(
+    public wp: {
+      id: number;
+      name: string;
+      lat_deg: number;
+      lat_dir: string;
+      lat_min: number;
+      lon_deg: number;
+      lon_dir: string;
+      lon_min: number;
+      address?: number;
+    }
+  ) {}
   toString(): string {
     let wpStr = `${this.wp.id}, ${this.wp.name}, ${this.wp.lat_deg}${this.wp.lat_dir}${this.wp.lat_min}, ${this.wp.lon_deg}${this.wp.lon_dir}${this.wp.lon_min}`;
     if (this.wp.address) {
@@ -19,7 +21,7 @@ export class Waypoint {
     } else {
       return wpStr;
     }
-  };
+  }
 }
 
 const decoder = new TextDecoder();
@@ -29,10 +31,7 @@ export function waypointFromConfig(wpData: Uint8Array, address?: number): Waypoi
   if (id == 255) {
     return;
   }
-  for (
-    var lastChar = 30;
-    lastChar >= 16 && [0, 255, 32].includes(wpData[lastChar]);
-    lastChar -= 1);
+  for (var lastChar = 30; lastChar >= 16 && [0, 255, 32].includes(wpData[lastChar]); lastChar -= 1);
   let name = decoder.decode(wpData.slice(16, lastChar + 1));
   let lat_str = hexarr(wpData.slice(4, 9)).slice(1);
   let lat_deg = Number(lat_str.slice(0, 3));

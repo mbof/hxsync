@@ -8,23 +8,21 @@ import { ConfigProtocol } from './configprotocol';
 export enum DeviceConnectionState {
   Disconnected = 0,
   Connecting = 1,
-  Connected = 2,
+  Connected = 2
 }
 
 export enum DeviceMode {
   Unknown = 0,
   CP = 1,
-  NMEA = 2,
+  NMEA = 2
 }
 
 @Injectable({
   providedIn: 'root'
 })
 export class DevicemgrService {
-
   readonly serial: Serial;
-  private _connectionState = new BehaviorSubject<DeviceConnectionState>(
-    DeviceConnectionState.Disconnected);
+  private _connectionState = new BehaviorSubject<DeviceConnectionState>(DeviceConnectionState.Disconnected);
   connectionState$ = this._connectionState.asObservable();
   private _busyWriteState = new BehaviorSubject<boolean>(false);
   private _busyReadState = new BehaviorSubject<boolean>(false);
@@ -54,7 +52,7 @@ export class DevicemgrService {
     try {
       this._connectionState.next(DeviceConnectionState.Connecting);
       this.port = await this.serial.requestPort({
-        filters: [{ "usbVendorId": 9898, "usbProductId": 30 }]
+        filters: [{ usbVendorId: 9898, usbProductId: 30 }]
       });
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
       await this.port.open({ baudRate: 9600 });
@@ -64,10 +62,10 @@ export class DevicemgrService {
       await this.detectDeviceMode();
       this._connectionState.next(DeviceConnectionState.Connected);
       console.log('Connected');
-    } catch(e) {
+    } catch (e) {
       console.error(`Error while connecting: ${e}`);
       await this.disconnect();
-    };
+    }
   }
 
   async disconnect() {
@@ -88,10 +86,10 @@ export class DevicemgrService {
       this.mode = DeviceMode.Unknown;
       this._connectionState.next(DeviceConnectionState.Disconnected);
       console.log('Disconnected');
-    } catch(e) {
+    } catch (e) {
       this.port = undefined;
       console.error(`Error while forgetting: ${e}`);
-    };
+    }
   }
 
   async write(s: string) {
@@ -115,7 +113,7 @@ export class DevicemgrService {
   }
 
   flushInput() {
-    this.reader!.flush();  
+    this.reader!.flush();
   }
 
   async detectDeviceMode() {
@@ -128,5 +126,4 @@ export class DevicemgrService {
     }
     console.log(`Detected mode ${this.mode}`);
   }
-
 }

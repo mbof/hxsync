@@ -19,14 +19,14 @@ describe('Message', () => {
     let m = new Message({ encoded: '#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\t11\r\n' });
     expect(m.type).toBe('#CEPDT');
     expect(m.checksum_recv).toBe('11');
-    expect(m.args).toEqual(['0100', '0A', '414D3035374E32FFFFFF'])
+    expect(m.args).toEqual(['0100', '0A', '414D3035374E32FFFFFF']);
     expect(m.validate()).toBeTrue();
   });
   it('should parse a NMEA message', () => {
     let m = new Message({ encoded: '$PMTK001,622,3*36\r\n' });
     expect(m.type).toBe('$PMTK');
     expect(m.checksum_recv).toBe('36');
-    expect(m.args).toEqual(['001', '622', '3'])
+    expect(m.args).toEqual(['001', '622', '3']);
     expect(m.validate()).toBeTrue();
   });
 
@@ -46,23 +46,23 @@ describe('Message', () => {
 
   // Message encoding tests
   it('should properly encode a unary message without checksum', () => {
-    let m = new Message({type: '#CMDOK'});
+    let m = new Message({ type: '#CMDOK' });
     expect(m.toString()).toBe('#CMDOK\r\n');
   });
   it('should properly encode a unary message with checksum', () => {
-    let m = new Message({type: '#CVRRQ'});
+    let m = new Message({ type: '#CVRRQ' });
     expect(m.toString()).toBe('#CVRRQ\t6E\r\n');
   });
   it('should properly encode a command message with arguments', () => {
-    let m = new Message({type: '#CEPDT', args: ['0100', '0A', '414D3035374E32FFFFFF']});
+    let m = new Message({ type: '#CEPDT', args: ['0100', '0A', '414D3035374E32FFFFFF'] });
     expect(m.toString()).toBe('#CEPDT\t0100\t0A\t414D3035374E32FFFFFF\t11\r\n');
   });
   it('should properly encode a NMEA message with 1 argument', () => {
-    let m = new Message({type: '$PMTK', args: ['183']});
+    let m = new Message({ type: '$PMTK', args: ['183'] });
     expect(m.toString()).toBe('$PMTK183*38\r\n');
   });
   it('should properly encode a NMEA message with 3 arguments', () => {
-    let m = new Message({type: '$PMTK', args: ['001', '183', '3']});
+    let m = new Message({ type: '$PMTK', args: ['001', '183', '3'] });
     expect(m.toString()).toBe('$PMTK001,183,3*3A\r\n');
   });
 });

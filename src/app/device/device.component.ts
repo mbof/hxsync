@@ -31,13 +31,11 @@ export class DeviceComponent {
 
   ngOnInit() {
     this.connectionStateSubscription = this.deviceMgr.connectionState$.subscribe(
-      connectionState => this.connectionState = connectionState
+      (connectionState) => (this.connectionState = connectionState)
     );
-    this.readStateSubscription = this.deviceMgr.busyReadState$.subscribe(
-      readState => this.readState = readState
-    );
+    this.readStateSubscription = this.deviceMgr.busyReadState$.subscribe((readState) => (this.readState = readState));
     this.writeStateSubscription = this.deviceMgr.busyWriteState$.subscribe(
-      writeState => this.writeState = writeState
+      (writeState) => (this.writeState = writeState)
     );
     this.configSubscription = this.deviceMgr.configProtocol.config.asObservable().subscribe();
   }
