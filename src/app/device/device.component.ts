@@ -46,4 +46,7 @@ export class DeviceComponent {
   async readWaypoints() {
     await this.deviceMgr.configProtocol.readWaypoints();
   }
+  async readGpslog() {
+    await this.deviceMgr.configProtocol.readGpsLog();
+  }
 }

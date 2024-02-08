@@ -20,6 +20,7 @@ export type Config = {
   mmsi?: string;
   waypoints?: Array<Waypoint>;
   atis?: string;
+  gpslog?: Uint8Array[];
 };
 
 export class ConfigProtocol {
@@ -51,6 +52,7 @@ export class ConfigProtocol {
   async waitForReady_() {
     let radio_status = '';
     while (radio_status != '00') {
+      this.dev.flushInput();
       await this.sendMessage('#CEPSR', ['00']);
       let ans1 = await this.receiveMessage();
       if (ans1.type != '#CMDOK') {
@@ -120,5 +122,67 @@ export class ConfigProtocol {
       }
     }
     this.config.next({ ...this.config.getValue(), waypoints: waypoints });
+  }
+
+  async waitForGps_() {
+    while (true) {
+      this.dev.flushInput();
+      this.sendMessage('$PMTK', ['000']);
+      let ans = await this.receiveMessage();
+      if (
+        ans.type == '$PMTK' &&
+        ans.args.length == 3 &&
+        ans.args[0] == '001' &&
+        ans.args[1] == '0' &&
+        ans.args[2] == '3'
+      ) {
+        return;
+      }
+    }
+  }
+  async waitForGps() {
+    await asyncWithTimeout(this.waitForGps_(), 1000);
+  }
+
+  async readGpsLog() {
+    await this.waitForGps();
+    let gpslog: Uint8Array[] = [];
+    this.sendMessage('$PMTK', ['622', '1']);
+    let ans = await this.receiveMessage();
+    if (ans.type != '$PMTK' || ans.args.length != 3 || ans.args[0] != 'LOX' || ans.args[1] != '0') {
+      throw new Error(`Unexpected log header ${ans.toString()}`);
+    }
+    let numLines = Number(ans.args[2]);
+    let expectedLineNum = 0;
+    let line = await this.receiveMessage();
+    // 2 arguments with line.args[1] == '2' is the log footer.
+    while (!(line.args.length == 2 && line.args[1] == '2')) {
+      if (line.type != '$PMTK' || line.args.length < 2 || line.args[0] != 'LOX' || line.args[1] != '1') {
+        throw new Error(`Unexpected log line ${line.toString()}`);
+      }
+      if (Number(line.args[2]) != expectedLineNum) {
+        throw new Error(`Unexpected log line number ${Number(line.args[2])} (was expecting ${expectedLineNum})`);
+      }
+      let gpsDataPoints = line.args.slice(3).map(unhex);
+      for (let dataPoint of gpsDataPoints) {
+        gpslog.push(dataPoint);
+      }
+      expectedLineNum += 1;
+      line = await this.receiveMessage();
+    }
+    if (expectedLineNum != numLines) {
+      console.log(`Got ${expectedLineNum} lines, was expecting ${numLines}. Continuing anyway.`);
+    }
+    ans = await this.receiveMessage();
+    if (
+      ans.type != '$PMTK' ||
+      ans.args.length != 3 ||
+      ans.args[0] != '001' ||
+      ans.args[1] != '622' ||
+      ans.args[2] != '3'
+    ) {
+      throw new Error(`Unexpected ReadLog acknowledgement ${ans.toString()}`);
+    }
+    this.config.next({ ...this.config.getValue(), gpslog: gpslog });
   }
 }
