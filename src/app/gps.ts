@@ -6,15 +6,15 @@ function checksum(data: Uint8Array): number {
 }
 
 enum LocusContent {
-  UTC = 1 << 0,  // 4 bytes int
-  VALID = 1 << 1,  // 1 byte uint
-  LAT = 1 << 2,  // 4 bytes float
-  LON = 1 << 3,  // 4 bytes float
-  HGT = 1 << 4,  // 2 bytes int
-  SPD = 1 << 5,  // 2 bytes uint
-  TRK = 1 << 6,  // 2 bytes int
-  HDOP = 1 << 10,  // 2 bytes
-  NSAT = 1 << 12,  // 1 byte uint
+  UTC = 1 << 0, // 4 bytes int
+  VALID = 1 << 1, // 1 byte uint
+  LAT = 1 << 2, // 4 bytes float
+  LON = 1 << 3, // 4 bytes float
+  HGT = 1 << 4, // 2 bytes int
+  SPD = 1 << 5, // 2 bytes uint
+  TRK = 1 << 6, // 2 bytes int
+  HDOP = 1 << 10, // 2 bytes
+  NSAT = 1 << 12 // 1 byte uint
 }
 
 export function makeParser(content: number): Parser {
@@ -74,11 +74,11 @@ export enum FixQuality {
   SIMULATOR = 8
 }
 
-class LocusError extends Error { }
+class LocusError extends Error {}
 
 export function parseHeader(data: Uint8Array, verify: boolean = true) {
   if (data.length < 16) {
-    throw new Error("Insufficient data for parsing header");
+    throw new Error('Insufficient data for parsing header');
   }
   // <HBBHHHHHBB
   let headerParser = new Parser()
@@ -101,7 +101,7 @@ export function parseHeader(data: Uint8Array, verify: boolean = true) {
 }
 
 export function parseWaypoint(parser: Parser, data: Uint8Array, verify: boolean = true) {
-  if (data.slice(0, 6).every(byte => byte === 0xff) || data.slice(0, 6).every(byte => byte === 0x00)) {
+  if (data.slice(0, 6).every((byte) => byte === 0xff) || data.slice(0, 6).every((byte) => byte === 0x00)) {
     return undefined;
   }
   const parsed = parser.parse(data);
@@ -154,4 +154,3 @@ export class Locus {
     }
   }
 }
-
