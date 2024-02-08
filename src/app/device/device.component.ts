@@ -3,6 +3,7 @@ import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hexarr } from '../message';
 import { Config } from '../configprotocol';
+import { saveAs } from 'file-saver';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -48,5 +49,9 @@ export class DeviceComponent {
   }
   async readGpslog() {
     await this.deviceMgr.configProtocol.readGpsLog();
+    const file = new Blob([this.deviceMgr.configProtocol.config.getValue().gpslog!], {
+      type: 'application/octet-stream'
+    });
+    saveAs(file, 'gpslog.bin');
   }
 }

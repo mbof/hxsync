@@ -20,7 +20,7 @@ export type Config = {
   mmsi?: string;
   waypoints?: Array<Waypoint>;
   atis?: string;
-  gpslog?: Uint8Array[];
+  gpslog?: Uint8Array;
 };
 
 export class ConfigProtocol {
@@ -146,7 +146,7 @@ export class ConfigProtocol {
 
   async readGpsLog() {
     await this.waitForGps();
-    let gpslog: Uint8Array[] = [];
+    let rawGpslog: Uint8Array[] = [];
     this.sendMessage('$PMTK', ['622', '1']);
     let ans = await this.receiveMessage();
     if (ans.type != '$PMTK' || ans.args.length != 3 || ans.args[0] != 'LOX' || ans.args[1] != '0') {
@@ -165,13 +165,20 @@ export class ConfigProtocol {
       }
       let gpsDataPoints = line.args.slice(3).map(unhex);
       for (let dataPoint of gpsDataPoints) {
-        gpslog.push(dataPoint);
+        rawGpslog.push(dataPoint);
       }
       expectedLineNum += 1;
       line = await this.receiveMessage();
     }
     if (expectedLineNum != numLines) {
       console.log(`Got ${expectedLineNum} lines, was expecting ${numLines}. Continuing anyway.`);
+    }
+    let logSize = rawGpslog.reduce((s, arr) => s + arr.length, 0);
+    let gpslog = new Uint8Array(logSize);
+    let offset = 0;
+    for (let logChunk of rawGpslog) {
+      gpslog.set(logChunk, offset);
+      offset += logChunk.length;
     }
     ans = await this.receiveMessage();
     if (
