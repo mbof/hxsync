@@ -38,7 +38,6 @@ describe('parseWaypoint', () => {
 describe('Locus', () => {
   it('should parse a log file', () => {
     const data_str =
-      '' +
       '0100010b7f0000000500000000007a0b0000000000000000000000000000000f' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00fc8c1c' +
       '0992245d02200952422861574130000d0027019d0e92245d0246095242715d57' +
@@ -169,5 +168,6 @@ describe('Locus', () => {
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
     const locus = new Locus(unhex(data_str), true);
     expect(locus).toBeTruthy();
+    expect(locus.getGpx()).toMatch(/.*<wpt lat="52.5089111328125" lon="13.461219787597656">.*/);
   });
 });

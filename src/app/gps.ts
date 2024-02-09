@@ -143,14 +143,52 @@ export class LocusSector {
   }
 }
 
+function formatGpxWaypoint(waypoint: any) {
+  return `
+<wpt lat="${waypoint.lat}" lon="${waypoint.lon}">
+<ele>${waypoint.hgt}</ele>
+<time>${waypoint.utc}</time>
+<fix>${waypoint.valid}</fix>
+${waypoint.spd ? `<spd>${waypoint.spd}</spd>` : ''}
+${waypoint.trk ? `<trk>${waypoint.trk}</trk>` : ''}
+${waypoint.hdop ? `<hdop>${waypoint.hdop}</hdop>` : ''}
+${waypoint.nsat ? `<sat>${waypoint.nsat}</sat>` : ''}
+</wpt>
+`;
+}
+
 export class Locus {
   sectors: LocusSector[];
 
   constructor(data: Uint8Array, verify: boolean = true) {
     this.sectors = [];
-    for (let sector_offset = 0; sector_offset < data.length; sector_offset += 0x1000) {
+    for (let sector_offset = 0; sector_offset + 0x1000 <= data.length; sector_offset += 0x1000) {
       const sector_data = data.slice(sector_offset, sector_offset + 0x1000);
       this.sectors.push(new LocusSector(sector_data, verify));
     }
+  }
+
+  getGpx() {
+    let gpx: string[] = [
+      `<?xml version="1.0"?>
+<gpx
+ version="1.0"
+ creator="Nghx"
+ xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.topografix.com/GPX/1/0"
+ xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+`
+    ];
+    gpx.push('<trk><trkseg>');
+    for (let sector of this.sectors) {
+      for (let waypoint of sector.waypoints) {
+        if (waypoint) {
+          gpx.push(formatGpxWaypoint(waypoint));
+        }
+      }
+    }
+    gpx.push('</trkseg></trk>');
+    gpx.push('</gpx>');
+    return gpx.join('');
   }
 }
