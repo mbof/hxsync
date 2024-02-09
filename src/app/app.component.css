@@ -67,7 +67,6 @@ main {
 }
 
 .content {
-  display: flex;
   justify-content: space-around;
   width: 100%;
   max-width: 700px;
@@ -76,10 +75,15 @@ main {
 
 .content h1 {
   margin-top: 1.75rem;
+  margin-bottom: 1rem;
 }
 
-.content p {
-  margin-top: 1.5rem;
+.content .desc {
+  margin: 0.5rem 0;
+}
+
+.content ul {
+  margin: 0.5rem 0;
 }
 
 .divider {

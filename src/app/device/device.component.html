@@ -1,40 +1,28 @@
-@if (connectionState != DCS.Connected) {
-<button
-  [disabled]="connectionState === DCS.Connecting"
-  (click)="deviceMgr.connect()"
-  >Connect</button>
-} @else {
-  <button
-  (click)="readMMSI()"
-  >Read MMSI</button>
-  <button
-  (click)="readWaypoints()"
-  >Read waypoints</button>
-  <button
-  (click)="readGpslog()"
-  >Read GPS log</button>
-  <button
-  (click)="deviceMgr.disconnect()"
-  >Disconnect</button>
-}
-<p>Device state is {{this.connectionState}}.
-</p>
-<p>
-  @if (this.readState) {
-    READING
-   }
-</p><p>
-   @if (this.writeState) {
-    WRITING
-   }
-</p>
-@if (this.config.getValue().mmsi) {
+<div class="device-panel">
+  <img class="device-picture" src="assets/radio.jpeg" />
+  <div class="status-lights">
+    <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
+    <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
+  </div>
+
+  <div class="controls">
+  @if (connectionState != DCS.Connected) {
+  <button [disabled]="connectionState === DCS.Connecting" (click)="deviceMgr.connect()">Connect</button>
+  } @else {
+  <button (click)="readMMSI()">Read MMSI</button>
+  <button (click)="readWaypoints()">Read waypoints</button>
+  <button (click)="readGpslog()">Read GPS log</button>
+  <button (click)="deviceMgr.disconnect()">Disconnect</button>
+  }
+  @if (this.config.getValue().mmsi) {
   <p>MMSI is {{ this.config.getValue().mmsi }}.</p>
-}
-@if (this.config.getValue().waypoints) {
+  }
+  @if (this.config.getValue().waypoints) {
   <p> Waypoints are
     @for (wp of this.config.getValue().waypoints; track wp) {
-     <li>{{ wp.toString() }}</li>
+    <li>{{ wp.toString() }}</li>
     }
   </p>
-}
+  }
+  </div>
+</div>

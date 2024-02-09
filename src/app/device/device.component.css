@@ -1,0 +1,41 @@
+.device-panel {
+  display: flex;
+}
+
+.device-picture {
+  width: 150px;
+  height: 150px;
+}
+
+.status-lights {
+  width: 100px;
+  height: auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-lights .light {
+  width: 24px;
+  height: 24px;
+  border-radius: 14px;
+  border: solid 1px #444;
+  margin: 5px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.status-lights .on {
+  background-color: rgb(28, 136, 28);
+  color: white;
+}
+
+.controls {
+  width: 100%;
+  height: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
