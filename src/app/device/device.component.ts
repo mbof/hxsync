@@ -51,7 +51,7 @@ export class DeviceComponent {
   async readGpslog() {
     await this.deviceMgr.configProtocol.readGpsLog();
     const gpx = new Locus(this.deviceMgr.configProtocol.config.getValue().gpslog!).getGpx();
-    const file = new Blob([gpx], {
+    const file = new Blob(gpx, {
       type: 'application/octet-stream'
     });
     saveAs(file, 'gpslog.bin');

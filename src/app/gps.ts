@@ -143,18 +143,22 @@ export class LocusSector {
   }
 }
 
-function formatGpxWaypoint(waypoint: any) {
-  return `
-<wpt lat="${waypoint.lat}" lon="${waypoint.lon}">
-<ele>${waypoint.hgt}</ele>
-<time>${waypoint.utc}</time>
-<fix>${waypoint.valid}</fix>
-${waypoint.spd ? `<spd>${waypoint.spd}</spd>` : ''}
-${waypoint.trk ? `<trk>${waypoint.trk}</trk>` : ''}
-${waypoint.hdop ? `<hdop>${waypoint.hdop}</hdop>` : ''}
-${waypoint.nsat ? `<sat>${waypoint.nsat}</sat>` : ''}
-</wpt>
-`;
+function pushGpxWaypoint(dest: string[], waypoint: any) {
+  dest.push(`<wpt lat="${waypoint.lat}" lon="${waypoint.lon}">`);
+  dest.push(`<ele>${waypoint.hgt}</ele><time>${waypoint.utc}</time><fix>${waypoint.valid}</fix>`);
+  if (waypoint.spd) {
+    dest.push(`<spd>${waypoint.spd}</spd>`);
+  }
+  if (waypoint.trk) {
+    dest.push(`<trk>${waypoint.trk}</trk>`);
+  }
+  if (waypoint.hdop) {
+    dest.push(`<hdop>${waypoint.hdop}</hdop>`);
+  }
+  if (waypoint.nsat) {
+    dest.push(`<sat>${waypoint.nsat}</sat>`);
+  }
+  dest.push(`</wpt>`);
 }
 
 export class Locus {
@@ -183,12 +187,12 @@ export class Locus {
     for (let sector of this.sectors) {
       for (let waypoint of sector.waypoints) {
         if (waypoint) {
-          gpx.push(formatGpxWaypoint(waypoint));
+          pushGpxWaypoint(gpx, waypoint);
         }
       }
     }
     gpx.push('</trkseg></trk>');
     gpx.push('</gpx>');
-    return gpx.join('');
+    return gpx;
   }
 }
