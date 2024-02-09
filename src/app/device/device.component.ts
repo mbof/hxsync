@@ -3,6 +3,8 @@ import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hexarr } from '../message';
 import { Config } from '../configprotocol';
+import { saveAs } from 'file-saver';
+import { Locus } from '../gps';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -45,5 +47,13 @@ export class DeviceComponent {
   }
   async readWaypoints() {
     await this.deviceMgr.configProtocol.readWaypoints();
+  }
+  async readGpslog() {
+    await this.deviceMgr.configProtocol.readGpsLog();
+    const gpx = new Locus(this.deviceMgr.configProtocol.config.getValue().gpslog!).getGpx();
+    const file = new Blob(gpx, {
+      type: 'application/xml'
+    });
+    saveAs(file, `gpslog.gpx`);
   }
 }
