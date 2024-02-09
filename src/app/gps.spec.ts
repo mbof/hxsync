@@ -168,6 +168,6 @@ describe('Locus', () => {
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
     const locus = new Locus(unhex(data_str), true);
     expect(locus).toBeTruthy();
-    expect(locus.getGpx()).toMatch(/.*<wpt lat="52.5089111328125" lon="13.461219787597656">.*/);
+    expect(locus.getGpx()).toMatch(/.*<trkpt lat="52.5089111328125" lon="13.461219787597656">.*/);
   });
 });

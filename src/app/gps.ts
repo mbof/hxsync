@@ -144,7 +144,7 @@ export class LocusSector {
 }
 
 function pushGpxWaypoint(dest: string[], waypoint: any) {
-  dest.push(`<wpt lat="${waypoint.lat}" lon="${waypoint.lon}">`);
+  dest.push(`<trkpt lat="${waypoint.lat}" lon="${waypoint.lon}">`);
   dest.push(`<ele>${waypoint.hgt}</ele><time>${waypoint.utc}</time><fix>${waypoint.valid}</fix>`);
   if (waypoint.spd) {
     dest.push(`<spd>${waypoint.spd}</spd>`);
@@ -158,7 +158,7 @@ function pushGpxWaypoint(dest: string[], waypoint: any) {
   if (waypoint.nsat) {
     dest.push(`<sat>${waypoint.nsat}</sat>`);
   }
-  dest.push(`</wpt>`);
+  dest.push(`</trkpt>`);
 }
 
 export class Locus {
@@ -174,13 +174,10 @@ export class Locus {
 
   getGpx() {
     let gpx: string[] = [
-      `<?xml version="1.0"?>
-<gpx
- version="1.0"
- creator="Nghx"
- xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
- xmlns="http://www.topografix.com/GPX/1/0"
- xsi:schemaLocation="http://www.topografix.com/GPX/1/0 http://www.topografix.com/GPX/1/0/gpx.xsd">
+      `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Nghx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
 `
     ];
     gpx.push('<trk><trkseg>');
