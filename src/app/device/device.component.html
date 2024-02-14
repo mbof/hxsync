@@ -1,43 +1,58 @@
 <div class="device-panel">
   <img class="device-picture" src="assets/radio.jpeg" />
   @if (connectionState == DCS.Connected) {
-  <div class="status-lights">
-    <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
-    <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
-  </div>
+    <div class="status-lights">
+      <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
+      <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
+    </div>
   }
   <div class="controls">
     @if (connectionState != DCS.Connected) {
-    <button [disabled]="connectionState === DCS.Connecting" (click)="deviceMgr.connect()">Connect</button>
+      <button
+        [disabled]="connectionState === DCS.Connecting"
+        (click)="deviceMgr.connect()"
+      >
+        Connect
+      </button>
     } @else {
-    <button (click)="readWaypoints()">Waypoints</button>
-    <button (click)="readGpslog()">Download GPS log</button>
-    <button (click)="deviceMgr.disconnect()">Disconnect</button>
+      <button (click)="readWaypoints()">Waypoints</button>
+      <button (click)="readGpslog()">Download GPS log</button>
+      <button (click)="deviceMgr.disconnect()">Disconnect</button>
     }
   </div>
 </div>
 @if (this.config.getValue().waypoints) {
   <div class="waypoints">
     <div class="list">
-    @if (this.config.getValue().waypoints!.length == 0) {
-      No waypoints!
-    } @else {
-      <table>
-        <tr><th>Name</th><th>Latitude</th><th>Longitude</th></tr>
-        @for (wp of this.config.getValue().waypoints; track wp) {
+      @if (this.config.getValue().waypoints!.length == 0) {
+        No waypoints!
+      } @else {
+        <table>
           <tr>
-            <td>{{ wp.wp.name }}</td>
-            <td>{{ wp.getLat() }}</td>
-            <td>{{ wp.getLon() }}</td>
-            <td>✎</td><td>✖</td>
-        }
-      </table>
-    }
-    <button>Add waypoint</button>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+          @for (wp of this.config.getValue().waypoints; track wp) {
+            <tr>
+              <td>
+                <a href="{{ wp.getMapLink() }}" target="_blank">{{
+                  wp.wp.name
+                }} ↗</a>
+              </td>
+              <td>{{ wp.getLat() }}</td>
+              <td>{{ wp.getLon() }}</td>
+              <td>✎</td>
+              <td>✖</td>
+            </tr>
+          }
+        </table>
+      }
+      <button>Add waypoint</button>
     </div>
     <div class="controls">
       <button>Save changes</button>
       <button>Cancel changes</button>
     </div>
   </div>
-  }
+}

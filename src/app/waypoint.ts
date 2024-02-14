@@ -13,7 +13,7 @@ export class Waypoint {
       lon_min: number;
       address?: number;
     }
-  ) { }
+  ) {}
   toString(): string {
     let wpStr = `${this.wp.id}, ${this.wp.name}, ${this.wp.lat_deg}${this.wp.lat_dir}${this.wp.lat_min}, ${this.wp.lon_deg}${this.wp.lon_dir}${this.wp.lon_min}`;
     if (this.wp.address) {
@@ -23,25 +23,45 @@ export class Waypoint {
     }
   }
   getLat() {
-    const lat_min_int = Math.floor(this.wp.lat_min / 10000).toString(10).padStart(2, '0');
+    const lat_min_int = Math.floor(this.wp.lat_min / 10000)
+      .toString(10)
+      .padStart(2, '0');
     const lat_min_flt = (this.wp.lat_min % 10000).toString(10).padStart(4, '0');
     return `${this.wp.lat_deg}${this.wp.lat_dir}${lat_min_int}.${lat_min_flt}`;
   }
   getLon() {
-    const lon_min_int = Math.floor(this.wp.lon_min / 10000).toString(10).padStart(2, '0');
+    const lon_min_int = Math.floor(this.wp.lon_min / 10000)
+      .toString(10)
+      .padStart(2, '0');
     const lon_min_flt = (this.wp.lon_min % 10000).toString(10).padStart(4, '0');
     return `${this.wp.lon_deg}${this.wp.lon_dir}${lon_min_int}.${lon_min_flt}`;
+  }
+  getMapLink() {
+    const lat_flt =
+      (this.wp.lat_dir == 'N' ? 1 : -1) *
+      (this.wp.lat_deg + this.wp.lat_min / 10000 / 60);
+    const lon_flt =
+      (this.wp.lon_dir == 'E' ? 1 : -1) *
+      (this.wp.lon_deg + this.wp.lon_min / 10000 / 60);
+    return `https://www.google.com/maps/place/${lat_flt},${lon_flt}`;
   }
 }
 
 const decoder = new TextDecoder();
 
-export function waypointFromConfig(wpData: Uint8Array, address?: number): Waypoint | undefined {
+export function waypointFromConfig(
+  wpData: Uint8Array,
+  address?: number
+): Waypoint | undefined {
   let id = wpData[31];
   if (id == 255) {
     return;
   }
-  for (var lastChar = 30; lastChar >= 16 && [0, 255, 32].includes(wpData[lastChar]); lastChar -= 1);
+  for (
+    var lastChar = 30;
+    lastChar >= 16 && [0, 255, 32].includes(wpData[lastChar]);
+    lastChar -= 1
+  );
   let name = decoder.decode(wpData.slice(16, lastChar + 1));
   let lat_str = hexarr(wpData.slice(4, 9)).slice(1);
   let lat_deg = Number(lat_str.slice(0, 3));
@@ -49,7 +69,7 @@ export function waypointFromConfig(wpData: Uint8Array, address?: number): Waypoi
   let lat_dir = decoder.decode(wpData.slice(9, 10));
   let lon_str = hexarr(wpData.slice(10, 15));
   let lon_deg = Number(lon_str.slice(0, 4));
-  let lon_min = Number(lat_str.slice(4, 10));
+  let lon_min = Number(lon_str.slice(4, 10));
   let lon_dir = decoder.decode(wpData.slice(15, 16));
 
   return new Waypoint({
