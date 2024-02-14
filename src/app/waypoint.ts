@@ -13,7 +13,7 @@ export class Waypoint {
       lon_min: number;
       address?: number;
     }
-  ) {}
+  ) { }
   toString(): string {
     let wpStr = `${this.wp.id}, ${this.wp.name}, ${this.wp.lat_deg}${this.wp.lat_dir}${this.wp.lat_min}, ${this.wp.lon_deg}${this.wp.lon_dir}${this.wp.lon_min}`;
     if (this.wp.address) {
@@ -21,6 +21,16 @@ export class Waypoint {
     } else {
       return wpStr;
     }
+  }
+  getLat() {
+    const lat_min_int = Math.floor(this.wp.lat_min / 10000).toString(10).padStart(2, '0');
+    const lat_min_flt = (this.wp.lat_min % 10000).toString(10).padStart(4, '0');
+    return `${this.wp.lat_deg}${this.wp.lat_dir}${lat_min_int}.${lat_min_flt}`;
+  }
+  getLon() {
+    const lon_min_int = Math.floor(this.wp.lon_min / 10000).toString(10).padStart(2, '0');
+    const lon_min_flt = (this.wp.lon_min % 10000).toString(10).padStart(4, '0');
+    return `${this.wp.lon_deg}${this.wp.lon_dir}${lon_min_int}.${lon_min_flt}`;
   }
 }
 
