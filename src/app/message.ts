@@ -13,7 +13,15 @@ export function hexarr(bytes: Uint8Array): string {
 }
 
 export function unhex(hexString: string): Uint8Array {
-  return Uint8Array.from(hexString.match(/.{1,2}/g)!.map((byte) => parseInt(byte, 16)));
+  return Uint8Array.from(
+    hexString.match(/.{2}/g)!.map((byte) => parseInt(byte, 16))
+  );
+}
+
+export function unhexInto(hexString: string, dest: Uint8Array) {
+  hexString
+    .match(/.{2}/g)!
+    .map((byte, index) => (dest[index] = Number.parseInt(byte, 16)));
 }
 
 function checksum(type: string, args: string[]): string | undefined {
@@ -28,7 +36,9 @@ function checksum(type: string, args: string[]): string | undefined {
   } else {
     return undefined;
   }
-  let s = check.reduce((previous, current) => (current == 33 ? previous : previous ^ current));
+  let s = check.reduce((previous, current) =>
+    current == 33 ? previous : previous ^ current
+  );
   return hex(s, 2);
 }
 
@@ -88,7 +98,9 @@ export class Message {
     }
     let checksum = this.checksum_recv || this.checksum_calc;
     if (this.type[0] == '#') {
-      return [this.type].concat(this.args).concat([checksum]).join('\t') + '\r\n';
+      return (
+        [this.type].concat(this.args).concat([checksum]).join('\t') + '\r\n'
+      );
     } else if (this.type[0] == '$') {
       return [this.type] + this.args.join(',') + `*${checksum}\r\n`;
     }
@@ -96,6 +108,10 @@ export class Message {
   }
 
   validate(): boolean {
-    return !this.checksum_calc || !this.checksum_recv || this.checksum_calc == this.checksum_recv;
+    return (
+      !this.checksum_calc ||
+      !this.checksum_recv ||
+      this.checksum_calc == this.checksum_recv
+    );
   }
 }
