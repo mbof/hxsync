@@ -1,0 +1,32 @@
+.dialog {
+  display: block;
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  padding: 1em;
+  box-shadow: rgb(0, 0, 0, 0.3) 1px 1px 10px;
+  border-radius: 5px;
+}
+
+h2 {
+  margin-top: 10px;
+}
+
+.input {
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+
+.input input {
+  margin-left: 1rem;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}

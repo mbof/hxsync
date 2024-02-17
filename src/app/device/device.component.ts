@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hexarr } from '../message';
@@ -6,13 +6,14 @@ import { Config } from '../configprotocol';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
 import { Waypoint } from '../waypoint';
+import { WaypointEditorComponent } from '../waypoint-editor/waypoint-editor.component';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
 @Component({
   selector: 'app-device',
   standalone: true,
-  imports: [],
+  imports: [WaypointEditorComponent],
   templateUrl: './device.component.html',
   styleUrl: './device.component.css'
 })
@@ -26,6 +27,8 @@ export class DeviceComponent {
   readonly DCS = DeviceConnectionState;
   configSubscription?: Subscription;
   config: BehaviorSubject<Config>;
+
+  @ViewChild(WaypointEditorComponent) waypointEditor!: WaypointEditorComponent;
 
   constructor(public deviceMgr: DevicemgrService) {
     this.connectionState = deviceMgr.getConnectionState();
@@ -71,7 +74,14 @@ export class DeviceComponent {
   draftEditWaypoint(wp: Waypoint) {
     const draftWaypoints = this.config.getValue().draftWaypoints;
     if (draftWaypoints) {
-      console.log(`Unimplemented: edit waypoint ${wp.wp}`);
+      this.waypointEditor.editWaypoint(wp, (wpFormData) =>
+        draftWaypoints.editWaypoint(
+          wp,
+          wpFormData.name,
+          wpFormData.lat,
+          wpFormData.lon
+        )
+      );
     }
   }
   draftDeleteWaypoint(wp: Waypoint) {

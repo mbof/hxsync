@@ -55,26 +55,6 @@
   justify-content: center;
 }
 
-button {
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin: 5px 10px;
-  background: rgb(38, 42, 85);
-  color: white;
-  font-weight: bold;
-}
-
-button:disabled {
-  border: none;
-  border-radius: 5px;
-  padding: 5px 10px;
-  margin: 5px 10px;
-  background: rgb(151, 151, 151);
-  color: rgb(48, 48, 48);
-  font-weight: bold;
-}
-
 .waypoints {
   display: flex;
   flex-direction: row;
