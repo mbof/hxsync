@@ -1,20 +1,28 @@
 @if (shown) {
-<div class="dialog">
-<h2>Waypoint</h2>
-<form #f="ngForm" (ngSubmit)="onSubmit(f)">
-<div class="input">
-  Name: <input type="text" name="name" [(ngModel)]="wpFormData!.name">
-</div>
-<div class="input">
-  Latitude (e.g. 12N34.56789): <input type="text" name="lat" [(ngModel)]="wpFormData!.lat">
-</div>
-<div class="input">
-  Longitude (e.g. 123W45.67890): <input type="text" name="lon" [(ngModel)]="wpFormData!.lon">
-</div>
-<div class="buttons">
-<button (click)="onCancel(f)">Cancel</button>
-<button>Done</button>
-</div>
-</form>
-</div>
+  <div class="dialog">
+    <h2>
+      @if (editing) {
+        Edit waypoint
+      } @else {
+        Add waypoint
+      }
+    </h2>
+    <form #f="ngForm" (ngSubmit)="onSubmit(f)">
+      <div class="input">
+        Name: <input type="text" name="wpName" [(ngModel)]="wpFormData!.name" />
+      </div>
+      <div class="input">
+        Latitude (e.g. 12N34.56789):
+        <input type="text" name="wpLat" [(ngModel)]="wpFormData!.lat" />
+      </div>
+      <div class="input">
+        Longitude (e.g. 123W45.67890):
+        <input type="text" name="wpLon" [(ngModel)]="wpFormData!.lon" />
+      </div>
+      <div class="buttons">
+        <button (click)="onCancel(f)">Cancel</button>
+        <button>Done</button>
+      </div>
+    </form>
+  </div>
 }

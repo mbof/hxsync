@@ -91,7 +91,14 @@ export class DeviceComponent {
     }
   }
   draftAddWaypoint() {
-    console.log(`Unimplemented: add waypoint`);
+    const draftWaypoints = this.config.getValue().draftWaypoints;
+    this.waypointEditor.createWaypoint((wpFormData) =>
+      draftWaypoints?.addWaypoint(
+        wpFormData.name,
+        wpFormData.lat,
+        wpFormData.lon
+      )
+    );
   }
   draftCancel() {
     this.deviceMgr.configProtocol.cancelDraftWaypoints();
