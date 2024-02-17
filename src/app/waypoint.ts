@@ -19,8 +19,9 @@ export function parseLat(
   if (!parsed_lat) {
     return undefined;
   }
-  const [_unused, lat_deg_str, lat_dir, lat_min_str, lat_min_tenthousandths] =
+  let [_unused, lat_deg_str, lat_dir, lat_min_str, lat_min_tenthousandths] =
     parsed_lat;
+  lat_min_tenthousandths = lat_min_tenthousandths.slice(0, 4).padEnd(4, '0');
   const lat_deg = Number.parseInt(lat_deg_str, 10);
   const lat_min =
     Number.parseInt(lat_min_str, 10) * 10000 +
@@ -35,8 +36,9 @@ export function parseLon(
   if (!parsed_lon) {
     return undefined;
   }
-  const [_unused, lon_deg_str, lon_dir, lon_min_str, lon_min_tenthousandths] =
+  let [_unused, lon_deg_str, lon_dir, lon_min_str, lon_min_tenthousandths] =
     parsed_lon;
+  lon_min_tenthousandths = lon_min_tenthousandths.slice(0, 4).padEnd(4, '0');
   const lon_deg = Number.parseInt(lon_deg_str, 10);
   const lon_min =
     Number.parseInt(lon_min_str, 10) * 10000 +

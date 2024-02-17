@@ -36,20 +36,8 @@ const testEncodedWaypoint = new Uint8Array([
 ]);
 
 const testEncodedWaypoint2 = unhex(
-  'FFFFFFFFF0340750004E01191662005747494E41202020202020202020200009'
+  'FFFFFFFFF0332072004E0118194170574176616C6F6E2020202020202020000A'
 );
-
-const testWpData2 = {
-  id: 9,
-  name: 'GINA',
-  lat_deg: 34,
-  lat_min: 75000,
-  lat_dir: 'N',
-  lon_deg: 119,
-  lon_min: 166200,
-  lon_dir: 'W',
-  address: 0x1234
-};
 
 describe('Waypoint', () => {
   it('should pack a waypoint', () => {
@@ -58,13 +46,6 @@ describe('Waypoint', () => {
     dest.fill(0xaa, 0, 32);
     wp.fillConfig(dest, 0x1234);
     expect(dest).toEqual(testEncodedWaypoint);
-  });
-  it('should pack a waypoint ', () => {
-    const wp = new Waypoint(testWpData2);
-    const dest = new Uint8Array(32);
-    dest.fill(0xaa, 0, 32);
-    wp.fillConfig(dest, 0x1234);
-    expect(dest).toEqual(testEncodedWaypoint2);
   });
   it('should return readable lat / lon', () => {
     const wp = new Waypoint(testWpData);
@@ -78,9 +59,9 @@ describe('Waypoint', () => {
 
 describe('waypointFromConfig', () => {
   it('should decode a waypoint', () => {
-    const wp = waypointFromConfig(testEncodedWaypoint2, 0x1234);
+    const wp = waypointFromConfig(testEncodedWaypoint, 0x1234);
     expect(wp).toBeTruthy();
-    expect(wp!.wp).toEqual(testWpData2);
+    expect(wp!.wp).toEqual(testWpData);
   });
 });
 
@@ -198,19 +179,25 @@ describe('DraftWaypoints', () => {
     const draft = new DraftWaypoints(wpArr, 100);
     expect(draft.waypoints.length == 4);
     draft.addWaypoint({
-      name: 'New waypoint',
-      lat: '10S34.5678',
-      lon: '100E45.6789'
+      name: 'Avalon',
+      lat: '33N20.720',
+      lon: '118W19.417'
     });
+    const dest = new Uint8Array(32);
     expect(draft.waypoints.length == 5);
-    expect(draft.waypoints[4].wp.name).toBe('New waypoint');
-    expect(draft.waypoints[4].wp.lat_deg).toBe(10);
-    expect(draft.waypoints[4].wp.lat_dir).toBe('S');
-    expect(draft.waypoints[4].wp.lat_min).toBe(345678);
-    expect(draft.waypoints[4].wp.lon_deg).toBe(100);
-    expect(draft.waypoints[4].wp.lon_dir).toBe('E');
-    expect(draft.waypoints[4].wp.lon_min).toBe(456789);
-    expect(draft.waypoints[4].wp.id).toBe(3);
+    const addedWp = draft.waypoints[4];
+    expect(addedWp.wp.name).toBe('Avalon');
+    expect(addedWp.wp.id).toBe(3);
+    addedWp.wp.address = 0x1234;
+    addedWp.wp.id = 10;
+    addedWp.fillConfig(dest, 0x1234);
+    expect(dest).toEqual(testEncodedWaypoint2);
+    expect(addedWp.wp.lat_deg).toBe(33);
+    expect(addedWp.wp.lat_dir).toBe('N');
+    expect(addedWp.wp.lat_min).toBe(207200);
+    expect(addedWp.wp.lon_deg).toBe(118);
+    expect(addedWp.wp.lon_dir).toBe('W');
+    expect(addedWp.wp.lon_min).toBe(194170);
     expect(draft.dirty).toBeTrue();
   });
   it('should reject waypoints when full', () => {
