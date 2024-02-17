@@ -1,12 +1,7 @@
 import { Component, Input } from '@angular/core';
-import { Waypoint, WaypointData } from '../waypoint';
+import { Waypoint, WaypointData, parseAndCheckWaypointData } from '../waypoint';
 import { NgForm, FormsModule } from '@angular/forms';
-
-type WpFormData = {
-  name: string;
-  lat: string;
-  lon: string;
-};
+import { WpFormData } from '../waypoint';
 
 @Component({
   selector: 'waypoint-editor',
@@ -20,17 +15,34 @@ export class WaypointEditorComponent {
   shown = true;
   wpFormData?: WpFormData;
   callbackFn?: (wpData: WpFormData) => void;
+  errorMsg?: string;
   ngOnInit() {}
   onSubmit(f: NgForm) {
+    if (!this.wpFormData) {
+      this.shown = false;
+      return;
+    }
+    var wpFormData = this.wpFormData;
+    try {
+      const unused = parseAndCheckWaypointData(wpFormData);
+    } catch (e: any) {
+      this.errorMsg = e.toString();
+      return;
+    }
+
     this.shown = false;
+    this.wpFormData = undefined;
+    this.errorMsg = undefined;
     console.log(`Submitted form ${f}`);
-    if (this.callbackFn && this.wpFormData) {
-      this.callbackFn(this.wpFormData);
+    if (this.callbackFn) {
+      this.callbackFn(wpFormData);
     }
   }
   onCancel(f: NgForm) {
     console.log(`Canceled form ${f}`);
     this.shown = false;
+    this.wpFormData = undefined;
+    this.errorMsg = undefined;
     return false;
   }
   editWaypoint(wp: Waypoint, callbackFn?: (wpData: WpFormData) => void) {

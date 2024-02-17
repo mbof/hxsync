@@ -30,3 +30,10 @@ h2 {
   flex-direction: row;
   justify-content: center;
 }
+
+.error {
+  background-color: rgb(255 213 213);
+  font-size: 80%;
+  padding: 0.4rem;
+  color: darkred;
+}

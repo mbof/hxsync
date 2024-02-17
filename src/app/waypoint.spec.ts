@@ -111,11 +111,11 @@ describe('parseLon', () => {
 
 describe('parseAndCheckWaypointData', () => {
   it('should accept valid data', () => {
-    const result = parseAndCheckWaypointData(
-      'Test waypoint',
-      '45N06.7890',
-      '123W03.5670'
-    );
+    const result = parseAndCheckWaypointData({
+      name: 'Test waypoint',
+      lat: '45N06.7890',
+      lon: '123W03.5670'
+    });
     expect(result.lat).toEqual({
       lat_deg: 45,
       lat_dir: 'N',
@@ -129,21 +129,29 @@ describe('parseAndCheckWaypointData', () => {
   });
   it('should reject long names', () => {
     expect(() =>
-      parseAndCheckWaypointData(
-        'Test waypoint but too long',
-        '45N06.7890',
-        '123W03.5670'
-      )
+      parseAndCheckWaypointData({
+        name: 'Test waypoint but too long',
+        lat: '45N06.7890',
+        lon: '123W03.5670'
+      })
     ).toThrow();
   });
   it('should reject non-ASCII names', () => {
     expect(() =>
-      parseAndCheckWaypointData('Test wäypoint', '45N06.7890', '123W03.5670')
+      parseAndCheckWaypointData({
+        name: 'Test wäypoint',
+        lat: '45N06.7890',
+        lon: '123W03.5670'
+      })
     ).toThrow();
   });
   it('should reject non-parseable lat / lon', () => {
     expect(() =>
-      parseAndCheckWaypointData('Test waypoint', '45Z06.7890', '123W03.5670')
+      parseAndCheckWaypointData({
+        name: 'Test waypoint',
+        lat: '45Z06.7890',
+        lon: '123W03.5670'
+      })
     ).toThrow();
   });
 });
@@ -192,7 +200,11 @@ describe('DraftWaypoints', () => {
     const wpArr = getSampleWaypointArray();
     const draft = new DraftWaypoints(wpArr, 100);
     expect(draft.waypoints.length == 4);
-    draft.addWaypoint('New waypoint', '10S34.5678', '100E45.6789');
+    draft.addWaypoint({
+      name: 'New waypoint',
+      lat: '10S34.5678',
+      lon: '100E45.6789'
+    });
     expect(draft.waypoints.length == 5);
     expect(draft.waypoints[4].wp.name).toBe('New waypoint');
     expect(draft.waypoints[4].wp.lat_deg).toBe(10);
@@ -208,14 +220,22 @@ describe('DraftWaypoints', () => {
     const wpArr = getSampleWaypointArray();
     const draft = new DraftWaypoints(wpArr, 4);
     expect(() =>
-      draft.addWaypoint('New waypoint', '10S34.5678', '100E45.6789')
+      draft.addWaypoint({
+        name: 'New waypoint',
+        lat: '10S34.5678',
+        lon: '100E45.6789'
+      })
     ).toThrow();
     expect(draft.dirty).toBeFalse();
   });
   it('should encode waypoints', () => {
     const wpArr = getSampleWaypointArray();
     const draft = new DraftWaypoints(wpArr, 6);
-    draft.addWaypoint('New waypoint', '10S34.5678', '100E45.6789');
+    draft.addWaypoint({
+      name: 'New waypoint',
+      lat: '10S34.5678',
+      lon: '100E45.6789'
+    });
     expect(hexarr(draft.getBinaryData(0x1234))).toBe(
       'FFFFFFFFF010345678530100456789454E657720776179706F696E7400000003' +
         'FFFFFFFFF0450678904E0123035670575465737420777000000000000000000B' +

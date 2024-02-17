@@ -157,23 +157,22 @@ export function waypointFromConfig(
   });
 }
 
-export function parseAndCheckWaypointData(
-  name: string,
-  lat_str: string,
-  lon_str: string
-) {
+export function parseAndCheckWaypointData({ name, lat, lon }: WpFormData) {
+  if (name.length == 0) {
+    throw new Error(`No name was provided`);
+  }
   if (name.length >= 15) {
     throw new Error(`Waypoint name too long ${name}`);
   }
   if (!/^[\x20-\x7F]+$/.test(name)) {
     throw new Error(`Name contains bad characters ${name}`);
   }
-  const lat = parseLat(lat_str);
-  const lon = parseLon(lon_str);
-  if (!lat || !lon) {
-    throw new Error(`Unparseable position ${lat_str} ${lon_str}`);
+  const parsedLat = parseLat(lat);
+  const parsedLon = parseLon(lon);
+  if (!parsedLat || !parsedLon) {
+    throw new Error(`Unparseable position ${lat} ${lon}`);
   }
-  return { lat, lon };
+  return { lat: parsedLat, lon: parsedLon };
 }
 
 export const WAYPOINTS_BYTE_SIZE = 32;
@@ -233,11 +232,11 @@ export class DraftWaypoints {
     this.maybeUpdateCallback();
   }
 
-  addWaypoint(name: string, lat_str: string, lon_str: string): void {
+  addWaypoint(wpFormData: WpFormData): void {
     if (this.waypoints.length >= this.maxWaypoints) {
       throw new Error('No more room for waypoints');
     }
-    const { lat, lon } = parseAndCheckWaypointData(name, lat_str, lon_str);
+    const { lat, lon } = parseAndCheckWaypointData(wpFormData);
     let nextId: number;
     // Find the first available ID
     for (nextId = 0; nextId < 255; nextId += 1) {
@@ -249,7 +248,7 @@ export class DraftWaypoints {
       new Waypoint({
         ...lat,
         ...lon,
-        name: name,
+        name: wpFormData.name,
         id: nextId
       })
     );
@@ -274,3 +273,8 @@ export class DraftWaypoints {
     return wpData;
   }
 }
+export type WpFormData = {
+  name: string;
+  lat: string;
+  lon: string;
+};

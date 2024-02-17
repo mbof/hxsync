@@ -93,11 +93,7 @@ export class DeviceComponent {
   draftAddWaypoint() {
     const draftWaypoints = this.config.getValue().draftWaypoints;
     this.waypointEditor.createWaypoint((wpFormData) =>
-      draftWaypoints?.addWaypoint(
-        wpFormData.name,
-        wpFormData.lat,
-        wpFormData.lon
-      )
+      draftWaypoints?.addWaypoint(wpFormData)
     );
   }
   draftCancel() {
