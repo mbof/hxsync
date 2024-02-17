@@ -5,6 +5,7 @@ import { hexarr } from '../message';
 import { Config } from '../configprotocol';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
+import { Waypoint } from '../waypoint';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -32,14 +33,19 @@ export class DeviceComponent {
   }
 
   ngOnInit() {
-    this.connectionStateSubscription = this.deviceMgr.connectionState$.subscribe(
-      (connectionState) => (this.connectionState = connectionState)
+    this.connectionStateSubscription =
+      this.deviceMgr.connectionState$.subscribe(
+        (connectionState) => (this.connectionState = connectionState)
+      );
+    this.readStateSubscription = this.deviceMgr.busyReadState$.subscribe(
+      (readState) => (this.readState = readState)
     );
-    this.readStateSubscription = this.deviceMgr.busyReadState$.subscribe((readState) => (this.readState = readState));
     this.writeStateSubscription = this.deviceMgr.busyWriteState$.subscribe(
       (writeState) => (this.writeState = writeState)
     );
-    this.configSubscription = this.deviceMgr.configProtocol.config.asObservable().subscribe();
+    this.configSubscription = this.deviceMgr.configProtocol.config
+      .asObservable()
+      .subscribe();
   }
 
   async readMMSI() {
@@ -50,10 +56,37 @@ export class DeviceComponent {
   }
   async readGpslog() {
     await this.deviceMgr.configProtocol.readGpsLog();
-    const gpx = new Locus(this.deviceMgr.configProtocol.config.getValue().gpslog!).getGpx();
+    const gpx = new Locus(
+      this.deviceMgr.configProtocol.config.getValue().gpslog!
+    ).getGpx();
     const file = new Blob(gpx, {
       type: 'application/xml'
     });
     saveAs(file, `gpslog.gpx`);
+  }
+
+  getDraftWaypoints() {
+    return this.config.getValue().draftWaypoints;
+  }
+  draftEditWaypoint(wp: Waypoint) {
+    const draftWaypoints = this.config.getValue().draftWaypoints;
+    if (draftWaypoints) {
+      console.log(`Unimplemented: edit waypoint ${wp.wp}`);
+    }
+  }
+  draftDeleteWaypoint(wp: Waypoint) {
+    const draftWaypoints = this.config.getValue().draftWaypoints;
+    if (draftWaypoints) {
+      draftWaypoints.deleteWaypoint(wp);
+    }
+  }
+  draftAddWaypoint() {
+    console.log(`Unimplemented: add waypoint`);
+  }
+  draftCancel() {
+    this.deviceMgr.configProtocol.cancelDraftWaypoints();
+  }
+  isPendingDraft() {
+    return this.config.getValue().draftWaypoints?.dirty;
   }
 }

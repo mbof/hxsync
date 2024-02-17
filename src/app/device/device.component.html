@@ -15,16 +15,18 @@
         Connect
       </button>
     } @else {
-      <button (click)="readWaypoints()">Waypoints</button>
+      <button (click)="readWaypoints()" [disabled]="!!getDraftWaypoints()">
+        Waypoints
+      </button>
       <button (click)="readGpslog()">Download GPS log</button>
       <button (click)="deviceMgr.disconnect()">Disconnect</button>
     }
   </div>
 </div>
-@if (this.config.getValue().waypoints) {
+@if (!!getDraftWaypoints()) {
   <div class="waypoints">
     <div class="list">
-      @if (this.config.getValue().waypoints!.length == 0) {
+      @if (!getDraftWaypoints()?.waypoints?.length) {
         No waypoints!
       } @else {
         <table>
@@ -33,26 +35,28 @@
             <th>Latitude</th>
             <th>Longitude</th>
           </tr>
-          @for (wp of this.config.getValue().waypoints; track wp) {
+          @for (wp of getDraftWaypoints()!.waypoints; track wp) {
             <tr>
               <td>
-                <a href="{{ wp.getMapLink() }}" target="_blank">{{
-                  wp.wp.name
-                }} ↗</a>
+                <a href="{{ wp.getMapLink() }}" target="_blank"
+                  >{{ wp.wp.name }} ↗</a
+                >
               </td>
               <td>{{ wp.getLat() }}</td>
               <td>{{ wp.getLon() }}</td>
-              <td>✎</td>
-              <td>✖</td>
+              <td class="action" (click)="draftEditWaypoint(wp)">✎</td>
+              <td class="action" (click)="draftDeleteWaypoint(wp)">✖</td>
             </tr>
           }
         </table>
       }
-      <button>Add waypoint</button>
+      <button (click)="draftAddWaypoint()">Add waypoint</button>
     </div>
     <div class="controls">
-      <button>Save changes</button>
-      <button>Cancel changes</button>
+      <button [disabled]="!isPendingDraft()">Save changes</button>
+      <button [disabled]="!isPendingDraft()" (click)="draftCancel()">
+        Cancel changes
+      </button>
     </div>
   </div>
 }
