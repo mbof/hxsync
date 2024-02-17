@@ -1,7 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
-import { hexarr } from '../message';
+import { hex } from '../message';
 import { Config } from '../configprotocol';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
@@ -99,7 +99,11 @@ export class DeviceComponent {
   draftCancel() {
     this.deviceMgr.configProtocol.cancelDraftWaypoints();
   }
+  saveDraft() {
+    this.deviceMgr.configProtocol.writeDraftWaypoints();
+  }
   isPendingDraft() {
     return this.config.getValue().draftWaypoints?.dirty;
   }
+  hex = hex;
 }

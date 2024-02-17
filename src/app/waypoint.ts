@@ -90,8 +90,9 @@ export class Waypoint {
     let name = this.wp.name;
     if (name.length >= 15) {
       console.log(`Waypoint name too long ${name}, truncating`);
-      name = name.substring(0, 15);
+      name = name.substring(0, 14);
     }
+    name = name.padEnd(14, ' ');
     const destWaypoint = dest.subarray(destOffset, destOffset + 32);
     destWaypoint[31] = this.wp.id;
     const destName = destWaypoint.subarray(16, 31);
@@ -239,7 +240,7 @@ export class DraftWaypoints {
     const { lat, lon } = parseAndCheckWaypointData(wpFormData);
     let nextId: number;
     // Find the first available ID
-    for (nextId = 0; nextId < 255; nextId += 1) {
+    for (nextId = 1; nextId < 255; nextId += 1) {
       if (!this.waypoints.find((wp) => wp.wp.id == nextId)) {
         break;
       }

@@ -41,6 +41,7 @@
                 <a href="{{ wp.getMapLink() }}" target="_blank"
                   >{{ wp.wp.name }} ↗</a
                 >
+                ({{ wp.wp.id }}, {{ hex(wp.wp.address || 0, 4) }})
               </td>
               <td>{{ wp.getLat() }}</td>
               <td>{{ wp.getLon() }}</td>
@@ -53,7 +54,9 @@
       <button (click)="draftAddWaypoint()">Add waypoint</button>
     </div>
     <div class="controls">
-      <button [disabled]="!isPendingDraft()">Save changes</button>
+      <button [disabled]="!isPendingDraft()" (click)="saveDraft()">
+        Save changes
+      </button>
       <button [disabled]="!isPendingDraft()" (click)="draftCancel()">
         Cancel changes
       </button>
