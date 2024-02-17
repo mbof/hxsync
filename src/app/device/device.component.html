@@ -1,28 +1,66 @@
 <div class="device-panel">
   <img class="device-picture" src="assets/radio.jpeg" />
-  <div class="status-lights">
-    <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
-    <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
-  </div>
-
+  @if (connectionState == DCS.Connected) {
+    <div class="status-lights">
+      <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
+      <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
+    </div>
+  }
   <div class="controls">
-  @if (connectionState != DCS.Connected) {
-  <button [disabled]="connectionState === DCS.Connecting" (click)="deviceMgr.connect()">Connect</button>
-  } @else {
-  <button (click)="readMMSI()">Read MMSI</button>
-  <button (click)="readWaypoints()">Read waypoints</button>
-  <button (click)="readGpslog()">Read GPS log</button>
-  <button (click)="deviceMgr.disconnect()">Disconnect</button>
-  }
-  @if (this.config.getValue().mmsi) {
-  <p>MMSI is {{ this.config.getValue().mmsi }}.</p>
-  }
-  @if (this.config.getValue().waypoints) {
-  <p> Waypoints are
-    @for (wp of this.config.getValue().waypoints; track wp) {
-    <li>{{ wp.toString() }}</li>
+    @if (connectionState != DCS.Connected) {
+      <button
+        [disabled]="connectionState === DCS.Connecting"
+        (click)="deviceMgr.connect()"
+      >
+        Connect
+      </button>
+    } @else {
+      <button (click)="readWaypoints()" [disabled]="!!getDraftWaypoints()">
+        Waypoints
+      </button>
+      <button (click)="readGpslog()">Download GPS log</button>
+      <button (click)="deviceMgr.disconnect()">Disconnect</button>
     }
-  </p>
-  }
   </div>
 </div>
+@if (!!getDraftWaypoints()) {
+  <div class="waypoints">
+    <div class="list">
+      @if (!getDraftWaypoints()?.waypoints?.length) {
+        No waypoints!
+      } @else {
+        <table>
+          <tr>
+            <th>Name</th>
+            <th>Latitude</th>
+            <th>Longitude</th>
+          </tr>
+          @for (wp of getDraftWaypoints()!.waypoints; track wp) {
+            <tr>
+              <td>
+                <a href="{{ wp.getMapLink() }}" target="_blank"
+                  >{{ wp.wp.name }} ↗</a
+                >
+                ({{ wp.wp.id }}, {{ hex(wp.wp.address || 0, 4) }})
+              </td>
+              <td>{{ wp.getLat() }}</td>
+              <td>{{ wp.getLon() }}</td>
+              <td class="action" (click)="draftEditWaypoint(wp)">✎</td>
+              <td class="action" (click)="draftDeleteWaypoint(wp)">✖</td>
+            </tr>
+          }
+        </table>
+      }
+      <button (click)="draftAddWaypoint()">Add waypoint</button>
+    </div>
+    <div class="controls">
+      <button [disabled]="!isPendingDraft()" (click)="saveDraft()">
+        Save changes
+      </button>
+      <button [disabled]="!isPendingDraft()" (click)="draftCancel()">
+        Cancel changes
+      </button>
+    </div>
+  </div>
+}
+<waypoint-editor />
