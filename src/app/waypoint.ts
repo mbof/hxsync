@@ -85,7 +85,7 @@ function parseAngleInternal(
       dir = degFloat > 0 ? 'E' : 'W';
     }
     const deg = Math.floor(Math.abs(degFloat));
-    const min = Math.round((degFloat - deg) * 60 * 10000);
+    const min = Math.round((Math.abs(degFloat) - deg) * 60 * 10000);
     return { deg, dir, min };
   }
 

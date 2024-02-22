@@ -103,6 +103,15 @@ it('should parse a latitude (format 4)', () => {
   });
 });
 
+it('should parse a latitude (format 4, negative)', () => {
+  const lat = parseLat(`-45.123456`);
+  expect(lat).toEqual({
+    lat_deg: 45,
+    lat_dir: 'S',
+    lat_min: 74074
+  });
+});
+
 describe('parseLon', () => {
   it('should parse a longitude', () => {
     const lon = parseLon('123W03.5670');
