@@ -54,35 +54,3 @@
   align-items: center;
   justify-content: center;
 }
-
-.waypoints {
-  display: flex;
-  flex-direction: row;
-  justify-content: center;
-}
-
-.waypoints .list {
-  display: flex;
-  flex-direction: column;
-  width: 100%;
-}
-
-.waypoints .list td {
-  text-align: center;
-}
-
-.waypoints .list .button {
-  align-self: center;
-}
-
-.waypoints .list .action {
-  cursor: pointer;
-}
-
-.waypoints .controls {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  flex-shrink: 3;
-}
