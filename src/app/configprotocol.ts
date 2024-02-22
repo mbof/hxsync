@@ -51,6 +51,7 @@ export class ConfigProtocol {
 
   reset() {
     this.config.next({});
+    this._deviceTaskState.next('idle');
   }
 
   async sendMessage(
