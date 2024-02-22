@@ -12,38 +12,104 @@ export type WaypointData = {
   address?: number;
 };
 
+function parseAngleInternal(
+  angle: string,
+  axis: 'lat' | 'lon'
+): { deg: number; dir: string; min: number } | undefined {
+  // Format 1: decimal minutes 32N34.0005
+  let parsedAngle =
+    axis == 'lat'
+      ? angle.toUpperCase().match(/^ *(\d+) *(N|S) *(\d+)\.(\d+) *$/)
+      : angle.toUpperCase().match(/^ *(\d+) *(E|W) *(\d+)\.(\d+) *$/);
+
+  if (parsedAngle) {
+    const [_unused, degStr, dir, minStr, minDecimalsStr] = parsedAngle;
+    const minTenThousandthsStr = minDecimalsStr.slice(0, 4).padEnd(4, '0');
+    const deg = Number.parseInt(degStr, 10);
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
+      Number.parseInt(minTenThousandthsStr, 10);
+    return { deg, dir, min };
+  }
+
+  // Format 2: decimal minutes 32° 34.0005' N
+  parsedAngle =
+    axis == 'lat'
+      ? angle
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(N|S) *$/)
+      : angle
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(E|W) *$/);
+
+  if (parsedAngle) {
+    const [_unused, degStr, minStr, minDecimalsStr, dir] = parsedAngle;
+    const minTenThousandthsStr = minDecimalsStr.slice(0, 4).padEnd(4, '0');
+    const deg = Number.parseInt(degStr, 10);
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
+      Number.parseInt(minTenThousandthsStr, 10);
+    return { deg, dir, min };
+  }
+
+  // Format 3: degrees, minutes, decimal seconds 32° 34' 23.1" N
+  parsedAngle =
+    axis == 'lat'
+      ? angle
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(N|S) *$/)
+      : angle
+          .toUpperCase()
+          .match(
+            /^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(E|W) *$/
+          );
+
+  if (parsedAngle) {
+    const [_unused, degStr, minStr, secStr, dir] = parsedAngle;
+    const deg = Number.parseInt(degStr, 10);
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
+      Math.round((Number.parseFloat(secStr) * 10000) / 60);
+    return { deg, dir, min };
+  }
+
+  // Format 4: decimal degrees 32.12536, sign = direction
+  parsedAngle = angle.match(/^ *([+-]?\d+(\.\d+)?) *$/);
+  if (parsedAngle) {
+    const [_unused, degStr] = parsedAngle;
+    const degFloat = Number.parseFloat(degStr);
+    let dir: string;
+    if (axis == 'lat') {
+      dir = degFloat > 0 ? 'N' : 'S';
+    } else {
+      dir = degFloat > 0 ? 'E' : 'W';
+    }
+    const deg = Math.floor(Math.abs(degFloat));
+    const min = Math.round((degFloat - deg) * 60 * 10000);
+    return { deg, dir, min };
+  }
+
+  return undefined;
+}
+
 export function parseLat(
   lat: string
 ): { lat_deg: number; lat_dir: string; lat_min: number } | undefined {
-  const parsed_lat = lat.toUpperCase().match(/(\d+)(N|S)(\d+)\.(\d+)/);
-  if (!parsed_lat) {
+  const angle = parseAngleInternal(lat, 'lat');
+  if (!angle) {
     return undefined;
   }
-  let [_unused, lat_deg_str, lat_dir, lat_min_str, lat_min_tenthousandths] =
-    parsed_lat;
-  lat_min_tenthousandths = lat_min_tenthousandths.slice(0, 4).padEnd(4, '0');
-  const lat_deg = Number.parseInt(lat_deg_str, 10);
-  const lat_min =
-    Number.parseInt(lat_min_str, 10) * 10000 +
-    Number.parseInt(lat_min_tenthousandths);
-  return { lat_deg: lat_deg, lat_dir: lat_dir, lat_min: lat_min };
+  return { lat_deg: angle.deg, lat_dir: angle.dir, lat_min: angle.min };
 }
 
 export function parseLon(
   lon: string
 ): { lon_deg: number; lon_dir: string; lon_min: number } | undefined {
-  const parsed_lon = lon.toUpperCase().match(/(\d+)(E|W)(\d+)\.(\d+)/);
-  if (!parsed_lon) {
+  const angle = parseAngleInternal(lon, 'lon');
+  if (!angle) {
     return undefined;
   }
-  let [_unused, lon_deg_str, lon_dir, lon_min_str, lon_min_tenthousandths] =
-    parsed_lon;
-  lon_min_tenthousandths = lon_min_tenthousandths.slice(0, 4).padEnd(4, '0');
-  const lon_deg = Number.parseInt(lon_deg_str, 10);
-  const lon_min =
-    Number.parseInt(lon_min_str, 10) * 10000 +
-    Number.parseInt(lon_min_tenthousandths);
-  return { lon_deg: lon_deg, lon_dir: lon_dir, lon_min: lon_min };
+  return { lon_deg: angle.deg, lon_dir: angle.dir, lon_min: angle.min };
 }
 
 export class Waypoint {
@@ -61,14 +127,14 @@ export class Waypoint {
       .toString(10)
       .padStart(2, '0');
     const lat_min_flt = (this.wp.lat_min % 10000).toString(10).padStart(4, '0');
-    return `${this.wp.lat_deg}${this.wp.lat_dir}${lat_min_int}.${lat_min_flt}`;
+    return `${this.wp.lat_deg}° ${lat_min_int}.${lat_min_flt}’ ${this.wp.lat_dir}`;
   }
   getLon() {
     const lon_min_int = Math.floor(this.wp.lon_min / 10000)
       .toString(10)
       .padStart(2, '0');
     const lon_min_flt = (this.wp.lon_min % 10000).toString(10).padStart(4, '0');
-    return `${this.wp.lon_deg}${this.wp.lon_dir}${lon_min_int}.${lon_min_flt}`;
+    return `${this.wp.lon_deg}° ${lon_min_int}.${lon_min_flt}’ ${this.wp.lon_dir}`;
   }
   getMapLink() {
     const lat_flt =

@@ -21,7 +21,7 @@
         />
       </div>
       <div class="input">
-        Latitude (e.g. 12N34.56789):
+        Latitude:
         <input
           type="text"
           name="wpLat"
@@ -30,13 +30,19 @@
         />
       </div>
       <div class="input">
-        Longitude (e.g. 123W45.67890):
+        Longitude:
         <input
           type="text"
           name="wpLon"
           autocomplete="off"
           [(ngModel)]="wpFormData!.lon"
         />
+      </div>
+      <div class="desc">
+        Supported formats for latitude / longitude:
+        <li>Degrees and decimal minutes (DMM), e.g. 12 N 34.5678, 12° 34.5678' N</li>
+        <li>Degrees, minutes, seconds (DMS), e.g. 12° 34' 34.1" N</li>
+        <li>Decimal degrees (DD), e.g. 12.57613 (number sign indicates direction)</li>
       </div>
       <div class="buttons">
         <button type="button" (click)="onCancel(f)">Cancel</button>

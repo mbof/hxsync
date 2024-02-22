@@ -49,8 +49,8 @@ describe('Waypoint', () => {
   });
   it('should return readable lat / lon', () => {
     const wp = new Waypoint(testWpData);
-    expect(wp.getLat()).toEqual('45N06.7890');
-    expect(wp.getLon()).toEqual('123W03.5670');
+    expect(wp.getLat()).toEqual('45° 06.7890’ N');
+    expect(wp.getLon()).toEqual('123° 03.5670’ W');
     expect(wp.getMapLink()).toEqual(
       'https://www.google.com/maps/place/45.11315,-123.05945'
     );
@@ -73,6 +73,33 @@ describe('parseLat', () => {
       lat_dir: 'N',
       lat_min: 67890
     });
+  });
+});
+
+it('should parse a latitude (format 2)', () => {
+  const lat = parseLat(`45° 06.789' N `);
+  expect(lat).toEqual({
+    lat_deg: 45,
+    lat_dir: 'N',
+    lat_min: 67890
+  });
+});
+
+it('should parse a latitude (format 3)', () => {
+  const lat = parseLat(`45° 16’ 33.33” N `);
+  expect(lat).toEqual({
+    lat_deg: 45,
+    lat_dir: 'N',
+    lat_min: 165555
+  });
+});
+
+it('should parse a latitude (format 4)', () => {
+  const lat = parseLat(`45.123456`);
+  expect(lat).toEqual({
+    lat_deg: 45,
+    lat_dir: 'N',
+    lat_min: 74074
   });
 });
 
