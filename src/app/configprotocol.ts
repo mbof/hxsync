@@ -132,12 +132,6 @@ export class ConfigProtocol {
     }
   }
 
-  async readMmsi() {
-    let mmsiBytes = await this.readConfigMemory(0x00b0, 6);
-    let mmsi = hexarr(mmsiBytes).slice(0, 9);
-    this.config.next({ ...this.config.getValue(), mmsi: mmsi });
-  }
-
   // Used to refresh config after in-place changes to drafts
   private noopConfigCallback() {
     return () => this.config.next(this.config.getValue());

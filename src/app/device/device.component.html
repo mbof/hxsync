@@ -20,53 +20,11 @@
         Connect
       </button>
     } @else {
-      <button (click)="readWaypoints()" [disabled]="!!getDraftWaypoints()">
-        Waypoints
-      </button>
+      <button (click)="readWaypoints()">Waypoints</button>
       <button (click)="readGpslog()">Download GPS log</button>
       <button (click)="deviceMgr.disconnect()">Disconnect</button>
     }
   </div>
 </div>
-@if (!!getDraftWaypoints()) {
-  <div class="waypoints">
-    <div class="list">
-      @if (!getDraftWaypoints()?.waypoints?.length) {
-        No waypoints!
-      } @else {
-        <table>
-          <tr>
-            <th>Name</th>
-            <th>Latitude</th>
-            <th>Longitude</th>
-          </tr>
-          @for (wp of getDraftWaypoints()!.waypoints; track wp) {
-            <tr>
-              <td>
-                <a href="{{ wp.getMapLink() }}" target="_blank"
-                  >{{ wp.wp.name }} ↗</a
-                >
-                ({{ wp.wp.id }}, {{ hex(wp.wp.address || 0, 4) }})
-              </td>
-              <td>{{ wp.getLat() }}</td>
-              <td>{{ wp.getLon() }}</td>
-              <td class="action" (click)="draftEditWaypoint(wp)">✎</td>
-              <td class="action" (click)="draftDeleteWaypoint(wp)">✖</td>
-            </tr>
-          }
-        </table>
-      }
-      <button (click)="draftAddWaypoint()">Add waypoint</button>
-    </div>
-    <div class="controls">
-      <button [disabled]="!isPendingDraft()" (click)="saveDraft()">
-        Save changes
-      </button>
-      <button [disabled]="!isPendingDraft()" (click)="draftCancel()">
-        Cancel changes
-      </button>
-    </div>
-  </div>
-}
-<waypoint-editor />
+<waypoint-sheet />
 <busy-state-modal />
