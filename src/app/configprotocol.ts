@@ -32,12 +32,26 @@ export type Config = {
   gpslog?: Uint8Array;
 };
 
+export type DeviceTaskState =
+  | 'idle'
+  | 'gpslog-read'
+  | 'waypoints-read'
+  | 'waypoints-edit'
+  | 'waypoints-save';
+
 const WAYPOINTS_ADDRESS_START = 0xd700;
 const WAYPOINTS_NUMBER = 250;
 export class ConfigProtocol {
   constructor(private dev: DevicemgrService) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
+
+  private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
+  deviceTaskState$ = this._deviceTaskState.asObservable();
+
+  reset() {
+    this.config.next({});
+  }
 
   async sendMessage(
     type: string,
@@ -129,6 +143,12 @@ export class ConfigProtocol {
   }
 
   async readWaypoints() {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't read waypoints from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('waypoints-read');
     let wpBegin = WAYPOINTS_ADDRESS_START;
     let wpNum = WAYPOINTS_NUMBER; // 200 on other models
     let wpEnd = wpBegin + WAYPOINTS_BYTE_SIZE * wpNum; // = 0xF640;
@@ -160,12 +180,20 @@ export class ConfigProtocol {
         this.noopConfigCallback()
       )
     });
+    this._deviceTaskState.next('waypoints-edit');
   }
 
   async writeDraftWaypoints() {
+    if (this._deviceTaskState.getValue() != 'waypoints-edit') {
+      throw new Error(
+        `Can't write draft from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('waypoints-save');
     const draftWaypoints = this.config.getValue().draftWaypoints;
     if (!draftWaypoints) {
       console.log('No draft waypoints');
+      this._deviceTaskState.next('idle');
       return;
     }
     const wpData = draftWaypoints?.getBinaryData(WAYPOINTS_ADDRESS_START);
@@ -190,12 +218,19 @@ export class ConfigProtocol {
         this.noopConfigCallback()
       )
     });
+    this._deviceTaskState.next('idle');
   }
 
   cancelDraftWaypoints() {
+    if (this._deviceTaskState.getValue() != 'waypoints-edit') {
+      throw new Error(
+        `Can't cancel draft from state ${this._deviceTaskState.getValue()}`
+      );
+    }
     const waypoints = this.config.getValue().waypoints;
     if (!waypoints) {
       console.log('No waypoints yet');
+      this._deviceTaskState.next('idle');
       return;
     }
     this.config.next({
@@ -206,6 +241,7 @@ export class ConfigProtocol {
         this.noopConfigCallback()
       )
     });
+    this._deviceTaskState.next('idle');
   }
 
   async waitForGps_() {
@@ -229,6 +265,12 @@ export class ConfigProtocol {
   }
 
   async readGpsLog() {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't start reading GPS from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('gpslog-read');
     await this.waitForGps();
     let rawGpslog: Uint8Array[] = [];
     this.sendMessage('$PMTK', ['622', '1']);
@@ -289,5 +331,6 @@ export class ConfigProtocol {
       throw new Error(`Unexpected ReadLog acknowledgement ${ans.toString()}`);
     }
     this.config.next({ ...this.config.getValue(), gpslog: gpslog });
+    this._deviceTaskState.next('idle');
   }
 }

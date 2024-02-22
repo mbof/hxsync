@@ -2,37 +2,36 @@ import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hex } from '../message';
-import { Config } from '../configprotocol';
+import { Config, DeviceTaskState } from '../configprotocol';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
 import { Waypoint } from '../waypoint';
 import { WaypointEditorComponent } from '../waypoint-editor/waypoint-editor.component';
+import { BusyStateModalComponent } from '../busy-state-modal/busy-state-modal.component';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
 @Component({
   selector: 'app-device',
   standalone: true,
-  imports: [WaypointEditorComponent],
   templateUrl: './device.component.html',
-  styleUrl: './device.component.css'
+  styleUrl: './device.component.css',
+  imports: [WaypointEditorComponent, BusyStateModalComponent]
 })
 export class DeviceComponent {
   connectionStateSubscription?: Subscription;
   connectionState: DeviceConnectionState;
-  readStateSubscription?: Subscription;
-  readState: boolean = false;
-  writeStateSubscription?: Subscription;
-  writeState: boolean = false;
-  readonly DCS = DeviceConnectionState;
   configSubscription?: Subscription;
   config: BehaviorSubject<Config>;
+  deviceTaskState: DeviceTaskState;
 
   @ViewChild(WaypointEditorComponent) waypointEditor!: WaypointEditorComponent;
+  @ViewChild(BusyStateModalComponent) busyStateModal!: BusyStateModalComponent;
 
   constructor(public deviceMgr: DevicemgrService) {
     this.connectionState = deviceMgr.getConnectionState();
     this.config = this.deviceMgr.configProtocol.config;
+    this.deviceTaskState = 'idle';
   }
 
   ngOnInit() {
@@ -40,15 +39,15 @@ export class DeviceComponent {
       this.deviceMgr.connectionState$.subscribe(
         (connectionState) => (this.connectionState = connectionState)
       );
-    this.readStateSubscription = this.deviceMgr.busyReadState$.subscribe(
-      (readState) => (this.readState = readState)
-    );
-    this.writeStateSubscription = this.deviceMgr.busyWriteState$.subscribe(
-      (writeState) => (this.writeState = writeState)
-    );
     this.configSubscription = this.deviceMgr.configProtocol.config
       .asObservable()
       .subscribe();
+    this.deviceMgr.configProtocol.deviceTaskState$.subscribe(
+      (deviceTaskState) => (
+        (this.deviceTaskState = deviceTaskState),
+        this.busyStateModal.setState(deviceTaskState)
+      )
+    );
   }
 
   async readMMSI() {

@@ -1,15 +1,20 @@
 <div class="device-panel">
   <img class="device-picture" src="assets/radio.jpeg" />
-  @if (connectionState == DCS.Connected) {
-    <div class="status-lights">
-      <div class="light" class="{{ this.readState ? 'on' : 'off' }}">↘</div>
-      <div class="light" class="{{ this.writeState ? 'on' : 'off' }}">↖</div>
-    </div>
-  }
   <div class="controls">
-    @if (connectionState != DCS.Connected) {
+    @if (connectionState != 'connected') {
+      <div class="desc">
+        Connect your HX890 radio to this computer with a USB cable, and place it
+        in "CP Mode":
+        <ol>
+          <li>Power the device off</li>
+          <li>Press and hold the Menu key</li>
+          <li>While holding the Menu key, press the power button</li>
+          <li>Release both keys when the screen lights up</li>
+          <li>Click Connect</li>
+        </ol>
+      </div>
       <button
-        [disabled]="connectionState === DCS.Connecting"
+        [disabled]="connectionState === 'connecting'"
         (click)="deviceMgr.connect()"
       >
         Connect
@@ -64,3 +69,4 @@
   </div>
 }
 <waypoint-editor />
+<busy-state-modal />

@@ -1,0 +1,16 @@
+@if (['gpslog-read', 'waypoints-read', 'waypoints-save'].includes(state)) {
+  <div class="veil">
+    <div class="modal">
+      <div class="message">
+        @if (state == 'gpslog-read') {
+          Reading GPS log
+        } @else if (state == 'waypoints-read') {
+          Reading waypoints
+        } @else if (state == 'waypoints-save') {
+          Saving waypoints
+        }
+      </div>
+      <div class="spinner"></div>
+    </div>
+  </div>
+}

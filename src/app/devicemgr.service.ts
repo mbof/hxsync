@@ -5,29 +5,23 @@ import { BehaviorSubject } from 'rxjs';
 import { ChunkReader } from './chunkreader';
 import { ConfigProtocol } from './configprotocol';
 
-export enum DeviceConnectionState {
-  Disconnected = 0,
-  Connecting = 1,
-  Connected = 2
-}
-
 export enum DeviceMode {
   Unknown = 0,
   CP = 1,
   NMEA = 2
 }
 
+export type DeviceConnectionState = 'disconnected' | 'connecting' | 'connected';
+
 @Injectable({
   providedIn: 'root'
 })
 export class DevicemgrService {
   readonly serial: Serial;
-  private _connectionState = new BehaviorSubject<DeviceConnectionState>(DeviceConnectionState.Disconnected);
+  private _connectionState = new BehaviorSubject<DeviceConnectionState>(
+    'disconnected'
+  );
   connectionState$ = this._connectionState.asObservable();
-  private _busyWriteState = new BehaviorSubject<boolean>(false);
-  private _busyReadState = new BehaviorSubject<boolean>(false);
-  busyWriteState$ = this._busyWriteState.asObservable();
-  busyReadState$ = this._busyReadState.asObservable();
   port?: SerialPort;
   private _streamReader?: ReadableStreamDefaultReader;
   reader?: ChunkReader;
@@ -46,11 +40,13 @@ export class DevicemgrService {
   }
 
   async connect() {
-    if (this.getConnectionState() != DeviceConnectionState.Disconnected) {
-      throw new Error(`Cannot connect from state: ${this.getConnectionState()}`);
+    if (this.getConnectionState() != 'disconnected') {
+      throw new Error(
+        `Cannot connect from state: ${this.getConnectionState()}`
+      );
     }
     try {
-      this._connectionState.next(DeviceConnectionState.Connecting);
+      this._connectionState.next('connecting');
       this.port = await this.serial.requestPort({
         filters: [{ usbVendorId: 9898, usbProductId: 30 }]
       });
@@ -60,7 +56,11 @@ export class DevicemgrService {
       this.reader = new ChunkReader(this._streamReader!);
       this.writer = this.port?.writable?.getWriter();
       await this.detectDeviceMode();
-      this._connectionState.next(DeviceConnectionState.Connected);
+      if (this.mode != DeviceMode.CP) {
+        throw new Error('Device must be in CP mode');
+      }
+      this._connectionState.next('connected');
+      this.configProtocol.reset();
       console.log('Connected');
     } catch (e) {
       console.error(`Error while connecting: ${e}`);
@@ -84,10 +84,8 @@ export class DevicemgrService {
       this.reader = undefined;
       this.writer = undefined;
       this.mode = DeviceMode.Unknown;
-      this._connectionState.next(DeviceConnectionState.Disconnected);
+      this._connectionState.next('disconnected');
       this.configProtocol.config.next({});
-      this._busyReadState.next(false);
-      this._busyWriteState.next(false);
       console.log('Disconnected');
     } catch (e) {
       this.port = undefined;
@@ -96,22 +94,16 @@ export class DevicemgrService {
   }
 
   async write(s: string) {
-    this._busyWriteState.next(true);
     await this.writer?.write(this.encoder.encode(s));
-    this._busyWriteState.next(false);
   }
 
   async read(length: number): Promise<string> {
-    this._busyReadState.next(true);
     let ans = await this.reader!.read(length);
-    this._busyReadState.next(false);
     return ans;
   }
 
   async readline(): Promise<string> {
-    this._busyReadState.next(true);
     let line = await this.reader!.readline();
-    this._busyReadState.next(false);
     return line;
   }
 
