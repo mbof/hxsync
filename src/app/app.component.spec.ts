@@ -17,7 +17,7 @@ describe('AppComponent', () => {
   it(`should have the 'nghx' title`, () => {
     const fixture = TestBed.createComponent(AppComponent);
     const app = fixture.componentInstance;
-    expect(app.title).toEqual('nghx');
+    expect(app.title).toEqual('hxsync');
   });
 
   it('should render title', () => {

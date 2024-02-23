@@ -10,5 +10,5 @@ import { DeviceComponent } from './device/device.component';
   styleUrl: './app.component.css'
 })
 export class AppComponent {
-  title = 'nghx';
+  title = 'hxsync';
 }
