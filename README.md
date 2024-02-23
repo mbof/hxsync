@@ -1,4 +1,4 @@
-# Nghx
+# HxSync
 
 This project is an Angular web application that connects to the Standard Horizon HX890
 portable VHF radios using the WebSerial API. As of this writing, the WebSerial API is
@@ -13,7 +13,7 @@ It is very incomplete, and could break your device. **Use at your own risk!**
 * Try it out: https://mbof.github.io/hx
 * Video:
 
-https://github.com/mbof/nghx/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff474
+https://github.com/mbof/hxsync/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff474
 
 ## Development server
 
