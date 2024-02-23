@@ -3,10 +3,14 @@
 This project is an Angular web application that connects to the Standard Horizon HX890
 portable VHF radios using the WebSerial API. As of this writing, it only supports the 
 following functions:
-* reading the MMSI from the terminal
-* reading waypoints from the terminal
+* reading and esditing waypoints
+* Downloading the GPS log as a GPX file
 
 It is very incomplete, and could break your device. **Use at your own risk!**
+
+## Demo
+
+* Website: https://mbof.github.io/hx
 
 ## Development server
 
