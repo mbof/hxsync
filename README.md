@@ -3,10 +3,14 @@
 This project is an Angular web application that connects to the Standard Horizon HX890
 portable VHF radios using the WebSerial API. As of this writing, the WebSerial API is
 only available in Chrome, and this software only supports the  following functions:
-* Reading and esditing waypoints
+* Reading and editing waypoints
 * Downloading the GPS log as a GPX file
 
 It is very incomplete, and could break your device. **Use at your own risk!**
+
+This software builds on the work published at
+[Robert Elsinga's page on the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld)
+as well as the [`hxtool` Python utility](https://github.com/cr/hx870) by Christiane Ruetten.
 
 ## Demo
 
