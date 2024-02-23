@@ -1,16 +1,19 @@
-# Nghx
+# HxSync
 
 This project is an Angular web application that connects to the Standard Horizon HX890
-portable VHF radios using the WebSerial API. As of this writing, it only supports the 
-following functions:
-* reading and esditing waypoints
+portable VHF radios using the WebSerial API. As of this writing, the WebSerial API is
+only available in Chrome, and this software only supports the  following functions:
+* Reading and esditing waypoints
 * Downloading the GPS log as a GPX file
 
 It is very incomplete, and could break your device. **Use at your own risk!**
 
 ## Demo
 
-* Website: https://mbof.github.io/hx
+* Try it out: https://mbof.github.io/hx
+* Video:
+
+https://github.com/mbof/hxsync/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff474
 
 ## Development server
 
