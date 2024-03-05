@@ -241,6 +241,28 @@ export function parseAndCheckWaypointData({ name, lat, lon }: WpFormData) {
   if (!parsedLat || !parsedLon) {
     throw new Error(`Unparseable position ${lat} ${lon}`);
   }
+  if (
+    parsedLat.lat_deg > 90 ||
+    parsedLat.lat_deg < 0 ||
+    parsedLat.lat_min < 0 ||
+    parsedLat.lat_min > 60 * 10000
+  ) {
+    throw new Error(`Bad latitude ${lat}`);
+  }
+  if (
+    parsedLon.lon_deg > 180 ||
+    parsedLon.lon_deg < 0 ||
+    parsedLon.lon_min < 0 ||
+    parsedLon.lon_min > 60 * 10000
+  ) {
+    throw new Error(`Bad longitude ${lon}`);
+  }
+  if (!['N', 'S'].includes(parsedLat.lat_dir)) {
+    throw new Error(`Bad latitude direction in ${lat}`);
+  }
+  if (!['E', 'W'].includes(parsedLon.lon_dir)) {
+    throw new Error(`Bad longitude direction in ${lon}`);
+  }
   return { lat: parsedLat, lon: parsedLon };
 }
 

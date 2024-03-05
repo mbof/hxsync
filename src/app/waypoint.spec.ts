@@ -168,6 +168,24 @@ describe('parseAndCheckWaypointData', () => {
       })
     ).toThrow();
   });
+  it('should reject bad latitude', () => {
+    expect(() =>
+      parseAndCheckWaypointData({
+        name: 'Test waypoint',
+        lat: '453N06.7890',
+        lon: '123W03.5670'
+      })
+    ).toThrow(new Error('Bad latitude 453N06.7890'));
+  });
+  it('should reject bad longitude', () => {
+    expect(() =>
+      parseAndCheckWaypointData({
+        name: 'Test waypoint',
+        lat: '45N06.7890',
+        lon: '183W03.5670'
+      })
+    ).toThrow(new Error('Bad longitude 183W03.5670'));
+  });
 });
 
 function getSampleWaypointArray() {
