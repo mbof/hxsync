@@ -1,5 +1,5 @@
 import { BehaviorSubject, max, range } from 'rxjs';
-import { DevicemgrService } from './devicemgr.service';
+import { DeviceConfig, DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
 import {
   DraftWaypoints,
@@ -39,9 +39,8 @@ export type DeviceTaskState =
   | 'waypoints-edit'
   | 'waypoints-save';
 
-const WAYPOINTS_ADDRESS_START = 0xd700;
-const WAYPOINTS_NUMBER = 250;
 export class ConfigProtocol {
+  private _deviceConfig?: DeviceConfig;
   constructor(private dev: DevicemgrService) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
@@ -49,9 +48,10 @@ export class ConfigProtocol {
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
 
-  reset() {
+  reset(deviceConfig: DeviceConfig) {
     this.config.next({});
     this._deviceTaskState.next('idle');
+    this._deviceConfig = deviceConfig;
   }
 
   async sendMessage(
@@ -144,9 +144,9 @@ export class ConfigProtocol {
       );
     }
     this._deviceTaskState.next('waypoints-read');
-    let wpBegin = WAYPOINTS_ADDRESS_START;
-    let wpNum = WAYPOINTS_NUMBER; // 200 on other models
-    let wpEnd = wpBegin + WAYPOINTS_BYTE_SIZE * wpNum; // = 0xF640;
+    let wpBegin = this._deviceConfig!.waypointsStartAddress;
+    let wpNum = this._deviceConfig!.waypointsNumber;
+    let wpEnd = wpBegin + WAYPOINTS_BYTE_SIZE * wpNum;
     let wpChunkSize = 0x40;
     let wpData = new Uint8Array(wpEnd - wpBegin);
     for (var address = wpBegin; address < wpEnd; address += wpChunkSize) {
@@ -171,7 +171,7 @@ export class ConfigProtocol {
       waypoints: waypoints,
       draftWaypoints: new DraftWaypoints(
         waypoints,
-        WAYPOINTS_NUMBER,
+        this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
       )
     });
@@ -191,14 +191,16 @@ export class ConfigProtocol {
       this._deviceTaskState.next('idle');
       return;
     }
-    const wpData = draftWaypoints?.getBinaryData(WAYPOINTS_ADDRESS_START);
+    const wpData = draftWaypoints?.getBinaryData(
+      this._deviceConfig!.waypointsStartAddress
+    );
     if (!wpData) {
       throw new Error('Error getting draft binary data');
     }
     // Do the writing in chunks
     let wpChunkSize = 0x40;
     for (let offset = 0; offset < wpData.length; offset += wpChunkSize) {
-      const address = WAYPOINTS_ADDRESS_START + offset;
+      const address = this._deviceConfig!.waypointsStartAddress + offset;
       await this.writeConfigMemory(
         address,
         wpData.subarray(offset, offset + wpChunkSize)
@@ -209,7 +211,7 @@ export class ConfigProtocol {
       waypoints: draftWaypoints.waypoints,
       draftWaypoints: new DraftWaypoints(
         draftWaypoints.waypoints,
-        WAYPOINTS_NUMBER,
+        this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
       )
     });
@@ -232,7 +234,7 @@ export class ConfigProtocol {
       ...this.config.getValue(),
       draftWaypoints: new DraftWaypoints(
         waypoints,
-        WAYPOINTS_NUMBER,
+        this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
       )
     });

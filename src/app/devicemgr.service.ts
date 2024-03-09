@@ -11,6 +11,31 @@ export enum DeviceMode {
   NMEA = 2
 }
 
+export type DeviceConfig = {
+  name: string;
+  usbFilter: {
+    usbVendorId: number;
+    usbProductId: number;
+  };
+  waypointsStartAddress: number;
+  waypointsNumber: number;
+};
+
+const DEVICE_CONFIGS: DeviceConfig[] = [
+  {
+    name: 'HX890',
+    usbFilter: { usbVendorId: 9898, usbProductId: 30 },
+    waypointsStartAddress: 0xd700,
+    waypointsNumber: 250
+  },
+  {
+    name: 'HX870',
+    usbFilter: { usbVendorId: 9898, usbProductId: 16 },
+    waypointsStartAddress: 0x4300,
+    waypointsNumber: 200
+  }
+];
+
 export type DeviceConnectionState = 'disconnected' | 'connecting' | 'connected';
 
 @Injectable({
@@ -48,8 +73,15 @@ export class DevicemgrService {
     try {
       this._connectionState.next('connecting');
       this.port = await this.serial.requestPort({
-        filters: [{ usbVendorId: 9898, usbProductId: 30 }]
+        filters: DEVICE_CONFIGS.map((conf) => conf.usbFilter)
       });
+      const portInfo = this.port!.getInfo();
+      const deviceConfig = DEVICE_CONFIGS.find(
+        (conf) =>
+          conf.usbFilter.usbProductId == portInfo.usbProductId &&
+          conf.usbFilter.usbVendorId == portInfo.usbVendorId
+      )!;
+      console.log(`Found device ${deviceConfig.name}`);
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
       await this.port.open({ baudRate: 9600 });
       this._streamReader = this.port?.readable?.getReader();
@@ -60,7 +92,7 @@ export class DevicemgrService {
         throw new Error('Device must be in CP mode');
       }
       this._connectionState.next('connected');
-      this.configProtocol.reset();
+      this.configProtocol.reset(deviceConfig);
       console.log('Connected');
     } catch (e) {
       console.error(`Error while connecting: ${e}`);
