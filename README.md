@@ -33,6 +33,12 @@ change any of the source files.
 Run `ng generate component component-name` to generate a new component. You can
 also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
+## Text formatting
+
+Run
+`npx prettier --write $(git diff HEAD --name-only | egrep '\.(ts|html|css|md)$')`
+to format files before committing.
+
 ## Build
 
 Run `ng build` to build the project. The build artifacts will be stored in the
