@@ -168,6 +168,7 @@ describe('Locus', () => {
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
     const locus = new Locus(unhex(data_str), true);
     expect(locus).toBeTruthy();
-    expect(locus.getGpx()).toMatch(/.*<trkpt lat="52.5089111328125" lon="13.461219787597656">.*/);
+    expect(locus.getGpx()).toContain('<trkpt lat="52.5089111328125" lon="13.461219787597656">');
+    expect(locus.getGpx()).toContain('<time>2019-07-09T13:09:29.000</time>');
   });
 });

@@ -100,8 +100,15 @@ export function parseHeader(data: Uint8Array, verify: boolean = true) {
   return header;
 }
 
-export function parseWaypoint(parser: Parser, data: Uint8Array, verify: boolean = true) {
-  if (data.slice(0, 6).every((byte) => byte === 0xff) || data.slice(0, 6).every((byte) => byte === 0x00)) {
+export function parseWaypoint(
+  parser: Parser,
+  data: Uint8Array,
+  verify: boolean = true
+) {
+  if (
+    data.slice(0, 6).every((byte) => byte === 0xff) ||
+    data.slice(0, 6).every((byte) => byte === 0x00)
+  ) {
     return undefined;
   }
   const parsed = parser.parse(data);
@@ -116,7 +123,11 @@ function parseWaypointsLog(header: any, data: Uint8Array) {
   let waypoints: any[] = [];
   for (let offset = 0; offset < data.length; offset += parser.sizeOf()) {
     try {
-      const waypoint = parseWaypoint(parser, data.slice(offset, offset + parser.sizeOf()), true);
+      const waypoint = parseWaypoint(
+        parser,
+        data.slice(offset, offset + parser.sizeOf()),
+        true
+      );
       waypoints.push(waypoint);
     } catch (error) {
       if (error instanceof LocusError) {
@@ -145,18 +156,30 @@ export class LocusSector {
 
 function pushGpxWaypoint(dest: string[], waypoint: any) {
   dest.push(`<trkpt lat="${waypoint.lat}" lon="${waypoint.lon}">`);
-  dest.push(`<ele>${waypoint.hgt}</ele><time>${waypoint.utc}</time><fix>${waypoint.valid}</fix>`);
-  if (waypoint.spd) {
-    dest.push(`<spd>${waypoint.spd}</spd>`);
+  dest.push(`<ele>${waypoint.hgt}</ele>`);
+  dest.push(
+    `<time>${new Date(waypoint.utc * 1000).toISOString().replace('Z', '')}</time>`
+  );
+  // Stashing extra information into the comment element.
+  if (waypoint.spd || waypoint.trk) {
+    let comment: { spd?: number; trk?: number } = {};
+    if (waypoint.spd) {
+      comment.spd = waypoint.spd;
+    }
+    if (waypoint.trk) {
+      comment.trk = waypoint.trk;
+    }
+    dest.push(`<cmt>${JSON.stringify(comment)}</cmt>`);
   }
-  if (waypoint.trk) {
-    dest.push(`<trk>${waypoint.trk}</trk>`);
-  }
-  if (waypoint.hdop) {
-    dest.push(`<hdop>${waypoint.hdop}</hdop>`);
+  // Not sure how to map the fix quality to the fix type aside from this case.
+  if (waypoint.valid == FixQuality.DGPS) {
+    dest.push(`<fix>dgps</fix>`);
   }
   if (waypoint.nsat) {
     dest.push(`<sat>${waypoint.nsat}</sat>`);
+  }
+  if (waypoint.hdop) {
+    dest.push(`<hdop>${waypoint.hdop}</hdop>`);
   }
   dest.push(`</trkpt>`);
 }
@@ -166,7 +189,11 @@ export class Locus {
 
   constructor(data: Uint8Array, verify: boolean = true) {
     this.sectors = [];
-    for (let sector_offset = 0; sector_offset + 0x1000 <= data.length; sector_offset += 0x1000) {
+    for (
+      let sector_offset = 0;
+      sector_offset + 0x1000 <= data.length;
+      sector_offset += 0x1000
+    ) {
       const sector_data = data.slice(sector_offset, sector_offset + 0x1000);
       this.sectors.push(new LocusSector(sector_data, verify));
     }
@@ -188,8 +215,7 @@ export class Locus {
         }
       }
     }
-    gpx.push('</trkseg></trk>');
-    gpx.push('</gpx>');
+    gpx.push('</trkseg></trk></gpx>');
     return gpx;
   }
 }
