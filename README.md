@@ -11,9 +11,10 @@ the following functions:
 It is very incomplete, and could break your device. **Use at your own risk!**
 
 This software builds on the work published at
-[Robert Elsinga's page on the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld)
-as well as the [`hxtool` Python utility](https://github.com/cr/hx870) by
-Christiane Ruetten.
+[Robert Elsinga's page on the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld),
+the [`hxtool` Python utility](https://github.com/cr/hx870) by Christiane
+Ruetten, and tests and feedback by
+[Arne Johannessen](https://github.com/johannessen).
 
 ## Demo
 
