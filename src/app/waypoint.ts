@@ -204,11 +204,11 @@ export function waypointFromConfig(
     lastChar -= 1
   );
   let name = decoder.decode(wpData.slice(16, lastChar + 1));
-  let lat_str = hexarr(wpData.slice(4, 9)).slice(1);
+  let lat_str = hexarr(wpData.slice(4, 9)).slice(1).replaceAll('F', '0');
   let lat_deg = Number(lat_str.slice(0, 3));
   let lat_min = Number(lat_str.slice(3, 9));
   let lat_dir = decoder.decode(wpData.slice(9, 10));
-  let lon_str = hexarr(wpData.slice(10, 15));
+  let lon_str = hexarr(wpData.slice(10, 15)).replaceAll('F', '0');
   let lon_deg = Number(lon_str.slice(0, 4));
   let lon_min = Number(lon_str.slice(4, 10));
   let lon_dir = decoder.decode(wpData.slice(15, 16));

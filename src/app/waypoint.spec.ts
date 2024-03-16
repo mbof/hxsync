@@ -39,6 +39,10 @@ const testEncodedWaypoint2 = unhex(
   'FFFFFFFFF0332072004E0118194170574176616C6F6E2020202020202020000A'
 );
 
+const testEncodedWaypoint3 = unhex(
+  'FFFFFFFFFF110600004E001000600045303031575054FFFFFFFFFFFFFFFFFF01'
+);
+
 describe('Waypoint', () => {
   it('should pack a waypoint', () => {
     const wp = new Waypoint(testWpData);
@@ -62,6 +66,20 @@ describe('waypointFromConfig', () => {
     const wp = waypointFromConfig(testEncodedWaypoint, 0x1234);
     expect(wp).toBeTruthy();
     expect(wp!.wp).toEqual(testWpData);
+  });
+});
+
+describe('waypointFromConfig', () => {
+  it('should decode an 0xF-padded waypoint', () => {
+    const wp = waypointFromConfig(testEncodedWaypoint3, 0x1234);
+    expect(wp).toBeTruthy();
+    // 11° 06.0000’ N 10° 00.6000’ E
+    expect(wp!.wp.lat_deg).toBe(11);
+    expect(wp!.wp.lat_dir).toBe('N');
+    expect(wp!.wp.lat_min).toBe(60000);
+    expect(wp!.wp.lon_deg).toBe(10);
+    expect(wp!.wp.lon_dir).toBe('E');
+    expect(wp!.wp.lon_min).toBe(6000);
   });
 });
 
