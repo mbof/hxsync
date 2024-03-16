@@ -160,12 +160,11 @@ export class Waypoint {
       console.log(`Waypoint name too long ${name}, truncating`);
       name = name.substring(0, 14);
     }
-    name = name.padEnd(14, ' ');
     const destWaypoint = dest.subarray(destOffset, destOffset + 32);
     destWaypoint[31] = this.wp.id;
     const destName = destWaypoint.subarray(16, 31);
     const { written: nameByteLength } = encoder.encodeInto(name, destName);
-    destName.fill(0, nameByteLength, 15);
+    destName.fill(255, nameByteLength, 15);
     destWaypoint.fill(255, 0, 4);
     const destLat = destWaypoint.subarray(4, 9);
     let lat_hex = 'F';
