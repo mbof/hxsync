@@ -166,7 +166,11 @@ describe('parseAndCheckWaypointData', () => {
         lat: '45N06.7890',
         lon: '123W03.5670'
       })
-    ).toThrow(new Error('Waypoint name too long "Test waypoint but too long". Consider "Test waypoint".'));
+    ).toThrow(
+      new Error(
+        'Waypoint name too long "Test waypoint but too long". Consider "Test waypoint".'
+      )
+    );
   });
   it('should reject non-ASCII names', () => {
     expect(() =>
