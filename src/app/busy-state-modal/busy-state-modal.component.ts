@@ -1,5 +1,7 @@
 import { Component } from '@angular/core';
-import { DeviceTaskState } from '../configprotocol';
+import { Config, ConfigProtocol, DeviceTaskState } from '../configprotocol';
+import { DevicemgrService } from '../devicemgr.service';
+import { BehaviorSubject } from 'rxjs';
 
 @Component({
   selector: 'busy-state-modal',
@@ -9,8 +11,18 @@ import { DeviceTaskState } from '../configprotocol';
   styleUrl: './busy-state-modal.component.css'
 })
 export class BusyStateModalComponent {
-  public state: DeviceTaskState = 'idle';
-  setState(state: DeviceTaskState) {
-    this.state = state;
+  state: DeviceTaskState = 'idle';
+  gpsDownloadProgressPct: number = 0;
+  configProtocol: ConfigProtocol;
+  constructor(deviceMgr: DevicemgrService) {
+    this.configProtocol = deviceMgr.configProtocol;
+  }
+  ngOnInit() {
+    this.configProtocol.deviceTaskState$.subscribe(
+      (deviceTaskState) => (this.state = deviceTaskState)
+    );
+    this.configProtocol.gpsDownloadProgress$.subscribe(
+      (progress) => (this.gpsDownloadProgressPct = Math.floor(progress * 100))
+    );
   }
 }

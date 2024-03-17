@@ -3,7 +3,7 @@
     <div class="modal">
       <div class="message">
         @if (state == 'gpslog-read') {
-          Reading GPS log
+          Reading GPS log ({{ gpsDownloadProgressPct }}%)
         } @else if (state == 'waypoints-read') {
           Reading waypoints
         } @else if (state == 'waypoints-save') {

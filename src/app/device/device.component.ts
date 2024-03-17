@@ -43,10 +43,7 @@ export class DeviceComponent {
       .asObservable()
       .subscribe();
     this.deviceMgr.configProtocol.deviceTaskState$.subscribe(
-      (deviceTaskState) => (
-        (this.deviceTaskState = deviceTaskState),
-        this.busyStateModal?.setState(deviceTaskState)
-      )
+      (deviceTaskState) => (this.deviceTaskState = deviceTaskState)
     );
   }
 

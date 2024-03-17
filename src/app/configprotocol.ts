@@ -48,6 +48,9 @@ export class ConfigProtocol {
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
 
+  private _gpsDownloadProgress = new BehaviorSubject<number>(0);
+  gpsDownloadProgress$ = this._gpsDownloadProgress.asObservable();
+
   reset(deviceConfig: DeviceConfig) {
     this.config.next({});
     this._deviceTaskState.next('idle');
@@ -268,6 +271,7 @@ export class ConfigProtocol {
       );
     }
     this._deviceTaskState.next('gpslog-read');
+    this._gpsDownloadProgress.next(0);
     await this.waitForGps();
     let rawGpslog: Uint8Array[] = [];
     this.sendMessage('$PMTK', ['622', '1']);
@@ -302,6 +306,7 @@ export class ConfigProtocol {
       for (let dataPoint of gpsDataPoints) {
         rawGpslog.push(dataPoint);
       }
+      this._gpsDownloadProgress.next(expectedLineNum / numLines);
       expectedLineNum += 1;
       line = await this.receiveMessage();
     }
