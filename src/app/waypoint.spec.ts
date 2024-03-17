@@ -144,7 +144,7 @@ describe('parseLon', () => {
 describe('parseAndCheckWaypointData', () => {
   it('should accept valid data', () => {
     const result = parseAndCheckWaypointData({
-      name: 'Test waypoint',
+      name: 'Test wp!-[]#<>',
       lat: '45N06.7890',
       lon: '123W03.5670'
     });
@@ -166,7 +166,7 @@ describe('parseAndCheckWaypointData', () => {
         lat: '45N06.7890',
         lon: '123W03.5670'
       })
-    ).toThrow();
+    ).toThrow(new Error('Waypoint name too long "Test waypoint but too long". Consider "Test waypoint".'));
   });
   it('should reject non-ASCII names', () => {
     expect(() =>
@@ -175,7 +175,16 @@ describe('parseAndCheckWaypointData', () => {
         lat: '45N06.7890',
         lon: '123W03.5670'
       })
-    ).toThrow();
+    ).toThrow(new Error('Waypoint name cannot contain ä'));
+  });
+  it('should reject unsupported characters', () => {
+    expect(() =>
+      parseAndCheckWaypointData({
+        name: 'Test {($~)}',
+        lat: '45N06.7890',
+        lon: '123W03.5670'
+      })
+    ).toThrow(new Error('Waypoint name cannot contain {($~)}'));
   });
   it('should reject non-parseable lat / lon', () => {
     expect(() =>

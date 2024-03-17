@@ -230,10 +230,19 @@ export function parseAndCheckWaypointData({ name, lat, lon }: WpFormData) {
     throw new Error(`No name was provided`);
   }
   if (name.length >= 15) {
-    throw new Error(`Waypoint name too long ${name}`);
+    throw new Error(`Waypoint name too long "${name}". Consider "${name.trim().substring(0, 14).trim()}".`);
   }
-  if (!/^[\x20-\x7F]+$/.test(name)) {
-    throw new Error(`Name contains bad characters ${name}`);
+  if (!/^[-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]+$/.test(name)) {
+    const badCharRe = /[^-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]/g;
+    const badCharIterator = name.matchAll(badCharRe);
+    let badChars = '';
+    for (let badCharMatch of badCharIterator) {
+      const badChar = badCharMatch[0];
+      if (!badChars.includes(badChar)) {
+        badChars = badChars + badChar;
+      }
+    }
+    throw new Error(`Waypoint name cannot contain ${badChars}`);
   }
   const parsedLat = parseLat(lat);
   const parsedLon = parseLon(lon);
