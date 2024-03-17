@@ -12,7 +12,7 @@ import { BehaviorSubject } from 'rxjs';
 })
 export class BusyStateModalComponent {
   state: DeviceTaskState = 'idle';
-  gpsDownloadProgressPct: number = 0;
+  progressPct: number = 0;
   configProtocol: ConfigProtocol;
   constructor(deviceMgr: DevicemgrService) {
     this.configProtocol = deviceMgr.configProtocol;
@@ -21,8 +21,8 @@ export class BusyStateModalComponent {
     this.configProtocol.deviceTaskState$.subscribe(
       (deviceTaskState) => (this.state = deviceTaskState)
     );
-    this.configProtocol.gpsDownloadProgress$.subscribe(
-      (progress) => (this.gpsDownloadProgressPct = Math.floor(progress * 100))
+    this.configProtocol.progress$.subscribe(
+      (progress) => (this.progressPct = Math.floor(progress * 100))
     );
   }
 }

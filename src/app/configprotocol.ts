@@ -48,8 +48,8 @@ export class ConfigProtocol {
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
 
-  private _gpsDownloadProgress = new BehaviorSubject<number>(0);
-  gpsDownloadProgress$ = this._gpsDownloadProgress.asObservable();
+  private _progress = new BehaviorSubject<number>(0);
+  progress$ = this._progress.asObservable();
 
   reset(deviceConfig: DeviceConfig) {
     this.config.next({});
@@ -147,6 +147,7 @@ export class ConfigProtocol {
       );
     }
     this._deviceTaskState.next('waypoints-read');
+    this._progress.next(0);
     let wpBegin = this._deviceConfig!.waypointsStartAddress;
     let wpNum = this._deviceConfig!.waypointsNumber;
     let wpEnd = wpBegin + WAYPOINTS_BYTE_SIZE * wpNum;
@@ -157,6 +158,7 @@ export class ConfigProtocol {
         await this.readConfigMemory(address, wpChunkSize),
         address - wpBegin
       );
+      this._progress.next((address - wpBegin) / (wpEnd - wpBegin));
     }
     let waypoints = [];
     for (var waypointId = 0; waypointId < wpNum; waypointId += 1) {
@@ -188,6 +190,7 @@ export class ConfigProtocol {
       );
     }
     this._deviceTaskState.next('waypoints-save');
+    this._progress.next(0);
     const draftWaypoints = this.config.getValue().draftWaypoints;
     if (!draftWaypoints) {
       console.log('No draft waypoints');
@@ -208,6 +211,7 @@ export class ConfigProtocol {
         address,
         wpData.subarray(offset, offset + wpChunkSize)
       );
+      this._progress.next(offset / wpData.length);
     }
     this.config.next({
       ...this.config.getValue(),
@@ -271,7 +275,7 @@ export class ConfigProtocol {
       );
     }
     this._deviceTaskState.next('gpslog-read');
-    this._gpsDownloadProgress.next(0);
+    this._progress.next(0);
     await this.waitForGps();
     let rawGpslog: Uint8Array[] = [];
     this.sendMessage('$PMTK', ['622', '1']);
@@ -306,7 +310,7 @@ export class ConfigProtocol {
       for (let dataPoint of gpsDataPoints) {
         rawGpslog.push(dataPoint);
       }
-      this._gpsDownloadProgress.next(expectedLineNum / numLines);
+      this._progress.next(expectedLineNum / numLines);
       expectedLineNum += 1;
       line = await this.receiveMessage();
     }

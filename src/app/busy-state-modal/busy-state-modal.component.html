@@ -3,11 +3,11 @@
     <div class="modal">
       <div class="message">
         @if (state == 'gpslog-read') {
-          Reading GPS log ({{ gpsDownloadProgressPct }}%)
+          Reading GPS log ({{ progressPct }}%)
         } @else if (state == 'waypoints-read') {
-          Reading waypoints
+          Reading waypoints ({{ progressPct }}%)
         } @else if (state == 'waypoints-save') {
-          Saving waypoints
+          Saving waypoints ({{ progressPct }}%)
         }
       </div>
       <div class="spinner"></div>
