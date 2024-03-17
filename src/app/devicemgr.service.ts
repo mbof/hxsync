@@ -102,27 +102,24 @@ export class DevicemgrService {
 
   async disconnect() {
     try {
-      if (!this.writer?.closed) {
-        await this.writer?.close();
-      }
-      if (!this._streamReader?.closed) {
-        await this._streamReader?.cancel();
-      }
+      await this.writer?.close();
+      await this._streamReader?.cancel();
       this._streamReader?.releaseLock();
       this.writer?.releaseLock();
+      await this.port?.close();
       await this.port?.forget();
       this.port = undefined;
       this._streamReader = undefined;
       this.reader = undefined;
       this.writer = undefined;
       this.mode = DeviceMode.Unknown;
-      this._connectionState.next('disconnected');
       this.configProtocol.config.next({});
       console.log('Disconnected');
     } catch (e) {
       this.port = undefined;
-      console.error(`Error while forgetting: ${e}`);
+      console.error(`Error while disconnecting: ${e}`);
     }
+    this._connectionState.next('disconnected');
   }
 
   async write(s: string) {
