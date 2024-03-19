@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { WaypointEditorComponent } from '../waypoint-editor/waypoint-editor.component';
-import { DraftWaypoints, Waypoint } from '../waypoint';
+import { Waypoint } from '../waypoint';
+import { NavInfoDraft } from '../nav-info-draft';
 import { hex } from '../message';
 import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';

@@ -1,12 +1,8 @@
 import { BehaviorSubject, max, range } from 'rxjs';
 import { DeviceConfig, DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
-import {
-  DraftWaypoints,
-  Waypoint,
-  waypointFromConfig,
-  WAYPOINTS_BYTE_SIZE
-} from './waypoint';
+import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
+import { NavInfoDraft } from './nav-info-draft';
 
 async function asyncWithTimeout<T>(
   asyncPromise: Promise<T>,
@@ -27,7 +23,7 @@ async function asyncWithTimeout<T>(
 export type Config = {
   mmsi?: string;
   waypoints?: Array<Waypoint>;
-  draftWaypoints?: DraftWaypoints;
+  draftWaypoints?: NavInfoDraft;
   atis?: string;
   gpslog?: Uint8Array;
 };
@@ -174,7 +170,7 @@ export class ConfigProtocol {
     this.config.next({
       ...this.config.getValue(),
       waypoints: waypoints,
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         waypoints,
         this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
@@ -216,7 +212,7 @@ export class ConfigProtocol {
     this.config.next({
       ...this.config.getValue(),
       waypoints: draftWaypoints.waypoints,
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         draftWaypoints.waypoints,
         this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
@@ -239,7 +235,7 @@ export class ConfigProtocol {
     }
     this.config.next({
       ...this.config.getValue(),
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         waypoints,
         this._deviceConfig!.waypointsNumber,
         this.noopConfigCallback()
