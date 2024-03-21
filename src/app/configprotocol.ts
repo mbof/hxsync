@@ -172,7 +172,8 @@ export class ConfigProtocol {
       waypoints: waypoints,
       draftWaypoints: new NavInfoDraft(
         waypoints,
-        this._deviceConfig!.waypointsNumber,
+        [],
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });
@@ -193,7 +194,7 @@ export class ConfigProtocol {
       this._deviceTaskState.next('idle');
       return;
     }
-    const wpData = draftWaypoints?.getBinaryData(
+    const wpData = draftWaypoints?.getBinaryWaypointData(
       this._deviceConfig!.waypointsStartAddress
     );
     if (!wpData) {
@@ -214,7 +215,8 @@ export class ConfigProtocol {
       waypoints: draftWaypoints.waypoints,
       draftWaypoints: new NavInfoDraft(
         draftWaypoints.waypoints,
-        this._deviceConfig!.waypointsNumber,
+        [],
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });
@@ -237,7 +239,8 @@ export class ConfigProtocol {
       ...this.config.getValue(),
       draftWaypoints: new NavInfoDraft(
         waypoints,
-        this._deviceConfig!.waypointsNumber,
+        [],
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });

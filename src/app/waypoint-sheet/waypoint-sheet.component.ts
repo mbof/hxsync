@@ -70,7 +70,7 @@ export class WaypointSheetComponent {
     this.deviceMgr.configProtocol.writeDraftWaypoints();
   }
   isPendingDraft() {
-    return this.getDraftWaypoints()?.dirty;
+    return this.getDraftWaypoints()?.dirtyWaypoints;
   }
   hex = hex;
 }

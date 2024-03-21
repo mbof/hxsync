@@ -1,4 +1,6 @@
+import { DeviceConfig } from './devicemgr.service';
 import { parseLat, parseLon } from './parseLatLon';
+import { Route } from './route';
 import {
   Waypoint,
   WpFormData,
@@ -8,17 +10,23 @@ import {
 
 export class NavInfoDraft {
   waypoints: Waypoint[];
-  dirty = false;
+  routes: Route[];
+  dirtyWaypoints = false;
+  dirtyRoutes = false;
   constructor(
     waypoints: Waypoint[],
-    private maxWaypoints: number,
+    routes: Route[],
+    private deviceConfig: DeviceConfig,
     private updateCallback?: (() => void) | undefined
   ) {
     this.waypoints = waypoints.slice();
+    this.routes = Array.from(
+      { length: routes.length },
+      (_, i) => new Route(routes[i].route)
+    );
   }
 
   private maybeUpdateCallback() {
-    this.dirty = true;
     if (this.updateCallback) {
       this.updateCallback();
     }
@@ -29,6 +37,7 @@ export class NavInfoDraft {
       (wp) => wp.wp.address == wpToDelete.wp.address
     );
     this.waypoints.splice(index, 1);
+    this.dirtyWaypoints = true;
     this.maybeUpdateCallback();
   }
 
@@ -58,11 +67,12 @@ export class NavInfoDraft {
       ...lon,
       name: name
     });
+    this.dirtyWaypoints = true;
     this.maybeUpdateCallback();
   }
 
   addWaypoint(wpFormData: WpFormData): void {
-    if (this.waypoints.length >= this.maxWaypoints) {
+    if (this.waypoints.length >= this.deviceConfig.waypointsNumber) {
       throw new Error('No more room for waypoints');
     }
     const { lat, lon } = parseAndCheckWaypointData(wpFormData);
@@ -81,10 +91,71 @@ export class NavInfoDraft {
         id: nextId
       })
     );
+    this.dirtyWaypoints = true;
     this.maybeUpdateCallback();
   }
 
-  getBinaryData(wpBaseAddress: number): Uint8Array {
+  deleteRoute(routeToDelete: number): void {
+    this.routes.splice(routeToDelete, 1);
+    this.dirtyRoutes = true;
+    this.maybeUpdateCallback();
+  }
+
+  addRoute(name: string): number {
+    if (this.routes.length >= this.deviceConfig.routesNumber) {
+      throw new Error(`No room for more routes (${this.routes.length})`);
+    }
+    this.routes.push(new Route({ name: name, waypointIds: [] }));
+    this.dirtyRoutes = true;
+    this.maybeUpdateCallback();
+    return this.routes.length - 1;
+  }
+
+  insertWaypointInRoute(
+    routeIndex: number,
+    waypointId: number,
+    waypointIndex: number
+  ): void {
+    const route = this.routes[routeIndex].route;
+    if (route.waypointIds.length >= this.deviceConfig.numWaypointsPerRoute) {
+      throw new Error(
+        `No room for more waypoints (${route.waypointIds.length})`
+      );
+    }
+    route.waypointIds.splice(waypointIndex, 0, waypointId);
+    this.dirtyRoutes = true;
+    this.maybeUpdateCallback();
+  }
+
+  deleteWaypointFromRoute(routeIndex: number, waypointIndex: number): void {
+    this.routes[routeIndex].route.waypointIds.splice(waypointIndex, 1);
+    this.dirtyRoutes = true;
+    this.maybeUpdateCallback();
+  }
+
+  swapWaypointsInRoute(
+    routeIndex: number,
+    waypointIndexA: number,
+    waypointIndexB: number
+  ): void {
+    if (waypointIndexA == waypointIndexB) {
+      return;
+    }
+    const route = this.routes[routeIndex].route;
+    const waypointIdA = route.waypointIds[waypointIndexA];
+    const waypointIdB = route.waypointIds[waypointIndexB];
+    if (waypointIndexA < waypointIndexB) {
+      route.waypointIds.splice(waypointIndexB, 1, waypointIdA);
+      route.waypointIds.splice(waypointIndexA, 1, waypointIdB);
+    } else {
+      route.waypointIds.splice(waypointIndexA, 1, waypointIdB);
+      route.waypointIds.splice(waypointIndexB, 1, waypointIdA);
+    }
+    this.dirtyRoutes = true;
+    this.maybeUpdateCallback();
+  }
+
+  getBinaryWaypointData(wpBaseAddress: number): Uint8Array {
     // Sort waypoints alphabetically
     this.waypoints.sort((wpA, wpB) => wpA.wp.name.localeCompare(wpB.wp.name));
     // Reassign addresses from the top
@@ -94,11 +165,34 @@ export class NavInfoDraft {
       address += WAYPOINTS_BYTE_SIZE;
     }
     // Prepare all waypoint data
-    const wpData = new Uint8Array(WAYPOINTS_BYTE_SIZE * this.maxWaypoints);
+    const wpData = new Uint8Array(
+      WAYPOINTS_BYTE_SIZE * this.deviceConfig.waypointsNumber
+    );
     wpData.fill(255);
     for (const wp of this.waypoints) {
       wp.fillConfig(wpData, wpBaseAddress);
     }
     return wpData;
+  }
+
+  getBinaryRouteData(): Uint8Array {
+    // Sort routes alphabetically
+    this.routes.sort((routeA, routeB) =>
+      routeA.route.name.localeCompare(routeB.route.name)
+    );
+    // Prepare all route data
+    const routeData = new Uint8Array(
+      this.deviceConfig.routeBytes * this.deviceConfig.routesNumber
+    );
+    routeData.fill(255);
+    for (const [index, route] of this.routes.entries()) {
+      route.fillConfig(
+        routeData,
+        index * this.deviceConfig.routeBytes,
+        this.deviceConfig.numWaypointsPerRoute,
+        this.deviceConfig.routeBytes
+      );
+    }
+    return routeData;
   }
 }

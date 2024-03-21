@@ -7,7 +7,13 @@ const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 
 export class Route {
-  constructor(public route: RouteData) {}
+  public route: RouteData;
+  constructor(route: RouteData) {
+    this.route = {
+      name: route.name,
+      waypointIds: route.waypointIds.slice()
+    };
+  }
   fillConfig(
     dest: Uint8Array,
     offset: number,
