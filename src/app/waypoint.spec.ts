@@ -22,10 +22,10 @@ const testWpData: WaypointData = {
 };
 // prettier-ignore
 const testEncodedWaypoint = new Uint8Array([
-  // Four padding bytes
-  0xff, 0xff, 0xff, 0xff,
+  // Origin DSC - all F's when none, plus a 0 nibble
+  0xff, 0xff, 0xff, 0xff, 0xf0,
   // Latitude
-  0xf0, 0x45, 0x06, 0x78, 0x90, 'N'.charCodeAt(0),
+  0x45, 0x06, 0x78, 0x90, 'N'.charCodeAt(0),
   // Longitude
   0x01, 0x23, 0x03, 0x56, 0x70, 'W'.charCodeAt(0),
   // Name
@@ -41,6 +41,10 @@ const testEncodedWaypoint2 = unhex(
 
 const testEncodedWaypoint3 = unhex(
   'FFFFFFFFFF110600004E001000600045303031575054FFFFFFFFFFFFFFFFFF01'
+);
+
+const testEncodedWaypoint4 = unhex(
+  '9876543210110600004E001000600045303031575054FFFFFFFFFFFFFFFFFF01'
 );
 
 describe('Waypoint', () => {
@@ -59,17 +63,25 @@ describe('Waypoint', () => {
       'https://www.google.com/maps/place/45.11315,-123.05945'
     );
   });
+  it('should keep the origin DSC when round-tripping data', () => {
+    const wp = waypointFromConfig(testEncodedWaypoint4, 0x1234);
+    const dest = new Uint8Array(32);
+    dest.fill(0xaa, 0, 32);
+    wp!.fillConfig(dest, 0x1234);
+    expect(dest).toEqual(testEncodedWaypoint4);
+  });
 });
 
 describe('waypointFromConfig', () => {
   it('should decode a waypoint', () => {
     const wp = waypointFromConfig(testEncodedWaypoint, 0x1234);
     expect(wp).toBeTruthy();
+    expect(wp!.wp.dsc_origin).toEqual(
+      new Uint8Array([0xff, 0xff, 0xff, 0xff, 0xf0])
+    );
+    delete wp!.wp.dsc_origin;
     expect(wp!.wp).toEqual(testWpData);
   });
-});
-
-describe('waypointFromConfig', () => {
   it('should decode an 0xF-padded waypoint', () => {
     const wp = waypointFromConfig(testEncodedWaypoint3, 0x1234);
     expect(wp).toBeTruthy();

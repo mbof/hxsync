@@ -9,6 +9,7 @@ export type WaypointData = {
   lon_deg: number;
   lon_dir: string;
   lon_min: number;
+  dsc_origin?: Uint8Array;
   address?: number;
 };
 
@@ -161,16 +162,19 @@ export class Waypoint {
       name = name.substring(0, 14);
     }
     const destWaypoint = dest.subarray(destOffset, destOffset + 32);
+    if (this.wp.dsc_origin) {
+      destWaypoint.set(this.wp.dsc_origin);
+    } else {
+      destWaypoint.set([0xff, 0xff, 0xff, 0xff, 0xf0]);
+    }
     destWaypoint[31] = this.wp.id;
     const destName = destWaypoint.subarray(16, 31);
     const { written: nameByteLength } = encoder.encodeInto(name, destName);
     destName.fill(255, nameByteLength, 15);
-    destWaypoint.fill(255, 0, 4);
-    const destLat = destWaypoint.subarray(4, 9);
-    let lat_hex = 'F';
-    lat_hex += this.wp.lat_deg.toString(10).padStart(3, '0');
+    const destLat = destWaypoint.subarray(5, 9);
+    let lat_hex = this.wp.lat_deg.toString(10).padStart(2, '0');
     lat_hex += this.wp.lat_min.toString(10).padStart(6, '0');
-    if (lat_hex.length != 10) {
+    if (lat_hex.length != 8) {
       throw new Error(`Encoded waypoint lat too long ${lat_hex}`);
     }
     unhexInto(lat_hex, destLat);
@@ -178,7 +182,7 @@ export class Waypoint {
     const destLon = destWaypoint.subarray(10, 15);
     let lon_hex = this.wp.lon_deg.toString(10).padStart(4, '0');
     lon_hex += this.wp.lon_min.toString(10).padStart(6, '0');
-    if (lat_hex.length != 10) {
+    if (lon_hex.length != 10) {
       throw new Error(`Encoded waypoint lon too long ${lon_hex}`);
     }
     unhexInto(lon_hex, destLon);
@@ -221,7 +225,8 @@ export function waypointFromConfig(
     lon_deg: lon_deg,
     lon_min: lon_min,
     lon_dir: lon_dir,
-    address: address
+    address: address,
+    dsc_origin: wpData.slice(0, 5)
   });
 }
 
