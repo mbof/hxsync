@@ -61,6 +61,11 @@ export function routeFromConfig(
     lastWaypoint >= 0 && routeData[16 + lastWaypoint] == 255;
     lastWaypoint -= 1
   );
+
+  if (name == '' || lastWaypoint == -1) {
+    return undefined;
+  }
+
   const waypointIds = routeData.subarray(16, 16 + lastWaypoint + 1);
 
   return new Route({

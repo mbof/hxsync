@@ -23,7 +23,7 @@ export class WaypointSheetComponent {
   ngOnInit() {
     this.deviceMgr.configProtocol.deviceTaskState$.subscribe(
       (deviceTaskState) => {
-        if (['waypoints-edit', 'waypoints-write'].includes(deviceTaskState)) {
+        if (deviceTaskState == 'nav-edit' || deviceTaskState == 'nav-save') {
           this.shown = true;
         } else {
           this.shown = false;
@@ -64,10 +64,10 @@ export class WaypointSheetComponent {
     );
   }
   draftCancel() {
-    this.deviceMgr.configProtocol.cancelDraftWaypoints();
+    this.deviceMgr.configProtocol.cancelNavInfoDraft();
   }
   saveDraft() {
-    this.deviceMgr.configProtocol.writeDraftWaypoints();
+    this.deviceMgr.configProtocol.writeNavInfoDraft();
   }
   isPendingDraft() {
     return this.getDraftWaypoints()?.dirtyWaypoints;

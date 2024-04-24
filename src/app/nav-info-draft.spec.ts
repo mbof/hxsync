@@ -69,6 +69,25 @@ describe('NavInfoDraft', () => {
     expect(draft.waypoints).toEqual([wpArr[0], wpArr[1], wpArr[3]]);
     expect(draft.dirtyWaypoints).toBeTrue();
   });
+  it('should ripple waypoint deletions to routes', () => {
+    const wpArr = getSampleWaypointArray();
+    const route1 = new Route({
+      name: 'Route 1',
+      waypointIds: [0, 1, 2, 1, 2, 0]
+    });
+    const route2 = new Route({
+      name: 'Route 2',
+      waypointIds: [0, 1, 0, 1]
+    });
+    const draft = new NavInfoDraft(wpArr, [route1, route2], makeFakeDeviceConfig(100));
+    draft.deleteWaypoint(wpArr[2]);
+    expect(draft.routes[0].route.waypointIds).toEqual([0, 2, 2, 0]);
+    expect(draft.routes.length).toEqual(2);
+    draft.deleteWaypoint(wpArr[1]);
+    expect(draft.routes[0].route.waypointIds).toEqual([2, 2]);
+    expect(draft.routes.length).toEqual(1);
+    expect(draft.dirtyWaypoints).toBeTrue();
+  });
   it('should edit waypoints', () => {
     const wpArr = getSampleWaypointArray();
     const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(100));
