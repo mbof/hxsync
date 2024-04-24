@@ -1,7 +1,4 @@
-import {
-  parseLat,
-  parseLon
-} from './parseLatLon';
+import { parseLat, parseLon } from './parseLatLon';
 
 describe('parseLat', () => {
   it('should parse a latitude', () => {

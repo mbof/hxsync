@@ -145,21 +145,23 @@ export class ConfigProtocol {
     }
     this._deviceTaskState.next('nav-read');
     this._progress.next(0);
-  
+
     // Sizing info
     const chunkSize = 0x40;
     const wpNum = this._deviceConfig!.waypointsNumber;
     const wpSize = WAYPOINTS_BYTE_SIZE * wpNum;
     const routeNum = this._deviceConfig!.routesNumber;
-    const routeSize =
-      this._deviceConfig!.routeBytes * routeNum;
+    const routeSize = this._deviceConfig!.routeBytes * routeNum;
 
     // Read waypoints
     const wpBegin = this._deviceConfig!.waypointsStartAddress;
     const wpData = new Uint8Array(wpSize);
     for (let offset = 0; offset < wpSize; offset += chunkSize) {
       wpData.set(
-        await this.readConfigMemory(wpBegin + offset, Math.min(wpSize - offset, chunkSize)),
+        await this.readConfigMemory(
+          wpBegin + offset,
+          Math.min(wpSize - offset, chunkSize)
+        ),
         offset
       );
       this._progress.next(offset / (wpSize + routeSize));
@@ -194,7 +196,8 @@ export class ConfigProtocol {
       let offset = routeId * this._deviceConfig!.routeBytes;
       let route = routeFromConfig(
         routeData.subarray(offset, offset + this._deviceConfig!.routeBytes),
-        this._deviceConfig!.numWaypointsPerRoute);
+        this._deviceConfig!.numWaypointsPerRoute
+      );
       if (route) {
         routes.push(route);
       }

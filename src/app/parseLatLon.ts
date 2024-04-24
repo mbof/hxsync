@@ -1,17 +1,19 @@
 function parseAngleInternal(
   angle: string,
   axis: 'lat' | 'lon'
-): { deg: number; dir: string; min: number; } | undefined {
+): { deg: number; dir: string; min: number } | undefined {
   // Format 1: decimal minutes 32N34.0005
-  let parsedAngle = axis == 'lat'
-    ? angle.toUpperCase().match(/^ *(\d+) *(N|S) *(\d+)\.(\d+) *$/)
-    : angle.toUpperCase().match(/^ *(\d+) *(E|W) *(\d+)\.(\d+) *$/);
+  let parsedAngle =
+    axis == 'lat'
+      ? angle.toUpperCase().match(/^ *(\d+) *(N|S) *(\d+)\.(\d+) *$/)
+      : angle.toUpperCase().match(/^ *(\d+) *(E|W) *(\d+)\.(\d+) *$/);
 
   if (parsedAngle) {
     const [_unused, degStr, dir, minStr, minDecimalsStr] = parsedAngle;
     const minTenThousandthsStr = minDecimalsStr.slice(0, 4).padEnd(4, '0');
     const deg = Number.parseInt(degStr, 10);
-    const min = Number.parseInt(minStr, 10) * 10000 +
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
       Number.parseInt(minTenThousandthsStr, 10);
     return { deg, dir, min };
   }
@@ -20,17 +22,18 @@ function parseAngleInternal(
   parsedAngle =
     axis == 'lat'
       ? angle
-        .toUpperCase()
-        .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(N|S) *$/)
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(N|S) *$/)
       : angle
-        .toUpperCase()
-        .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(E|W) *$/);
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+)\.(\d+) *['‘’`]? *(E|W) *$/);
 
   if (parsedAngle) {
     const [_unused, degStr, minStr, minDecimalsStr, dir] = parsedAngle;
     const minTenThousandthsStr = minDecimalsStr.slice(0, 4).padEnd(4, '0');
     const deg = Number.parseInt(degStr, 10);
-    const min = Number.parseInt(minStr, 10) * 10000 +
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
       Number.parseInt(minTenThousandthsStr, 10);
     return { deg, dir, min };
   }
@@ -39,18 +42,19 @@ function parseAngleInternal(
   parsedAngle =
     axis == 'lat'
       ? angle
-        .toUpperCase()
-        .match(/^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(N|S) *$/)
+          .toUpperCase()
+          .match(/^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(N|S) *$/)
       : angle
-        .toUpperCase()
-        .match(
-          /^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(E|W) *$/
-        );
+          .toUpperCase()
+          .match(
+            /^ *(\d+) *° *(\d+) *['‘’`] *(\d+|\d+\.\d+) *["“”]? *(E|W) *$/
+          );
 
   if (parsedAngle) {
     const [_unused, degStr, minStr, secStr, dir] = parsedAngle;
     const deg = Number.parseInt(degStr, 10);
-    const min = Number.parseInt(minStr, 10) * 10000 +
+    const min =
+      Number.parseInt(minStr, 10) * 10000 +
       Math.round((Number.parseFloat(secStr) * 10000) / 60);
     return { deg, dir, min };
   }
@@ -76,7 +80,7 @@ function parseAngleInternal(
 
 export function parseLat(
   lat: string
-): { lat_deg: number; lat_dir: string; lat_min: number; } | undefined {
+): { lat_deg: number; lat_dir: string; lat_min: number } | undefined {
   const angle = parseAngleInternal(lat, 'lat');
   if (!angle) {
     return undefined;
@@ -86,7 +90,7 @@ export function parseLat(
 
 export function parseLon(
   lon: string
-): { lon_deg: number; lon_dir: string; lon_min: number; } | undefined {
+): { lon_deg: number; lon_dir: string; lon_min: number } | undefined {
   const angle = parseAngleInternal(lon, 'lon');
   if (!angle) {
     return undefined;

@@ -79,7 +79,11 @@ describe('NavInfoDraft', () => {
       name: 'Route 2',
       waypointIds: [0, 1, 0, 1]
     });
-    const draft = new NavInfoDraft(wpArr, [route1, route2], makeFakeDeviceConfig(100));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [route1, route2],
+      makeFakeDeviceConfig(100)
+    );
     draft.deleteWaypoint(wpArr[2]);
     expect(draft.routes[0].route.waypointIds).toEqual([0, 2, 2, 0]);
     expect(draft.routes.length).toEqual(2);
