@@ -1,6 +1,7 @@
 import { Component, ViewChild } from '@angular/core';
 import { WaypointEditorComponent } from '../waypoint-editor/waypoint-editor.component';
-import { DraftWaypoints, Waypoint } from '../waypoint';
+import { Waypoint } from '../waypoint';
+import { NavInfoDraft } from '../nav-info-draft';
 import { hex } from '../message';
 import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
@@ -22,7 +23,7 @@ export class WaypointSheetComponent {
   ngOnInit() {
     this.deviceMgr.configProtocol.deviceTaskState$.subscribe(
       (deviceTaskState) => {
-        if (['waypoints-edit', 'waypoints-write'].includes(deviceTaskState)) {
+        if (deviceTaskState == 'nav-edit' || deviceTaskState == 'nav-save') {
           this.shown = true;
         } else {
           this.shown = false;
@@ -63,13 +64,13 @@ export class WaypointSheetComponent {
     );
   }
   draftCancel() {
-    this.deviceMgr.configProtocol.cancelDraftWaypoints();
+    this.deviceMgr.configProtocol.cancelNavInfoDraft();
   }
   saveDraft() {
-    this.deviceMgr.configProtocol.writeDraftWaypoints();
+    this.deviceMgr.configProtocol.writeNavInfoDraft();
   }
   isPendingDraft() {
-    return this.getDraftWaypoints()?.dirty;
+    return this.getDraftWaypoints()?.dirtyWaypoints;
   }
   hex = hex;
 }

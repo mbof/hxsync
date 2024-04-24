@@ -19,6 +19,10 @@ export type DeviceConfig = {
   };
   waypointsStartAddress: number;
   waypointsNumber: number;
+  routesStartAddress: number;
+  routesNumber: number;
+  numWaypointsPerRoute: number;
+  routeBytes: number;
 };
 
 const DEVICE_CONFIGS: DeviceConfig[] = [
@@ -26,13 +30,21 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     name: 'HX890',
     usbFilter: { usbVendorId: 9898, usbProductId: 30 },
     waypointsStartAddress: 0xd700,
-    waypointsNumber: 250
+    waypointsNumber: 250,
+    routesStartAddress: 0xc700,
+    routesNumber: 20,
+    numWaypointsPerRoute: 31,
+    routeBytes: 64
   },
   {
     name: 'HX870',
     usbFilter: { usbVendorId: 9898, usbProductId: 16 },
     waypointsStartAddress: 0x4300,
-    waypointsNumber: 200
+    waypointsNumber: 200,
+    routesStartAddress: 0x5c00,
+    routesNumber: 20,
+    numWaypointsPerRoute: 16,
+    routeBytes: 32
   }
 ];
 

@@ -1,12 +1,9 @@
 import { BehaviorSubject, max, range } from 'rxjs';
 import { DeviceConfig, DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
-import {
-  DraftWaypoints,
-  Waypoint,
-  waypointFromConfig,
-  WAYPOINTS_BYTE_SIZE
-} from './waypoint';
+import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
+import { NavInfoDraft } from './nav-info-draft';
+import { routeFromConfig } from './route';
 
 async function asyncWithTimeout<T>(
   asyncPromise: Promise<T>,
@@ -27,7 +24,7 @@ async function asyncWithTimeout<T>(
 export type Config = {
   mmsi?: string;
   waypoints?: Array<Waypoint>;
-  draftWaypoints?: DraftWaypoints;
+  draftWaypoints?: NavInfoDraft;
   atis?: string;
   gpslog?: Uint8Array;
 };
@@ -35,9 +32,9 @@ export type Config = {
 export type DeviceTaskState =
   | 'idle'
   | 'gpslog-read'
-  | 'waypoints-read'
-  | 'waypoints-edit'
-  | 'waypoints-save';
+  | 'nav-read'
+  | 'nav-edit'
+  | 'nav-save';
 
 export class ConfigProtocol {
   private _deviceConfig?: DeviceConfig;
@@ -140,25 +137,34 @@ export class ConfigProtocol {
     return () => this.config.next(this.config.getValue());
   }
 
-  async readWaypoints() {
+  async readNavInfo() {
     if (this._deviceTaskState.getValue() != 'idle') {
       throw new Error(
         `Can't read waypoints from state ${this._deviceTaskState.getValue()}`
       );
     }
-    this._deviceTaskState.next('waypoints-read');
+    this._deviceTaskState.next('nav-read');
     this._progress.next(0);
-    let wpBegin = this._deviceConfig!.waypointsStartAddress;
-    let wpNum = this._deviceConfig!.waypointsNumber;
-    let wpEnd = wpBegin + WAYPOINTS_BYTE_SIZE * wpNum;
-    let wpChunkSize = 0x40;
-    let wpData = new Uint8Array(wpEnd - wpBegin);
-    for (var address = wpBegin; address < wpEnd; address += wpChunkSize) {
+
+    // Sizing info
+    const chunkSize = 0x40;
+    const wpNum = this._deviceConfig!.waypointsNumber;
+    const wpSize = WAYPOINTS_BYTE_SIZE * wpNum;
+    const routeNum = this._deviceConfig!.routesNumber;
+    const routeSize = this._deviceConfig!.routeBytes * routeNum;
+
+    // Read waypoints
+    const wpBegin = this._deviceConfig!.waypointsStartAddress;
+    const wpData = new Uint8Array(wpSize);
+    for (let offset = 0; offset < wpSize; offset += chunkSize) {
       wpData.set(
-        await this.readConfigMemory(address, wpChunkSize),
-        address - wpBegin
+        await this.readConfigMemory(
+          wpBegin + offset,
+          Math.min(wpSize - offset, chunkSize)
+        ),
+        offset
       );
-      this._progress.next((address - wpBegin) / (wpEnd - wpBegin));
+      this._progress.next(offset / (wpSize + routeSize));
     }
     let waypoints = [];
     for (var waypointId = 0; waypointId < wpNum; waypointId += 1) {
@@ -171,25 +177,52 @@ export class ConfigProtocol {
         waypoints.push(waypoint);
       }
     }
+
+    // Read routes
+    const routeBegin = this._deviceConfig!.routesStartAddress;
+    const routeData = new Uint8Array(routeSize);
+    for (let offset = 0; offset < routeSize; offset += chunkSize) {
+      routeData.set(
+        await this.readConfigMemory(
+          routeBegin + offset,
+          Math.min(routeSize - offset, chunkSize)
+        ),
+        offset
+      );
+      this._progress.next((wpSize + offset) / (wpSize + routeSize));
+    }
+    let routes = [];
+    for (var routeId = 0; routeId < routeNum; routeId++) {
+      let offset = routeId * this._deviceConfig!.routeBytes;
+      let route = routeFromConfig(
+        routeData.subarray(offset, offset + this._deviceConfig!.routeBytes),
+        this._deviceConfig!.numWaypointsPerRoute
+      );
+      if (route) {
+        routes.push(route);
+      }
+    }
+
     this.config.next({
       ...this.config.getValue(),
       waypoints: waypoints,
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         waypoints,
-        this._deviceConfig!.waypointsNumber,
+        routes,
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });
-    this._deviceTaskState.next('waypoints-edit');
+    this._deviceTaskState.next('nav-edit');
   }
 
-  async writeDraftWaypoints() {
-    if (this._deviceTaskState.getValue() != 'waypoints-edit') {
+  async writeNavInfoDraft() {
+    if (this._deviceTaskState.getValue() != 'nav-edit') {
       throw new Error(
         `Can't write draft from state ${this._deviceTaskState.getValue()}`
       );
     }
-    this._deviceTaskState.next('waypoints-save');
+    this._deviceTaskState.next('nav-save');
     this._progress.next(0);
     const draftWaypoints = this.config.getValue().draftWaypoints;
     if (!draftWaypoints) {
@@ -197,36 +230,52 @@ export class ConfigProtocol {
       this._deviceTaskState.next('idle');
       return;
     }
-    const wpData = draftWaypoints?.getBinaryData(
+    const wpData = draftWaypoints?.getBinaryWaypointData(
       this._deviceConfig!.waypointsStartAddress
     );
     if (!wpData) {
       throw new Error('Error getting draft binary data');
     }
-    // Do the writing in chunks
-    let wpChunkSize = 0x40;
-    for (let offset = 0; offset < wpData.length; offset += wpChunkSize) {
+    const routeData = draftWaypoints?.getBinaryRouteData();
+    if (!routeData) {
+      throw new Error('Error getting route binary data');
+    }
+    // Write waypoints
+    const chunkSize = 0x40;
+    for (let offset = 0; offset < wpData.length; offset += chunkSize) {
       const address = this._deviceConfig!.waypointsStartAddress + offset;
       await this.writeConfigMemory(
         address,
-        wpData.subarray(offset, offset + wpChunkSize)
+        wpData.subarray(offset, offset + chunkSize)
       );
-      this._progress.next(offset / wpData.length);
+      this._progress.next(offset / (wpData.length + routeData.length));
+    }
+    // Write routes
+    for (let offset = 0; offset < routeData.length; offset += chunkSize) {
+      const address = this._deviceConfig!.routesStartAddress + offset;
+      await this.writeConfigMemory(
+        address,
+        routeData.subarray(offset, offset + chunkSize)
+      );
+      this._progress.next(
+        (wpData.length + offset) / (wpData.length + routeData.length)
+      );
     }
     this.config.next({
       ...this.config.getValue(),
       waypoints: draftWaypoints.waypoints,
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         draftWaypoints.waypoints,
-        this._deviceConfig!.waypointsNumber,
+        [],
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });
     this._deviceTaskState.next('idle');
   }
 
-  cancelDraftWaypoints() {
-    if (this._deviceTaskState.getValue() != 'waypoints-edit') {
+  cancelNavInfoDraft() {
+    if (this._deviceTaskState.getValue() != 'nav-edit') {
       throw new Error(
         `Can't cancel draft from state ${this._deviceTaskState.getValue()}`
       );
@@ -239,9 +288,10 @@ export class ConfigProtocol {
     }
     this.config.next({
       ...this.config.getValue(),
-      draftWaypoints: new DraftWaypoints(
+      draftWaypoints: new NavInfoDraft(
         waypoints,
-        this._deviceConfig!.waypointsNumber,
+        [],
+        this._deviceConfig!,
         this.noopConfigCallback()
       )
     });
