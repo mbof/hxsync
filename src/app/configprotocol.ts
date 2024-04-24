@@ -236,15 +236,30 @@ export class ConfigProtocol {
     if (!wpData) {
       throw new Error('Error getting draft binary data');
     }
-    // Do the writing in chunks
-    let wpChunkSize = 0x40;
-    for (let offset = 0; offset < wpData.length; offset += wpChunkSize) {
+    const routeData = draftWaypoints?.getBinaryRouteData();
+    if (!routeData) {
+      throw new Error('Error getting route binary data');
+    }
+    // Write waypoints
+    const chunkSize = 0x40;
+    for (let offset = 0; offset < wpData.length; offset += chunkSize) {
       const address = this._deviceConfig!.waypointsStartAddress + offset;
       await this.writeConfigMemory(
         address,
-        wpData.subarray(offset, offset + wpChunkSize)
+        wpData.subarray(offset, offset + chunkSize)
       );
-      this._progress.next(offset / wpData.length);
+      this._progress.next(offset / (wpData.length + routeData.length));
+    }
+    // Write routes
+    for (let offset = 0; offset < routeData.length; offset += chunkSize) {
+      const address = this._deviceConfig!.routesStartAddress + offset;
+      await this.writeConfigMemory(
+        address,
+        routeData.subarray(offset, offset + chunkSize)
+      );
+      this._progress.next(
+        (wpData.length + offset) / (wpData.length + routeData.length)
+      );
     }
     this.config.next({
       ...this.config.getValue(),

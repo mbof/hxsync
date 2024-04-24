@@ -39,9 +39,13 @@ export class NavInfoDraft {
     this.waypoints.splice(index, 1);
     this.dirtyWaypoints = true;
     for (const route of this.routes) {
-      route.route.waypointIds = route.route.waypointIds.filter(
+      const newWaypointIds = route.route.waypointIds.filter(
         (waypointId) => waypointId != wpToDelete.wp.id
       );
+      if (newWaypointIds.length != route.route.waypointIds.length) {
+        route.route.waypointIds = newWaypointIds;
+        this.dirtyRoutes = true;
+      }
     }
     this.routes = this.routes.filter(
       (route) => route.route.waypointIds.length > 0

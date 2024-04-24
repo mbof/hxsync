@@ -87,6 +87,7 @@ describe('NavInfoDraft', () => {
     draft.deleteWaypoint(wpArr[2]);
     expect(draft.routes[0].route.waypointIds).toEqual([0, 2, 2, 0]);
     expect(draft.routes.length).toEqual(2);
+    expect(draft.dirtyRoutes).toBeTrue();
     draft.deleteWaypoint(wpArr[1]);
     expect(draft.routes[0].route.waypointIds).toEqual([2, 2]);
     expect(draft.routes.length).toEqual(1);
