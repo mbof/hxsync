@@ -1,4 +1,4 @@
-@if (['gpslog-read', 'waypoints-read', 'waypoints-save'].includes(state)) {
+@if (state == 'gpslog-read' || state == 'nav-read' || state == 'nav-save') {
   <div class="veil">
     <div class="modal">
       <div class="message">
