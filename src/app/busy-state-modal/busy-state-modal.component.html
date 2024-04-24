@@ -1,12 +1,12 @@
-@if (['gpslog-read', 'waypoints-read', 'waypoints-save'].includes(state)) {
+@if (state == 'gpslog-read' || state == 'nav-read' || state == 'nav-save') {
   <div class="veil">
     <div class="modal">
       <div class="message">
         @if (state == 'gpslog-read') {
           Reading GPS log ({{ progressPct }}%)
-        } @else if (state == 'waypoints-read') {
+        } @else if (state == 'nav-read') {
           Reading waypoints ({{ progressPct }}%)
-        } @else if (state == 'waypoints-save') {
+        } @else if (state == 'nav-save') {
           Saving waypoints ({{ progressPct }}%)
         }
       </div>

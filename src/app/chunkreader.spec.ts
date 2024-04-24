@@ -34,7 +34,9 @@ describe('ChunkReader', () => {
     let chunkReader = new ChunkReader(chunks);
     expect(await chunkReader.read(3)).toBe('abc');
     expect(await chunkReader.read(3)).toBe('def');
-    await expectAsync(chunkReader.read(1)).toBeRejectedWith(new Error('Stream is done'));
+    await expectAsync(chunkReader.read(1)).toBeRejectedWith(
+      new Error('Stream is done')
+    );
   });
   it('should readline from a chunk', async () => {
     let chunks = _makeReader(['abc\nde\nfg\n']);
@@ -47,6 +49,8 @@ describe('ChunkReader', () => {
     let chunkReader = new ChunkReader(chunks);
     expect(await chunkReader.readline()).toBe('abcdefgh\n');
     expect(await chunkReader.readline()).toBe('ijklm\n');
-    await expectAsync(chunkReader.readline()).toBeRejectedWith(new Error('Stream is done'));
+    await expectAsync(chunkReader.readline()).toBeRejectedWith(
+      new Error('Stream is done')
+    );
   });
 });
