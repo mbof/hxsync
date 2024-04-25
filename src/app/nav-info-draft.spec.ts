@@ -42,7 +42,13 @@ function makeFakeDeviceConfig(waypointsNumber: number): DeviceConfig {
     routesStartAddress: 0x5678,
     routeBytes: 64,
     numWaypointsPerRoute: 32,
-    routesNumber: 2
+    routesNumber: 2,
+    individualMmsiNamesAddress: 0xdead,
+    individualMmsiNumbersAddress: 0xbeef,
+    individualMmsiNum: 10,
+    groupMmsiNamesAddress: 0xcafe,
+    groupMmsiNumbersAddress: 0xbabe,
+    groupMmsiNum: 10
   };
 }
 

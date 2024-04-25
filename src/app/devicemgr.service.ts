@@ -23,6 +23,12 @@ export type DeviceConfig = {
   routesNumber: number;
   numWaypointsPerRoute: number;
   routeBytes: number;
+  individualMmsiNamesAddress: number;
+  individualMmsiNumbersAddress: number;
+  individualMmsiNum: number;
+  groupMmsiNamesAddress: number;
+  groupMmsiNumbersAddress: number;
+  groupMmsiNum: number;
 };
 
 const DEVICE_CONFIGS: DeviceConfig[] = [
@@ -34,7 +40,13 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     routesStartAddress: 0xc700,
     routesNumber: 20,
     numWaypointsPerRoute: 31,
-    routeBytes: 64
+    routeBytes: 64,
+    individualMmsiNamesAddress: 0x4500,
+    individualMmsiNumbersAddress: 0x4200,
+    individualMmsiNum: 100,
+    groupMmsiNamesAddress: 0x5100,
+    groupMmsiNumbersAddress: 0x55d0, // Maybe wrong
+    groupMmsiNum: 20
   },
   {
     name: 'HX870',
@@ -44,7 +56,13 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     routesStartAddress: 0x5c00,
     routesNumber: 20,
     numWaypointsPerRoute: 16,
-    routeBytes: 32
+    routeBytes: 32,
+    individualMmsiNamesAddress: 0x3730,
+    individualMmsiNumbersAddress: 0x3500,
+    individualMmsiNum: 100,
+    groupMmsiNamesAddress: 0x3e80,
+    groupMmsiNumbersAddress: 0x3e00,
+    groupMmsiNum: 20
   }
 ];
 
