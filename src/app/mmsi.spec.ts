@@ -64,6 +64,17 @@ describe('Mmsi', () => {
   });
 });
 
+const csvData =
+  'name,mmsi\n' +
+  'Alpha,123456789\n' +
+  'Bravo,987654321\n' +
+  'Charlie,888888888\n' +
+  'Delta,999999999\n' +
+  'Alpha,023456789\n' +
+  'Bravo,087654321\n' +
+  'Charlie,088888888\n' +
+  'Delta,099999999\n';
+
 describe('MmsiDirectory', () => {
   it('should decode a few MMSI', () => {
     const mmsiDirectory = new MmsiDirectory(4, 4);
@@ -113,17 +124,35 @@ describe('MmsiDirectory', () => {
     mmsiDirectory.groupMmsis.forEach(
       (mmsi) => (mmsi.number = '0' + mmsi.number.slice(1))
     );
-    expect(mmsiDirectory.toCsv()).toBe(
-      'name,mmsi\n' +
-        'Alpha,123456789\n' +
-        'Bravo,987654321\n' +
-        'Charlie,888888888\n' +
-        'Delta,999999999\n' +
-        'Alpha,023456789\n' +
-        'Bravo,087654321\n' +
-        'Charlie,088888888\n' +
-        'Delta,099999999\n'
-    );
+    expect(mmsiDirectory.toCsv()).toBe(csvData);
+  });
+  it('should import from CSV', () => {
+    const mmsiDirectory = new MmsiDirectory(4, 4);
+    mmsiDirectory.initFromCsv(csvData);
+    expect(mmsiDirectory.individualMmsis.map((mmsi) => mmsi.name)).toEqual([
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta'
+    ]);
+    expect(mmsiDirectory.individualMmsis.map((mmsi) => mmsi.number)).toEqual([
+      '123456789',
+      '987654321',
+      '888888888',
+      '999999999'
+    ]);
+    expect(mmsiDirectory.groupMmsis.map((mmsi) => mmsi.name)).toEqual([
+      'Alpha',
+      'Bravo',
+      'Charlie',
+      'Delta'
+    ]);
+    expect(mmsiDirectory.groupMmsis.map((mmsi) => mmsi.number)).toEqual([
+      '023456789',
+      '087654321',
+      '088888888',
+      '099999999'
+    ]);
   });
   it('should write configuration data', () => {
     const mmsiDirectory = new MmsiDirectory(4, 4);

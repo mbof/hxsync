@@ -1,5 +1,6 @@
 import { __values } from 'tslib';
 import { hexarr, unhexInto } from './message';
+import { parse } from 'csv-parse/sync';
 
 export function validateMmsi(name: string, number: string) {
   if (!number.match(/^[0-9]{9}$/)) {
@@ -97,23 +98,23 @@ export class MmsiDirectory {
     }
     return ans;
   }
-  /* Commenting out this bit. More CSV troubleshooting needed.
   initFromCsv(csv: string) {
     const individualMmsis: Mmsi[] = [];
     const groupMmsis: Mmsi[] = [];
-    const parser = csvParser();
-    Readable.from(csv).pipe(parser)
-      .on('data', (record: { name: any; mmsi: any; }) => {
-          const name = record.name;
-          const number = record.mmsi;
-          validateMmsi(name, number);
-          const mmsi = new Mmsi(name, number);
-          if (number[0] == '0') {
-            groupMmsis.push(mmsi);
-          } else {
-            individualMmsis.push(mmsi);
-          }
-        });
+    const records = <{ name: string; mmsi: string }[]>(
+      parse(csv, { skip_empty_lines: true, columns: true })
+    );
+    for (const record of records) {
+      const name = record.name;
+      const number = record.mmsi;
+      validateMmsi(name, number);
+      const mmsi = new Mmsi(name, number);
+      if (number[0] == '0') {
+        groupMmsis.push(mmsi);
+      } else {
+        individualMmsis.push(mmsi);
+      }
+    }
 
     if (individualMmsis.length > this.maxIndividualMmsis) {
       throw new Error('Too many MMSIs');
@@ -124,7 +125,6 @@ export class MmsiDirectory {
     this.individualMmsis = individualMmsis;
     this.groupMmsis = groupMmsis;
   }
-  */
   fillConfig(
     individualMmsiNames: Uint8Array,
     individualMmsiNumbers: Uint8Array,
