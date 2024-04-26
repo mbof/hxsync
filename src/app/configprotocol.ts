@@ -195,8 +195,10 @@ export class ConfigProtocol {
 
     // Read routes
     const routeBegin = this._deviceConfig!.routesStartAddress;
-    const routeData = await this.readConfigMemory(wpBegin, wpSize, (offset) =>
-      this._progress.next((wpSize + offset) / (wpSize + routeSize))
+    const routeData = await this.readConfigMemory(
+      routeBegin,
+      routeSize,
+      (offset) => this._progress.next((wpSize + offset) / (wpSize + routeSize))
     );
     let routes = [];
     for (var routeId = 0; routeId < routeNum; routeId++) {
@@ -267,7 +269,7 @@ export class ConfigProtocol {
       throw new Error('Error getting route binary data');
     }
     // Write waypoints
-    this.writeConfigMemory(
+    await this.writeConfigMemory(
       wpData,
       this._deviceConfig!.waypointsStartAddress,
       (offset) =>
@@ -275,7 +277,7 @@ export class ConfigProtocol {
     );
 
     // Write routes
-    this.writeConfigMemory(
+    await this.writeConfigMemory(
       routeData,
       this._deviceConfig!.routesStartAddress,
       (offset) =>
@@ -467,6 +469,10 @@ export class ConfigProtocol {
       this._deviceConfig!.groupMmsiNumbersAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
+    this._deviceTaskState.next('idle');
+  }
+
+  cancelMmsiDirectory() {
     this._deviceTaskState.next('idle');
   }
 

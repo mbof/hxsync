@@ -21,10 +21,12 @@
       </button>
     } @else {
       <button (click)="readWaypoints()">Waypoints</button>
+      <button (click)="readMmsi()">MMSI Directory</button>
       <button (click)="readGpslog()">Download GPS log</button>
       <button (click)="deviceMgr.disconnect()">Disconnect</button>
     }
   </div>
 </div>
 <waypoint-sheet />
+<mmsi-sheet />
 <busy-state-modal />

@@ -1,4 +1,10 @@
-@if (state == 'gpslog-read' || state == 'nav-read' || state == 'nav-save') {
+@if (
+  state == 'gpslog-read' ||
+  state == 'nav-read' ||
+  state == 'nav-save' ||
+  state == 'mmsi-read' ||
+  state == 'mmsi-save'
+) {
   <div class="veil">
     <div class="modal">
       <div class="message">
@@ -8,6 +14,10 @@
           Reading waypoints ({{ progressPct }}%)
         } @else if (state == 'nav-save') {
           Saving waypoints ({{ progressPct }}%)
+        } @else if (state == 'mmsi-read') {
+          Reading MMSI directory ({{ progressPct }}%)
+        } @else if (state == 'mmsi-save') {
+          Saving MMSI directory ({{ progressPct }}%)
         }
       </div>
       <div class="spinner"></div>

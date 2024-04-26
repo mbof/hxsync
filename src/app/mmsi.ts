@@ -142,6 +142,15 @@ export class MmsiDirectory {
     if (this.groupMmsis.length > this.maxGroupMmsis) {
       throw new Error('Too many group MMSIs');
     }
+    for (const data of [
+      individualMmsiNames,
+      individualMmsiNumbers,
+      groupMmsiNames,
+      groupMmsiNumbers
+    ]) {
+      data.fill(255);
+    }
+
     for (const [index, mmsi] of this.individualMmsis.entries()) {
       mmsi.fillConfig(individualMmsiNames, individualMmsiNumbers, index);
     }

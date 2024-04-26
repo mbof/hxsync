@@ -8,6 +8,7 @@ import { Locus } from '../gps';
 import { Waypoint } from '../waypoint';
 import { BusyStateModalComponent } from '../busy-state-modal/busy-state-modal.component';
 import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.component';
+import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -16,7 +17,7 @@ import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.compone
   standalone: true,
   templateUrl: './device.component.html',
   styleUrl: './device.component.css',
-  imports: [BusyStateModalComponent, WaypointSheetComponent]
+  imports: [BusyStateModalComponent, WaypointSheetComponent, MmsiSheetComponent]
 })
 export class DeviceComponent {
   connectionStateSubscription?: Subscription;
@@ -26,6 +27,7 @@ export class DeviceComponent {
   deviceTaskState: DeviceTaskState;
 
   @ViewChild(WaypointSheetComponent) waypointSheet!: WaypointSheetComponent;
+  @ViewChild(MmsiSheetComponent) mmsiSheet!: MmsiSheetComponent;
   @ViewChild(BusyStateModalComponent) busyStateModal!: BusyStateModalComponent;
 
   constructor(public deviceMgr: DevicemgrService) {
@@ -49,6 +51,9 @@ export class DeviceComponent {
 
   async readWaypoints() {
     await this.deviceMgr.configProtocol.readNavInfo();
+  }
+  async readMmsi() {
+    await this.deviceMgr.configProtocol.readMmsiDirectory();
   }
   async readGpslog() {
     await this.deviceMgr.configProtocol.readGpsLog();
