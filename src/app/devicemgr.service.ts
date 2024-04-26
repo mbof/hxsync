@@ -45,7 +45,7 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     individualMmsiNumbersAddress: 0x4200,
     individualMmsiNum: 100,
     groupMmsiNamesAddress: 0x5100,
-    groupMmsiNumbersAddress: 0x55d0, // Maybe wrong
+    groupMmsiNumbersAddress: 0x5000,
     groupMmsiNum: 20
   },
   {

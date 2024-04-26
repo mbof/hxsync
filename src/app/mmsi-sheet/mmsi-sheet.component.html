@@ -1,0 +1,20 @@
+@if (shown) {
+  <div class="veil">
+    <div class="modal">
+      <h2>Edit MMSI Directory</h2>
+      <div class="info">
+        Input the MMSI directory as CSV with two columns ("name" and "mmsi").
+        Warning: this feature is extra experimental. If there are errors in the
+        CSV (name longer than 16 characters, MMSI not numeric, missing columns)
+        the save will fail silently.
+      </div>
+      <div class="contents">
+        <textarea [formControl]="csvControl"></textarea>
+      </div>
+      <div class="controls">
+        <button (click)="cancel()">Cancel</button>
+        <button (click)="save()">Save</button>
+      </div>
+    </div>
+  </div>
+}

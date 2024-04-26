@@ -15,6 +15,8 @@ export function validateMmsi(name: string, number: string) {
 const decoder = new TextDecoder();
 const encoder = new TextEncoder();
 
+export const MMSI_NAME_BYTE_SIZE = 16;
+
 export class Mmsi {
   name: string;
   number: string;
@@ -31,8 +33,11 @@ export class Mmsi {
     index: number
   ): void {
     validateMmsi(this.name, this.number);
-    const nameOffset = index * 16; // 16 bytes per name
-    const destName = destNames.subarray(nameOffset, nameOffset + 16);
+    const nameOffset = index * MMSI_NAME_BYTE_SIZE; // 16 bytes per name
+    const destName = destNames.subarray(
+      nameOffset,
+      nameOffset + MMSI_NAME_BYTE_SIZE
+    );
     destName.fill(255);
     encoder.encodeInto(this.name!, destName);
     // Number layout: every 5 bytes, with a padding byte every 3 numbers
@@ -45,7 +50,7 @@ export class Mmsi {
   }
 }
 
-function numberOffsetFromIndex(index: number): number {
+export function numberOffsetFromIndex(index: number): number {
   return index * 5 + (index - (index % 3)) / 3;
 }
 
@@ -54,7 +59,7 @@ function decodeMmsi(
   numberData: Uint8Array
 ): Mmsi | undefined {
   for (
-    var lastChar = 15;
+    var lastChar = MMSI_NAME_BYTE_SIZE - 1;
     lastChar >= 0 && [0, 255, 32].includes(nameData[lastChar]);
     lastChar -= 1
   );
@@ -137,6 +142,15 @@ export class MmsiDirectory {
     if (this.groupMmsis.length > this.maxGroupMmsis) {
       throw new Error('Too many group MMSIs');
     }
+    for (const data of [
+      individualMmsiNames,
+      individualMmsiNumbers,
+      groupMmsiNames,
+      groupMmsiNumbers
+    ]) {
+      data.fill(255);
+    }
+
     for (const [index, mmsi] of this.individualMmsis.entries()) {
       mmsi.fillConfig(individualMmsiNames, individualMmsiNumbers, index);
     }
