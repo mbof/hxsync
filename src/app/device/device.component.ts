@@ -2,7 +2,7 @@ import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { hex } from '../message';
-import { Config, DeviceTaskState } from '../configprotocol';
+import { Config, DeviceTaskState } from '../config-session';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
 import { Waypoint } from '../waypoint';

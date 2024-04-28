@@ -9,22 +9,7 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-
-async function asyncWithTimeout<T>(
-  asyncPromise: Promise<T>,
-  timeoutMs: number
-): Promise<T> {
-  let timeoutHandle: any;
-
-  const timeoutPromise = new Promise<T>((_resolve, reject) => {
-    timeoutHandle = setTimeout(() => reject(new Error('Timeout')), timeoutMs);
-  });
-
-  return Promise.race([asyncPromise, timeoutPromise]).then((result) => {
-    clearTimeout(timeoutHandle);
-    return result;
-  });
-}
+import { ConfigProtocol } from './config-protocol';
 
 export type Config = {
   mmsi?: string;
@@ -45,7 +30,6 @@ export type DeviceTaskState =
   | 'mmsi-edit'
   | 'mmsi-save';
 
-const CHUNK_SIZE: number = 0x40;
 /*
  * State machine transitions:
  * idle --readGps()--> gpslog-read --(wait)--> idle
@@ -56,9 +40,9 @@ const CHUNK_SIZE: number = 0x40;
  * mmsi-edit --writeMmsiDirectory()--> mmsi-save --(wait)--> idle
  */
 
-export class ConfigProtocol {
-  private _deviceConfig?: DeviceConfig;
-  constructor(private dev: DevicemgrService) {}
+export class ConfigSession {
+  public _deviceConfig?: DeviceConfig;
+  constructor(private _configProtocol: ConfigProtocol) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
 
@@ -72,87 +56,6 @@ export class ConfigProtocol {
     this.config.next({});
     this._deviceTaskState.next('idle');
     this._deviceConfig = deviceConfig;
-  }
-
-  async sendMessage(
-    type: string,
-    args?: Array<string> | undefined,
-    timeoutMs?: number | undefined
-  ) {
-    let str = new Message({ type: type, args: args }).toString();
-    if (!timeoutMs) {
-      await this.dev.write(str);
-    } else {
-      await asyncWithTimeout(this.dev.write(str), timeoutMs);
-    }
-    console.log(`Wrote command ${JSON.stringify(str)}`);
-  }
-
-  async receiveMessage(timeoutMs?: number | undefined) {
-    let line;
-    if (!timeoutMs) {
-      line = await this.dev.readline();
-    } else {
-      line = await asyncWithTimeout(this.dev.readline(), timeoutMs);
-    }
-    console.log(`Received line ${line}`);
-    return new Message({ encoded: line });
-  }
-
-  async waitForReady_() {
-    let radio_status = '';
-    while (radio_status != '00') {
-      this.dev.flushInput();
-      await this.sendMessage('#CEPSR', ['00']);
-      let ans1 = await this.receiveMessage();
-      if (ans1.type != '#CMDOK') {
-        throw new Error('Device did not acknowledge status request');
-      }
-      let ans2 = await this.receiveMessage();
-      if (ans2.type != '#CEPSD') {
-        throw new Error('Device did not return status');
-      }
-      radio_status = ans2.args[0];
-      if (radio_status != '00') {
-        console.log(`Waiting for radio, state=${radio_status}`);
-      }
-      this.sendMessage('#CMDOK');
-    }
-  }
-  async waitForReady() {
-    await asyncWithTimeout(this.waitForReady_(), 1000);
-  }
-
-  async readConfigMemoryChunk(
-    offset: number,
-    length: number
-  ): Promise<Uint8Array> {
-    await this.waitForReady();
-    await this.sendMessage('#CEPRD', [hex(offset, 4), hex(length, 2)]);
-    let ans1 = await this.receiveMessage();
-    if (ans1.type != '#CMDOK') {
-      throw new Error('Device did not acknowledge read');
-    }
-    let ans2 = await this.receiveMessage();
-    if (ans2.type != '#CEPDT') {
-      throw new Error('Device did not reply with data');
-    }
-    this.sendMessage('#CMDOK');
-    return unhex(ans2.args[2]);
-  }
-
-  async writeConfigMemoryChunk(offset: number, data: Uint8Array) {
-    await this.waitForReady();
-    let str = hexarr(data);
-    await this.sendMessage('#CEPWR', [
-      hex(offset, 4),
-      hex(data.length, 2),
-      str
-    ]);
-    let ans = await this.receiveMessage();
-    if (ans.type != '#CMDOK') {
-      throw new Error('Device did not acknowledge write');
-    }
   }
 
   // Used to refresh config after in-place changes to drafts
@@ -178,8 +81,10 @@ export class ConfigProtocol {
 
     // Read waypoints
     const wpBegin = this._deviceConfig!.waypointsStartAddress;
-    const wpData = await this.readConfigMemory(wpBegin, wpSize, (offset) =>
-      this._progress.next(offset / (wpSize + routeSize))
+    const wpData = await this._configProtocol.readConfigMemory(
+      wpBegin,
+      wpSize,
+      (offset) => this._progress.next(offset / (wpSize + routeSize))
     );
     let waypoints = [];
     for (var waypointId = 0; waypointId < wpNum; waypointId += 1) {
@@ -195,7 +100,7 @@ export class ConfigProtocol {
 
     // Read routes
     const routeBegin = this._deviceConfig!.routesStartAddress;
-    const routeData = await this.readConfigMemory(
+    const routeData = await this._configProtocol.readConfigMemory(
       routeBegin,
       routeSize,
       (offset) => this._progress.next((wpSize + offset) / (wpSize + routeSize))
@@ -225,25 +130,6 @@ export class ConfigProtocol {
     this._deviceTaskState.next('nav-edit');
   }
 
-  private async readConfigMemory(
-    address: number,
-    size: number,
-    progressCallback: (offset: number) => void
-  ) {
-    const data = new Uint8Array(size);
-    for (let offset = 0; offset < size; offset += CHUNK_SIZE) {
-      data.set(
-        await this.readConfigMemoryChunk(
-          address + offset,
-          Math.min(size - offset, CHUNK_SIZE)
-        ),
-        offset
-      );
-      progressCallback(offset);
-    }
-    return data;
-  }
-
   async writeNavInfoDraft() {
     if (this._deviceTaskState.getValue() != 'nav-edit') {
       throw new Error(
@@ -269,7 +155,7 @@ export class ConfigProtocol {
       throw new Error('Error getting route binary data');
     }
     // Write waypoints
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       wpData,
       this._deviceConfig!.waypointsStartAddress,
       (offset) =>
@@ -277,7 +163,7 @@ export class ConfigProtocol {
     );
 
     // Write routes
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       routeData,
       this._deviceConfig!.routesStartAddress,
       (offset) =>
@@ -296,20 +182,6 @@ export class ConfigProtocol {
       )
     });
     this._deviceTaskState.next('idle');
-  }
-
-  private async writeConfigMemory(
-    data: Uint8Array,
-    address: number,
-    progressCallback: (offset: number) => void
-  ) {
-    for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
-      await this.writeConfigMemoryChunk(
-        address + offset,
-        data.subarray(offset, Math.min(offset + CHUNK_SIZE, data.length))
-      );
-      progressCallback(offset);
-    }
   }
 
   cancelNavInfoDraft() {
@@ -350,33 +222,30 @@ export class ConfigProtocol {
       individualMmsiNamesSize,
       individualMmsiNumbersSize,
       groupMmsiNamesSize,
-      groupMmsiNumbersSize
+      groupMmsiNumbersSize,
+      totalSize
     } = this.getMmsiMemoryLayout();
-    const totalSize =
-      individualMmsiNamesSize +
-      individualMmsiNumbersSize +
-      groupMmsiNamesSize +
-      groupMmsiNumbersSize;
 
-    const individualMmsiNamesData = await this.readConfigMemory(
+    const individualMmsiNamesData = await this._configProtocol.readConfigMemory(
       this._deviceConfig!.individualMmsiNamesAddress,
       individualMmsiNamesSize,
       (offset) => this._progress.next(offset / totalSize)
     );
     let previousOffsets = individualMmsiNamesSize;
-    const individualMmsiNumbersData = await this.readConfigMemory(
-      this._deviceConfig!.individualMmsiNumbersAddress,
-      individualMmsiNumbersSize,
-      (offset) => this._progress.next((previousOffsets + offset) / totalSize)
-    );
+    const individualMmsiNumbersData =
+      await this._configProtocol.readConfigMemory(
+        this._deviceConfig!.individualMmsiNumbersAddress,
+        individualMmsiNumbersSize,
+        (offset) => this._progress.next((previousOffsets + offset) / totalSize)
+      );
     previousOffsets += individualMmsiNumbersSize;
-    const groupMmsiNamesData = await this.readConfigMemory(
+    const groupMmsiNamesData = await this._configProtocol.readConfigMemory(
       this._deviceConfig!.groupMmsiNamesAddress,
       groupMmsiNamesSize,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += groupMmsiNamesSize;
-    const groupMmsiNumbersData = await this.readConfigMemory(
+    const groupMmsiNumbersData = await this._configProtocol.readConfigMemory(
       this._deviceConfig!.groupMmsiNumbersAddress,
       groupMmsiNumbersSize,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
@@ -410,7 +279,12 @@ export class ConfigProtocol {
       individualMmsiNamesSize,
       individualMmsiNumbersSize,
       groupMmsiNamesSize,
-      groupMmsiNumbersSize
+      groupMmsiNumbersSize,
+      totalSize:
+        individualMmsiNamesSize +
+        individualMmsiNumbersSize +
+        groupMmsiNamesSize +
+        groupMmsiNumbersSize
     };
   }
 
@@ -426,13 +300,9 @@ export class ConfigProtocol {
       individualMmsiNamesSize,
       individualMmsiNumbersSize,
       groupMmsiNamesSize,
-      groupMmsiNumbersSize
+      groupMmsiNumbersSize,
+      totalSize
     } = this.getMmsiMemoryLayout();
-    const totalSize =
-      individualMmsiNamesSize +
-      individualMmsiNumbersSize +
-      groupMmsiNamesSize +
-      groupMmsiNumbersSize;
 
     const individualMmsiNamesData = new Uint8Array(individualMmsiNamesSize);
     const individualMmsiNumbersData = new Uint8Array(individualMmsiNumbersSize);
@@ -446,25 +316,25 @@ export class ConfigProtocol {
         groupMmsiNamesData,
         groupMmsiNumbersData
       );
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       individualMmsiNamesData,
       this._deviceConfig!.individualMmsiNamesAddress,
       (offset) => this._progress.next(offset / totalSize)
     );
     let previousOffsets = individualMmsiNamesSize;
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       individualMmsiNumbersData,
       this._deviceConfig!.individualMmsiNumbersAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += individualMmsiNumbersSize;
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       groupMmsiNamesData,
       this._deviceConfig!.groupMmsiNamesAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += groupMmsiNamesSize;
-    await this.writeConfigMemory(
+    await this._configProtocol.writeConfigMemory(
       groupMmsiNumbersData,
       this._deviceConfig!.groupMmsiNumbersAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
@@ -476,26 +346,6 @@ export class ConfigProtocol {
     this._deviceTaskState.next('idle');
   }
 
-  async waitForGps_() {
-    while (true) {
-      this.dev.flushInput();
-      this.sendMessage('$PMTK', ['000']);
-      let ans = await this.receiveMessage();
-      if (
-        ans.type == '$PMTK' &&
-        ans.args.length == 3 &&
-        ans.args[0] == '001' &&
-        ans.args[1] == '0' &&
-        ans.args[2] == '3'
-      ) {
-        return;
-      }
-    }
-  }
-  async waitForGps() {
-    await asyncWithTimeout(this.waitForGps_(), 1000);
-  }
-
   async readGpsLog() {
     if (this._deviceTaskState.getValue() != 'idle') {
       throw new Error(
@@ -504,10 +354,10 @@ export class ConfigProtocol {
     }
     this._deviceTaskState.next('gpslog-read');
     this._progress.next(0);
-    await this.waitForGps();
+    await this._configProtocol.waitForGps();
     let rawGpslog: Uint8Array[] = [];
-    this.sendMessage('$PMTK', ['622', '1']);
-    let ans = await this.receiveMessage();
+    this._configProtocol.sendMessage('$PMTK', ['622', '1']);
+    let ans = await this._configProtocol.receiveMessage();
     if (
       ans.type != '$PMTK' ||
       ans.args.length != 3 ||
@@ -518,7 +368,7 @@ export class ConfigProtocol {
     }
     let numLines = Number(ans.args[2]);
     let expectedLineNum = 0;
-    let line = await this.receiveMessage();
+    let line = await this._configProtocol.receiveMessage();
     // 2 arguments with line.args[1] == '2' is the log footer.
     while (!(line.args.length == 2 && line.args[1] == '2')) {
       if (
@@ -540,7 +390,7 @@ export class ConfigProtocol {
       }
       this._progress.next(expectedLineNum / numLines);
       expectedLineNum += 1;
-      line = await this.receiveMessage();
+      line = await this._configProtocol.receiveMessage();
     }
     if (expectedLineNum != numLines) {
       console.log(
@@ -554,7 +404,7 @@ export class ConfigProtocol {
       gpslog.set(logChunk, offset);
       offset += logChunk.length;
     }
-    ans = await this.receiveMessage();
+    ans = await this._configProtocol.receiveMessage();
     if (
       ans.type != '$PMTK' ||
       ans.args.length != 3 ||

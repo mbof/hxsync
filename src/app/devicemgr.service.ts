@@ -3,7 +3,8 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ChunkReader } from './chunkreader';
-import { ConfigProtocol } from './configprotocol';
+import { ConfigSession } from './config-session';
+import { ConfigProtocol } from './config-protocol';
 
 export enum DeviceMode {
   Unknown = 0,
@@ -84,7 +85,9 @@ export class DevicemgrService {
   readonly encoder: TextEncoder = new TextEncoder();
   readonly decoder: TextDecoder = new TextDecoder('utf-8');
   mode: DeviceMode = DeviceMode.Unknown;
-  readonly configProtocol: ConfigProtocol = new ConfigProtocol(this);
+  readonly configProtocol: ConfigSession = new ConfigSession(
+    new ConfigProtocol(this)
+  );
 
   constructor() {
     this.serial = navigator.serial;
