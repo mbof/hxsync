@@ -70,10 +70,10 @@ const csvData =
   'Bravo,987654321\n' +
   'Charlie,888888888\n' +
   'Delta,999999999\n' +
-  'Alpha,023456789\n' +
-  'Bravo,087654321\n' +
-  'Charlie,088888888\n' +
-  'Delta,099999999\n';
+  'Alpha,G023456789\n' +
+  'Bravo,G087654321\n' +
+  'Charlie,G088888888\n' +
+  'Delta,G099999999\n';
 
 describe('MmsiDirectory', () => {
   it('should decode a few MMSI', () => {

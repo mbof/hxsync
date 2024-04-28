@@ -3,7 +3,7 @@ import { hexarr, unhexInto } from './message';
 import { parse } from 'csv-parse/sync';
 
 export function validateMmsi(name: string, number: string) {
-  if (!number.match(/^[0-9]{9}$/)) {
+  if (!number.match(/^G?[0-9]{9}$/)) {
     throw new Error('MMSI number should have exactly 9 digits');
   }
   if (name.length > 16) {
@@ -99,7 +99,7 @@ export class MmsiDirectory {
       const name = /,/.test(mmsi.name)
         ? `"${mmsi.name.replace('"', '""')}"`
         : mmsi.name;
-      ans += `${mmsi.name},${mmsi.number}\n`;
+      ans += `${mmsi.name},G${mmsi.number}\n`;
     }
     return ans;
   }
@@ -113,10 +113,11 @@ export class MmsiDirectory {
       const name = record.name;
       const number = record.mmsi;
       validateMmsi(name, number);
-      const mmsi = new Mmsi(name, number);
-      if (number[0] == '0') {
+      if (number[0] == 'G') {
+        const mmsi = new Mmsi(name, number.slice(1));
         groupMmsis.push(mmsi);
       } else {
+        const mmsi = new Mmsi(name, number);
         individualMmsis.push(mmsi);
       }
     }
