@@ -19,13 +19,37 @@ async function asyncWithTimeout<T>(
   });
 }
 
-export class ConfigProtocol {
+export interface ConfigProtocolInterface {
+  supportsMessaging(): boolean;
+  sendMessage(
+    type: string,
+    args?: Array<string> | undefined,
+    timeoutMs?: number | undefined
+  ): Promise<void>;
+  receiveMessage(timeoutMs?: number | undefined): Promise<Message>;
+  waitForReady(): Promise<void>;
+  readConfigMemory(
+    address: number,
+    size: number,
+    progressCallback: (offset: number) => void
+  ): Promise<Uint8Array>;
+  writeConfigMemory(
+    data: Uint8Array,
+    address: number,
+    progressCallback: (offset: number) => void
+  ): Promise<void>;
+}
+
+export class ConfigProtocol implements ConfigProtocolInterface {
   constructor(private dev: DevicemgrService) {}
+  public supportsMessaging(): boolean {
+    return true;
+  }
   public async sendMessage(
     type: string,
     args?: Array<string> | undefined,
     timeoutMs?: number | undefined
-  ) {
+  ): Promise<void> {
     let str = new Message({ type: type, args: args }).toString();
     if (!timeoutMs) {
       await this.dev.write(str);
@@ -35,7 +59,9 @@ export class ConfigProtocol {
     console.log(`Wrote command ${JSON.stringify(str)}`);
   }
 
-  public async receiveMessage(timeoutMs?: number | undefined) {
+  public async receiveMessage(
+    timeoutMs?: number | undefined
+  ): Promise<Message> {
     let line;
     if (!timeoutMs) {
       line = await this.dev.readline();
@@ -66,7 +92,7 @@ export class ConfigProtocol {
       this.sendMessage('#CMDOK');
     }
   }
-  public async waitForReady() {
+  public async waitForReady(): Promise<void> {
     await asyncWithTimeout(this.waitForReady_(), 1000);
   }
 
@@ -105,7 +131,7 @@ export class ConfigProtocol {
     address: number,
     size: number,
     progressCallback: (offset: number) => void
-  ) {
+  ): Promise<Uint8Array> {
     const data = new Uint8Array(size);
     for (let offset = 0; offset < size; offset += CHUNK_SIZE) {
       data.set(
@@ -123,7 +149,7 @@ export class ConfigProtocol {
     data: Uint8Array,
     address: number,
     progressCallback: (offset: number) => void
-  ) {
+  ): Promise<void> {
     for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
       await this.writeConfigMemoryChunk(
         address + offset,
@@ -151,5 +177,42 @@ export class ConfigProtocol {
   }
   public async waitForGps() {
     await asyncWithTimeout(this.waitForGps_(), 1000);
+  }
+}
+
+// This class operates on a binary image in memory directly.
+export class DatConfigProtocol implements ConfigProtocolInterface {
+  constructor(public datImage: Uint8Array) {}
+  public supportsMessaging(): boolean {
+    return false;
+  }
+  sendMessage(
+    type: string,
+    args?: Array<string> | undefined,
+    timeoutMs?: number | undefined
+  ): Promise<void> {
+    throw new Error('sendMessage is unavailable on DatConfigProtocol.');
+  }
+  receiveMessage(timeoutMs?: number | undefined): Promise<Message> {
+    throw new Error('sendMessage is unavailable on DatConfigProtocol.');
+  }
+  async waitForReady(): Promise<void> {
+    return;
+  }
+  async readConfigMemory(
+    address: number,
+    size: number,
+    progressCallback: (offset: number) => void
+  ): Promise<Uint8Array> {
+    progressCallback(size);
+    return this.datImage.slice(address, address + size);
+  }
+  async writeConfigMemory(
+    data: Uint8Array,
+    address: number,
+    progressCallback: (offset: number) => void
+  ): Promise<void> {
+    progressCallback(data.length);
+    this.datImage.subarray(address).set(data);
   }
 }
