@@ -48,7 +48,9 @@ function makeFakeDeviceConfig(waypointsNumber: number): DeviceConfig {
     individualMmsiNum: 10,
     groupMmsiNamesAddress: 0xcafe,
     groupMmsiNumbersAddress: 0xbabe,
-    groupMmsiNum: 10
+    groupMmsiNum: 10,
+    datLength: 64,
+    datMagic: new Uint8Array([0x12, 0x34])
   };
 }
 

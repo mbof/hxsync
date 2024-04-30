@@ -15,7 +15,7 @@ export class BusyStateModalComponent {
   progressPct: number = 0;
   configProtocol: ConfigSession;
   constructor(deviceMgr: DevicemgrService) {
-    this.configProtocol = deviceMgr.configProtocol;
+    this.configProtocol = deviceMgr.configSession;
   }
   ngOnInit() {
     this.configProtocol.deviceTaskState$.subscribe(

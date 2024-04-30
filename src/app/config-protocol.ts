@@ -38,6 +38,7 @@ export interface ConfigProtocolInterface {
     address: number,
     progressCallback: (offset: number) => void
   ): Promise<void>;
+  waitForGps(): Promise<void>;
 }
 
 export class ConfigProtocol implements ConfigProtocolInterface {
@@ -197,6 +198,9 @@ export class DatConfigProtocol implements ConfigProtocolInterface {
     throw new Error('sendMessage is unavailable on DatConfigProtocol.');
   }
   async waitForReady(): Promise<void> {
+    return;
+  }
+  async waitForGps(): Promise<void> {
     return;
   }
   async readConfigMemory(

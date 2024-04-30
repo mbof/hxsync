@@ -9,7 +9,7 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-import { ConfigProtocol } from './config-protocol';
+import { ConfigProtocol, ConfigProtocolInterface } from './config-protocol';
 
 export type Config = {
   mmsi?: string;
@@ -42,7 +42,7 @@ export type DeviceTaskState =
 
 export class ConfigSession {
   public _deviceConfig?: DeviceConfig;
-  constructor(private _configProtocol: ConfigProtocol) {}
+  constructor(private _configProtocol: ConfigProtocolInterface) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
 
@@ -52,9 +52,10 @@ export class ConfigSession {
   private _progress = new BehaviorSubject<number>(0);
   progress$ = this._progress.asObservable();
 
-  reset(deviceConfig: DeviceConfig) {
+  reset(deviceConfig: DeviceConfig, configProtocol: ConfigProtocolInterface) {
     this.config.next({});
     this._deviceTaskState.next('idle');
+    this._configProtocol = configProtocol;
     this._deviceConfig = deviceConfig;
   }
 

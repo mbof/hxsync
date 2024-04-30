@@ -1,7 +1,7 @@
 <div class="device-panel">
   <img class="device-picture" src="assets/radio.jpeg" />
   <div class="controls">
-    @if (connectionState != 'connected') {
+    @if (connectionState != 'usb-connected') {
       <div class="desc">
         Connect your HX870 or HX890 radio to this computer with a USB cable, and
         place it in "CP Mode":
@@ -14,8 +14,8 @@
         </ol>
       </div>
       <button
-        [disabled]="connectionState === 'connecting'"
-        (click)="deviceMgr.connect()"
+        [disabled]="connectionState === 'usb-connecting'"
+        (click)="deviceMgr.connectUsb()"
       >
         Connect
       </button>

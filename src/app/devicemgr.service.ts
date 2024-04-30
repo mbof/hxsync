@@ -4,7 +4,7 @@ import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { ChunkReader } from './chunkreader';
 import { ConfigSession } from './config-session';
-import { ConfigProtocol } from './config-protocol';
+import { ConfigProtocol, DatConfigProtocol } from './config-protocol';
 
 export enum DeviceMode {
   Unknown = 0,
@@ -30,6 +30,8 @@ export type DeviceConfig = {
   groupMmsiNamesAddress: number;
   groupMmsiNumbersAddress: number;
   groupMmsiNum: number;
+  datLength: number;
+  datMagic: Uint8Array;
 };
 
 const DEVICE_CONFIGS: DeviceConfig[] = [
@@ -47,7 +49,9 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     individualMmsiNum: 100,
     groupMmsiNamesAddress: 0x5100,
     groupMmsiNumbersAddress: 0x5000,
-    groupMmsiNum: 20
+    groupMmsiNum: 20,
+    datLength: 0x10000,
+    datMagic: new Uint8Array([0x03, 0x7a])
   },
   {
     name: 'HX870',
@@ -63,11 +67,17 @@ const DEVICE_CONFIGS: DeviceConfig[] = [
     individualMmsiNum: 100,
     groupMmsiNamesAddress: 0x3e80,
     groupMmsiNumbersAddress: 0x3e00,
-    groupMmsiNum: 20
+    groupMmsiNum: 20,
+    datLength: 0x8000,
+    datMagic: new Uint8Array([0x03, 0x67])
   }
 ];
 
-export type DeviceConnectionState = 'disconnected' | 'connecting' | 'connected';
+export type DeviceConnectionState =
+  | 'disconnected'
+  | 'usb-connecting'
+  | 'usb-connected'
+  | 'dat-connected';
 
 @Injectable({
   providedIn: 'root'
@@ -85,8 +95,9 @@ export class DevicemgrService {
   readonly encoder: TextEncoder = new TextEncoder();
   readonly decoder: TextDecoder = new TextDecoder('utf-8');
   mode: DeviceMode = DeviceMode.Unknown;
-  readonly configProtocol: ConfigSession = new ConfigSession(
-    new ConfigProtocol(this)
+  private _configProtocol: ConfigProtocol = new ConfigProtocol(this);
+  readonly configSession: ConfigSession = new ConfigSession(
+    this._configProtocol
   );
 
   constructor() {
@@ -97,14 +108,19 @@ export class DevicemgrService {
     return this._connectionState.getValue();
   }
 
-  async connect() {
+  async connectUsb() {
+    if (!this.serial) {
+      throw new Error(
+        "This browser doesn't support the Webserial API. Use Chrome, Edge, or Opera."
+      );
+    }
     if (this.getConnectionState() != 'disconnected') {
       throw new Error(
         `Cannot connect from state: ${this.getConnectionState()}`
       );
     }
     try {
-      this._connectionState.next('connecting');
+      this._connectionState.next('usb-connecting');
       this.port = await this.serial.requestPort({
         filters: DEVICE_CONFIGS.map((conf) => conf.usbFilter)
       });
@@ -124,8 +140,8 @@ export class DevicemgrService {
       if (this.mode != DeviceMode.CP) {
         throw new Error('Device must be in CP mode');
       }
-      this._connectionState.next('connected');
-      this.configProtocol.reset(deviceConfig);
+      this._connectionState.next('usb-connected');
+      this.configSession.reset(deviceConfig, this._configProtocol);
       console.log('Connected');
     } catch (e) {
       console.error(`Error while connecting: ${e}`);
@@ -134,6 +150,10 @@ export class DevicemgrService {
   }
 
   async disconnect() {
+    if (this._connectionState.getValue() == 'dat-connected') {
+      this._connectionState.next('disconnected');
+      return;
+    }
     try {
       await this.writer?.close();
       await this._streamReader?.cancel();
@@ -146,7 +166,7 @@ export class DevicemgrService {
       this.reader = undefined;
       this.writer = undefined;
       this.mode = DeviceMode.Unknown;
-      this.configProtocol.config.next({});
+      this.configSession.config.next({});
       console.log('Disconnected');
     } catch (e) {
       this.port = undefined;
@@ -184,5 +204,26 @@ export class DevicemgrService {
       this.mode = DeviceMode.NMEA;
     }
     console.log(`Detected mode ${this.mode}`);
+  }
+
+  connectDat(datFile: Uint8Array) {
+    if (this.getConnectionState() != 'disconnected') {
+      throw new Error(
+        `Cannot load DAT from state: ${this.getConnectionState()}`
+      );
+    }
+    const deviceConfig = DEVICE_CONFIGS.find(
+      (config) =>
+        datFile.length == config.datLength &&
+        config.datMagic.every((v, offset) => datFile[offset] == v)
+    );
+    if (!deviceConfig) {
+      throw new Error(
+        `Unknown DAT file format (length ${datFile.length}, magic ${datFile.subarray(0, 2)}`
+      );
+    }
+    console.log(`Detected DAT file for ${deviceConfig.name}`);
+    this.configSession.reset(deviceConfig, new DatConfigProtocol(datFile));
+    this._connectionState.next('dat-connected');
   }
 }

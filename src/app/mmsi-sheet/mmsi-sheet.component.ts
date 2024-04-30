@@ -20,7 +20,7 @@ export class MmsiSheetComponent {
   configProtocol: ConfigSession;
   csvControl = new FormControl('Uninitialized');
   constructor(deviceMgr: DevicemgrService) {
-    this.configProtocol = deviceMgr.configProtocol;
+    this.configProtocol = deviceMgr.configSession;
   }
   ngOnInit() {
     this.configProtocol.deviceTaskState$.subscribe((state) => {
