@@ -1,7 +1,9 @@
 <div class="device-panel">
   <img class="device-picture" src="assets/radio.jpeg" />
   <div class="controls">
-    @if (connectionState != 'usb-connected') {
+    @if (
+      connectionState != 'usb-connected' && connectionState != 'dat-connected'
+    ) {
       <div class="desc">
         Connect your HX870 or HX890 radio to this computer with a USB cable, and
         place it in "CP Mode":
@@ -12,6 +14,9 @@
           <li>Release both keys when the screen lights up</li>
           <li>Click Connect</li>
         </ol>
+        Alternatively,
+        <a href="#" (click)="showDatPicker()">load a DAT file</a> for your
+        device to edit it.
       </div>
       <button
         [disabled]="connectionState === 'usb-connecting'"
@@ -22,8 +27,17 @@
     } @else {
       <button (click)="readWaypoints()">Waypoints</button>
       <button (click)="readMmsi()">MMSI Directory</button>
-      <button (click)="readGpslog()">Download GPS log</button>
-      <button (click)="deviceMgr.disconnect()">Disconnect</button>
+      @if (connectionState == 'usb-connected') {
+        <button (click)="readGpslog()">Download GPS log</button>
+      }
+      @if (connectionState == 'dat-connected') {
+        <button (click)="saveDat()">Save DAT</button>
+      }
+      @if (connectionState == 'usb-connected') {
+        <button (click)="deviceMgr.disconnect()">Disconnect</button>
+      } @else if (connectionState == 'dat-connected') {
+        <button (click)="deviceMgr.disconnect()">Close</button>
+      }
     }
   </div>
 </div>

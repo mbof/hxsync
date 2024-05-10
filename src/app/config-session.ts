@@ -9,7 +9,11 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-import { ConfigProtocol, ConfigProtocolInterface } from './config-protocol';
+import {
+  ConfigProtocol,
+  ConfigProtocolInterface,
+  DatConfigProtocol
+} from './config-protocol';
 
 export type Config = {
   mmsi?: string;
@@ -417,5 +421,11 @@ export class ConfigSession {
     }
     this.config.next({ ...this.config.getValue(), gpslog: gpslog });
     this._deviceTaskState.next('idle');
+  }
+  getDat(): Uint8Array {
+    if (this._configProtocol instanceof DatConfigProtocol) {
+      return this._configProtocol.datImage;
+    }
+    throw new Error('DAT is only available in this configuration.');
   }
 }

@@ -1,3 +1,5 @@
+/// <reference types="wicg-file-system-access" />
+
 import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject, Observable, Subscription } from 'rxjs';
@@ -64,6 +66,44 @@ export class DeviceComponent {
       type: 'application/xml'
     });
     saveAs(file, `gpslog.gpx`);
+  }
+
+  // TODO: move to device mgr and add DAT loading / saving states
+  async showDatPicker() {
+    const [handle] = await window.showOpenFilePicker({
+      multiple: false,
+      types: [
+        {
+          description: 'DAT files',
+          accept: {
+            'application/octet-stream': ['.dat', '.bin', '.DAT', '.bin']
+          }
+        }
+      ]
+    });
+    const f = await handle.getFile();
+    const dat = await f.arrayBuffer();
+    try {
+      this.deviceMgr.connectDat(new Uint8Array(dat));
+    } catch (e) {
+      window.alert(e);
+    }
+  }
+
+  async saveDat() {
+    const handle = await window.showSaveFilePicker({
+      types: [
+        {
+          description: 'DAT files',
+          accept: {
+            'application/octet-stream': ['.dat', '.bin', '.DAT', '.bin']
+          }
+        }
+      ]
+    });
+    const out = await handle.createWritable();
+    await out.write(this.deviceMgr.configSession.getDat());
+    await out.close();
   }
 
   hex = hex;
