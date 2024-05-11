@@ -1,14 +1,20 @@
 # HxSync
 
 This project is an Angular web application that connects to the Standard Horizon
-HX870 and HX890 portable VHF radios using the WebSerial API. As of this writing,
-the WebSerial API is only available in Chrome, and this software only supports
-the following functions:
+HX870 and HX890 portable VHF radios. It has the following features:
 
 - Reading and editing waypoints
-- Downloading the GPS log as a GPX file
+- Reading and editing MMSI directories for DSC
+- Downloading the GPS log from the device as a GPX file
+- Loading and saving DAT files on the computer
 
 It is very incomplete, and could break your device. **Use at your own risk!**
+
+The APIs that this application relies on for connecting to the device
+([WebSerial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility))
+and for opening files
+([File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access#read-file))
+are currently only available in Chrome, Edge, and Opera.
 
 This software builds on the work published at
 [Robert Elsinga's page on the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld),
