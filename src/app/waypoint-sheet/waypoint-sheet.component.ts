@@ -1,7 +1,6 @@
 import { Component, ViewChild } from '@angular/core';
 import { WaypointEditorComponent } from '../waypoint-editor/waypoint-editor.component';
 import { Waypoint } from '../waypoint';
-import { NavInfoDraft } from '../nav-info-draft';
 import { hex } from '../message';
 import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
@@ -21,7 +20,7 @@ export class WaypointSheetComponent {
   constructor(public deviceMgr: DevicemgrService) {}
 
   ngOnInit() {
-    this.deviceMgr.configProtocol.deviceTaskState$.subscribe(
+    this.deviceMgr.configSession.deviceTaskState$.subscribe(
       (deviceTaskState) => {
         if (deviceTaskState == 'nav-edit' || deviceTaskState == 'nav-save') {
           this.shown = true;
@@ -30,13 +29,13 @@ export class WaypointSheetComponent {
         }
       }
     );
-    this.configSubscription = this.deviceMgr.configProtocol.config
+    this.configSubscription = this.deviceMgr.configSession.config
       .asObservable()
       .subscribe();
   }
 
   getDraftWaypoints() {
-    return this.deviceMgr.configProtocol.config.getValue().draftWaypoints;
+    return this.deviceMgr.configSession.config.getValue().draftWaypoints;
   }
   draftEditWaypoint(wp: Waypoint) {
     const draftWaypoints = this.getDraftWaypoints();
@@ -64,10 +63,10 @@ export class WaypointSheetComponent {
     );
   }
   draftCancel() {
-    this.deviceMgr.configProtocol.cancelNavInfoDraft();
+    this.deviceMgr.configSession.cancelNavInfoDraft();
   }
   saveDraft() {
-    this.deviceMgr.configProtocol.writeNavInfoDraft();
+    this.deviceMgr.configSession.writeNavInfoDraft();
   }
   isPendingDraft() {
     return this.getDraftWaypoints()?.dirtyWaypoints;

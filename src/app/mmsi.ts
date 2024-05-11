@@ -137,6 +137,7 @@ export class MmsiDirectory {
     groupMmsiNames: Uint8Array,
     groupMmsiNumbers: Uint8Array
   ) {
+    this.sort();
     if (this.individualMmsis.length > this.maxIndividualMmsis) {
       throw new Error('Too many MMSIs');
     }

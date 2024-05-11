@@ -1,6 +1,6 @@
 import { Component } from '@angular/core';
 import { DevicemgrService } from '../devicemgr.service';
-import { ConfigProtocol, DeviceTaskState } from '../configprotocol';
+import { ConfigSession, DeviceTaskState } from '../config-session';
 import {
   NgForm,
   FormsModule,
@@ -17,10 +17,10 @@ import {
 })
 export class MmsiSheetComponent {
   shown = false;
-  configProtocol: ConfigProtocol;
+  configProtocol: ConfigSession;
   csvControl = new FormControl('Uninitialized');
   constructor(deviceMgr: DevicemgrService) {
-    this.configProtocol = deviceMgr.configProtocol;
+    this.configProtocol = deviceMgr.configSession;
   }
   ngOnInit() {
     this.configProtocol.deviceTaskState$.subscribe((state) => {

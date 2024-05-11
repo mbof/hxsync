@@ -1,5 +1,5 @@
 import { Component } from '@angular/core';
-import { Config, ConfigProtocol, DeviceTaskState } from '../configprotocol';
+import { Config, ConfigSession, DeviceTaskState } from '../config-session';
 import { DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject } from 'rxjs';
 
@@ -13,9 +13,9 @@ import { BehaviorSubject } from 'rxjs';
 export class BusyStateModalComponent {
   state: DeviceTaskState = 'idle';
   progressPct: number = 0;
-  configProtocol: ConfigProtocol;
+  configProtocol: ConfigSession;
   constructor(deviceMgr: DevicemgrService) {
-    this.configProtocol = deviceMgr.configProtocol;
+    this.configProtocol = deviceMgr.configSession;
   }
   ngOnInit() {
     this.configProtocol.deviceTaskState$.subscribe(
