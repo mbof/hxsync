@@ -68,8 +68,20 @@ export class DeviceComponent {
     saveAs(file, `gpslog.gpx`);
   }
 
+  async connectUsb() {
+    if (!this.deviceMgr.serial) {
+      window.alert("This functionality requires Chrome, Edge, or Opera.");
+      return;
+    }
+    await this.deviceMgr.connectUsb();
+  }
+
   // TODO: move to device mgr and add DAT loading / saving states
   async showDatPicker() {
+    if (!window.showOpenFilePicker) {
+      window.alert("This functionality requires Chrome, Edge, or Opera.");
+      return;
+    }
     const [handle] = await window.showOpenFilePicker({
       multiple: false,
       types: [

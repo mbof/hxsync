@@ -20,7 +20,7 @@
       </div>
       <button
         [disabled]="connectionState === 'usb-connecting'"
-        (click)="deviceMgr.connectUsb()"
+        (click)="connectUsb()"
       >
         Connect
       </button>
