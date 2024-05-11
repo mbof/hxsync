@@ -144,8 +144,8 @@ export class DevicemgrService {
       this.configSession.reset(deviceConfig, this._configProtocol);
       console.log('Connected');
     } catch (e) {
-      console.error(`Error while connecting: ${e}`);
       await this.disconnect();
+      throw e;
     }
   }
 

@@ -73,7 +73,11 @@ export class DeviceComponent {
       window.alert("This functionality requires Chrome, Edge, or Opera.");
       return;
     }
-    await this.deviceMgr.connectUsb();
+    try {
+      await this.deviceMgr.connectUsb();
+    } catch (e) {
+      window.alert(e);
+    }
   }
 
   // TODO: move to device mgr and add DAT loading / saving states
