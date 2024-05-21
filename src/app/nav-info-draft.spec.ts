@@ -35,7 +35,7 @@ const testRouteData2: RouteData = {
 
 function makeFakeDeviceConfig(waypointsNumber: number): DeviceConfig {
   return {
-    name: 'foo',
+    name: 'HX870',
     usbFilter: { usbProductId: 0, usbVendorId: 2 },
     waypointsStartAddress: 0x1234,
     waypointsNumber: waypointsNumber,
