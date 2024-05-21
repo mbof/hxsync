@@ -14,6 +14,9 @@ import {
   ConfigProtocolInterface,
   DatConfigProtocol
 } from './config-protocol';
+import { DscConfig } from './config-modules/dsc';
+import { ConfigBatchReader } from './config-batch-reader';
+import { Document } from 'yaml';
 
 export type Config = {
   mmsi?: string;
@@ -24,6 +27,9 @@ export type Config = {
   mmsiDirectory?: MmsiDirectory;
 };
 
+// TODO: refactor this into
+// a distinct class for each of nav / mmsi / yaml
+// and an orthogonal read / edit / save state
 export type DeviceTaskState =
   | 'idle'
   | 'gpslog-read'
@@ -32,7 +38,17 @@ export type DeviceTaskState =
   | 'nav-save'
   | 'mmsi-read'
   | 'mmsi-edit'
-  | 'mmsi-save';
+  | 'mmsi-save'
+  | 'yaml-read'
+  | 'yaml-edit'
+  | 'yaml-save';
+
+export type MemoryRangeId = 
+  'individual_mmsi_names' |
+  'individual_mmsi_numbers' |
+  'group_mmsi_names' |
+  'group_mmsi_numbers';
+
 
 /*
  * State machine transitions:
@@ -42,6 +58,9 @@ export type DeviceTaskState =
  * nav-edit --cancelNavInfoDraft()--> idle
  * idle --readMmsiDirectory()--> mmsi-read --(wait)--> mmsi-edit (success) / idle (error)
  * mmsi-edit --writeMmsiDirectory()--> mmsi-save --(wait)--> idle
+ * idle --startYamlEdit()--> yaml-read --(wait)--> yaml-edit (success) / idle (error)
+ * yaml-edit --writeYamlEdit()--> yaml-save --(wait)--> idle
+ * yaml-edit --cancelYamlEdit()--> idle
  */
 
 export class ConfigSession {
@@ -49,6 +68,7 @@ export class ConfigSession {
   constructor(private _configProtocol: ConfigProtocolInterface) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
+  yaml: BehaviorSubject<Document> = new BehaviorSubject(new Document());
 
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
@@ -427,5 +447,29 @@ export class ConfigSession {
       return this._configProtocol.datImage;
     }
     throw new Error('DAT is only available in this configuration.');
+  }
+
+  async startYaml() {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't start Yaml from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('yaml-read');
+    this.config.next({});
+    const configModules = [new DscConfig(this._deviceConfig!.name)];
+    const batchReader = new ConfigBatchReader(this._configProtocol);
+    for (const module of configModules) {
+      module.addRangesToRead(batchReader);
+    }
+    const results = await batchReader.read((v: number) => this._progress.next(v));
+    const yaml = new Document();
+    const config: Config = {};
+    for (const module of configModules) {
+      module.updateConfig(results, config, yaml);
+    }
+    this.config.next(config);
+    this.yaml.next(yaml);
+    this._deviceTaskState.next('yaml-edit');
   }
 }

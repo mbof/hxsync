@@ -12,8 +12,10 @@ export enum DeviceMode {
   NMEA = 2
 }
 
+export type DeviceModel = 'HX890' | 'HX870';
+
 export type DeviceConfig = {
-  name: string;
+  name: DeviceModel;
   usbFilter: {
     usbVendorId: number;
     usbProductId: number;
