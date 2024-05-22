@@ -92,48 +92,29 @@ export class DscConfig {
       results.get('group_mmsi_numbers')!
     );
     config.mmsiDirectory = mmsiDirectory;
-
-    const dsc_directory = new Map<string, string>();
-    for (const [index, mmsi] of mmsiDirectory.individualMmsis.entries()) {
-      let name = mmsi.name;
-      if (
-        mmsiDirectory.individualMmsis.find(
-          (mmsi2, index2) => index2 != index && mmsi2.name == mmsi.name
-        )
-      ) {
-        // There's a duplicate MMSI name. Let's give them disambiguating names.
-        name = `${name} [${index}]`;
-      }
-      dsc_directory.set(name, mmsi.number);
-    }
+    const dsc_directory = mmsiDirectory.individualMmsis.map((mmsi) => ({
+      [mmsi.name]: mmsi.number
+    }));
     const dsc = yaml.createNode({ dsc_directory });
-    dsc.commentBefore = ' DSC directory for individual calls. Wrap MMSIs in quotes.\n'
-     + ' Example:\n'
-     + ' - dsc_directory:\n'
-     + '     Alpha: "123456789"\n'
-     + '     Bravo: "987654321"';
+    dsc.commentBefore =
+      ' DSC directory for individual calls. Wrap MMSIs in quotes.\n' +
+      ' Example:\n' +
+      ' - dsc_directory:\n' +
+      '     - Alpha: "123456789"\n' +
+      '     - Bravo: "987654321"';
     dsc.spaceBefore = true;
     yaml.add(dsc);
 
-    const group_directory = new Map<string, string>();
-    for (const [index, mmsi] of mmsiDirectory.groupMmsis.entries()) {
-      let name = mmsi.name;
-      if (
-        mmsiDirectory.groupMmsis.find(
-          (mmsi2, index2) => index2 != index && mmsi2.name == mmsi.name
-        )
-      ) {
-        // There's a duplicate MMSI name. Let's give them disambiguating names.
-        name = `${name} [${index}]`;
-      }
-      group_directory.set(name, mmsi.number);
-    }
+    const group_directory = mmsiDirectory.groupMmsis.map((mmsi) => ({
+      [mmsi.name]: mmsi.number
+    }));
     const group = yaml.createNode({ group_directory });
-    group.commentBefore = ' DSC directory for group calls. Wrap MMSIs in quotes.\n'
-    + ' Example:\n'
-    + ' - group_directory:\n'
-    + '     Golf: "012345678"\n'
-    + '     Foxtrot: "098765432"';
+    group.commentBefore =
+      ' DSC directory for group calls. Wrap MMSIs in quotes.\n' +
+      ' Example:\n' +
+      ' - group_directory:\n' +
+      '     - Golf: "012345678"\n' +
+      '     - Foxtrot: "098765432"';
     group.spaceBefore = true;
     yaml.add(group);
   }
