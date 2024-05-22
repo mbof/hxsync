@@ -4,10 +4,10 @@ import { Config } from '../config-session';
 import { DeviceModel } from '../devicemgr.service';
 import {
   MMSI_NAME_BYTE_SIZE,
-  Mmsi,
   MmsiDirectory,
   numberOffsetFromIndex
 } from '../mmsi';
+import { ConfigModuleInterface } from './config-module-interface';
 
 type DscDeviceConfig = {
   name: DeviceModel;
@@ -40,7 +40,7 @@ const CONFIGS: DscDeviceConfig[] = [
   }
 ];
 
-export class DscConfig {
+export class DscConfig implements ConfigModuleInterface {
   readonly deviceConfig?: DscDeviceConfig;
   constructor(deviceModel: DeviceModel) {
     this.deviceConfig = CONFIGS.find((c) => c.name == deviceModel);

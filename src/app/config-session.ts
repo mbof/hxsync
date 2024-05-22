@@ -1,6 +1,6 @@
-import { BehaviorSubject, max, range } from 'rxjs';
-import { DeviceConfig, DevicemgrService } from './devicemgr.service';
-import { Message, hex, hexarr, unhex } from './message';
+import { BehaviorSubject } from 'rxjs';
+import { DeviceConfig } from './devicemgr.service';
+import { unhex } from './message';
 import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
 import { NavInfoDraft } from './nav-info-draft';
 import { routeFromConfig } from './route';
@@ -9,14 +9,10 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-import {
-  ConfigProtocol,
-  ConfigProtocolInterface,
-  DatConfigProtocol
-} from './config-protocol';
-import { DscConfig } from './config-modules/dsc';
+import { ConfigProtocolInterface, DatConfigProtocol } from './config-protocol';
 import { ConfigBatchReader } from './config-batch-reader';
 import { Document } from 'yaml';
+import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 
 export type Config = {
   mmsi?: string;
@@ -456,20 +452,20 @@ export class ConfigSession {
     }
     this._deviceTaskState.next('yaml-read');
     this.config.next({});
-    const configModules = [new DscConfig(this._deviceConfig!.name)];
+    const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
+      (moduleClass) => new moduleClass(this._deviceConfig!.name)
+    );
     const batchReader = new ConfigBatchReader(this._configProtocol);
-    for (const module of configModules) {
-      module.addRangesToRead(batchReader);
-    }
+    configModules.forEach((module) => module.addRangesToRead(batchReader));
     const results = await batchReader.read((v: number) =>
       this._progress.next(v)
     );
     const yaml = new Document();
     yaml.contents = yaml.createNode([]);
     const config: Config = {};
-    for (const module of configModules) {
-      module.updateConfig(results, config, yaml);
-    }
+    configModules.forEach((module) =>
+      module.updateConfig(results, config, yaml)
+    );
     this.config.next(config);
     this.yaml.next(yaml);
     this._deviceTaskState.next('yaml-edit');
