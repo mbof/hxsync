@@ -58,22 +58,22 @@ export class DscConfig {
     configBatchReader.addRange(
       'individual_mmsi_names',
       this.deviceConfig.individualMmsiNamesAddress,
-      individualMmsiNamesSize
+      this.deviceConfig.individualMmsiNamesAddress + individualMmsiNamesSize
     );
     configBatchReader.addRange(
       'individual_mmsi_numbers',
       this.deviceConfig.individualMmsiNumbersAddress,
-      individualMmsiNumbersSize
+      this.deviceConfig.individualMmsiNumbersAddress + individualMmsiNumbersSize
     );
     configBatchReader.addRange(
       'group_mmsi_names',
       this.deviceConfig.groupMmsiNamesAddress,
-      groupMmsiNamesSize
+      this.deviceConfig.groupMmsiNamesAddress + groupMmsiNamesSize
     );
     configBatchReader.addRange(
-      'individual_mmsi_numbers',
+      'group_mmsi_numbers',
       this.deviceConfig.groupMmsiNumbersAddress,
-      groupMmsiNumbersSize
+      this.deviceConfig.groupMmsiNumbersAddress + groupMmsiNumbersSize
     );
   }
   updateConfig(
@@ -106,7 +106,13 @@ export class DscConfig {
       }
       dsc_directory.set(name, mmsi.number);
     }
-    const dsc = yaml.createNode(dsc_directory);
+    const dsc = yaml.createNode({ dsc_directory });
+    dsc.commentBefore = ' DSC directory for individual calls. Wrap MMSIs in quotes.\n'
+     + ' Example:\n'
+     + ' - dsc_directory:\n'
+     + '     Alpha: "123456789"\n'
+     + '     Bravo: "987654321"';
+    dsc.spaceBefore = true;
     yaml.add(dsc);
 
     const group_directory = new Map<string, string>();
@@ -122,7 +128,13 @@ export class DscConfig {
       }
       group_directory.set(name, mmsi.number);
     }
-    const group = yaml.createNode(group_directory);
+    const group = yaml.createNode({ group_directory });
+    group.commentBefore = ' DSC directory for group calls. Wrap MMSIs in quotes.\n'
+    + ' Example:\n'
+    + ' - group_directory:\n'
+    + '     Golf: "012345678"\n'
+    + '     Foxtrot: "098765432"';
+    group.spaceBefore = true;
     yaml.add(group);
   }
 }

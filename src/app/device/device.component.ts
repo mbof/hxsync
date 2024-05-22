@@ -7,10 +7,10 @@ import { hex } from '../message';
 import { Config, DeviceTaskState } from '../config-session';
 import { saveAs } from 'file-saver';
 import { Locus } from '../gps';
-import { Waypoint } from '../waypoint';
 import { BusyStateModalComponent } from '../busy-state-modal/busy-state-modal.component';
 import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.component';
 import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
+import { YamlSheetComponent } from '../yaml-sheet/yaml-sheet.component';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -19,7 +19,12 @@ import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
   standalone: true,
   templateUrl: './device.component.html',
   styleUrl: './device.component.css',
-  imports: [BusyStateModalComponent, WaypointSheetComponent, MmsiSheetComponent]
+  imports: [
+    BusyStateModalComponent,
+    WaypointSheetComponent,
+    MmsiSheetComponent,
+    YamlSheetComponent
+  ]
 })
 export class DeviceComponent {
   connectionStateSubscription?: Subscription;
@@ -57,6 +62,9 @@ export class DeviceComponent {
   async readMmsi() {
     await this.deviceMgr.configSession.readMmsiDirectory();
   }
+  async readYaml() {
+    await this.deviceMgr.configSession.startYaml();
+  }
   async readGpslog() {
     await this.deviceMgr.configSession.readGpsLog();
     const gpx = new Locus(
@@ -70,7 +78,7 @@ export class DeviceComponent {
 
   async connectUsb() {
     if (!this.deviceMgr.serial) {
-      window.alert("This functionality requires Chrome, Edge, or Opera.");
+      window.alert('This functionality requires Chrome, Edge, or Opera.');
       return;
     }
     try {
@@ -83,7 +91,7 @@ export class DeviceComponent {
   // TODO: move to device mgr and add DAT loading / saving states
   async showDatPicker() {
     if (!window.showOpenFilePicker) {
-      window.alert("This functionality requires Chrome, Edge, or Opera.");
+      window.alert('This functionality requires Chrome, Edge, or Opera.');
       return;
     }
     const [handle] = await window.showOpenFilePicker({

@@ -27,6 +27,7 @@
     } @else {
       <button (click)="readWaypoints()">Waypoints</button>
       <button (click)="readMmsi()">MMSI Directory</button>
+      <button (click)="readYaml()">Edit as Yaml</button>
       @if (connectionState == 'usb-connected') {
         <button (click)="readGpslog()">Download GPS log</button>
       }
@@ -43,4 +44,5 @@
 </div>
 <waypoint-sheet />
 <mmsi-sheet />
+<yaml-sheet />
 <busy-state-modal />

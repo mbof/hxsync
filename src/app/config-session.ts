@@ -465,6 +465,7 @@ export class ConfigSession {
       this._progress.next(v)
     );
     const yaml = new Document();
+    yaml.contents = yaml.createNode([]);
     const config: Config = {};
     for (const module of configModules) {
       module.updateConfig(results, config, yaml);
@@ -472,5 +473,9 @@ export class ConfigSession {
     this.config.next(config);
     this.yaml.next(yaml);
     this._deviceTaskState.next('yaml-edit');
+  }
+
+  cancelYamlEdit() {
+    this._deviceTaskState.next('idle');
   }
 }
