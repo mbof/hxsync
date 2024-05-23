@@ -1,4 +1,3 @@
-import { config } from 'process';
 import { ConfigBatchReader } from './config-batch-reader';
 import { DatConfigProtocol } from './config-protocol';
 

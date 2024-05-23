@@ -11,8 +11,9 @@ import {
 } from './mmsi';
 import { ConfigProtocolInterface, DatConfigProtocol } from './config-protocol';
 import { ConfigBatchReader } from './config-batch-reader';
-import { Document } from 'yaml';
+import { Document, parseDocument, visit, YAMLSeq } from 'yaml';
 import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
+import { ConfigBatchWriter } from './config-batch-writer';
 
 export type Config = {
   mmsi?: string;
@@ -451,6 +452,7 @@ export class ConfigSession {
       );
     }
     this._deviceTaskState.next('yaml-read');
+    this._progress.next(0);
     this.config.next({});
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
@@ -469,6 +471,56 @@ export class ConfigSession {
     this.config.next(config);
     this.yaml.next(yaml);
     this._deviceTaskState.next('yaml-edit');
+  }
+
+  async saveYaml(yamlText: string) {
+    if (this._deviceTaskState.getValue() != 'yaml-edit') {
+      throw new Error(
+        `Can't save Yaml from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('yaml-save');
+    this._progress.next(0);
+    const yaml = parseDocument(yamlText);
+    const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
+      (moduleClass) => new moduleClass(this._deviceConfig!.name)
+    );
+    const configBatchWriter = new ConfigBatchWriter(this._configProtocol);
+    const config: Config = {};
+    try {
+      visit(yaml, {
+        Map(key, node, path) {
+          if (path.length != 2) {
+            // This should not happen as we're skipping all paths of depth > 2.
+            throw new Error(`Error processing node at ${node.range![0]}`);
+          }
+          let handled = false;
+          for (const configModule of configModules) {
+            handled = configModule.maybeVisitYamlNode(
+              node,
+              configBatchWriter,
+              config
+            );
+            if (handled) break;
+          }
+          if (!handled) {
+            throw new Error(
+              `Unknown node ${key} at ${node.range![0]} - ${node.range![1]}`
+            );
+          }
+          return visit.SKIP;
+        }
+      });
+    } catch (e) {
+      this._deviceTaskState.next('yaml-edit');
+      throw e;
+    }
+
+    await configBatchWriter.write((progress: number) => {
+      this._progress.next(progress);
+    });
+
+    this._deviceTaskState.next('idle');
   }
 
   cancelYamlEdit() {

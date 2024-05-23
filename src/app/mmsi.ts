@@ -81,7 +81,13 @@ export class MmsiDirectory {
     public maxGroupMmsis: number
   ) {}
   sort(): void {
+    this.sortIndividual();
+    this.sortGroup();
+  }
+  sortIndividual(): void {
     this.individualMmsis.sort((a, b) => a.name.localeCompare(b.name));
+  }
+  sortGroup(): void {
     this.groupMmsis.sort((a, b) => a.name.localeCompare(b.name));
   }
   toCsv(): string {
@@ -132,30 +138,41 @@ export class MmsiDirectory {
     this.groupMmsis = groupMmsis;
   }
   fillConfig(
-    individualMmsiNames: Uint8Array,
-    individualMmsiNumbers: Uint8Array,
+    individualMmsiNamesData: Uint8Array,
+    individualMmsiNumbersData: Uint8Array,
     groupMmsiNames: Uint8Array,
     groupMmsiNumbers: Uint8Array
   ) {
-    this.sort();
+    this.fillIndividualConfig(
+      individualMmsiNamesData,
+      individualMmsiNumbersData
+    );
+    this.fillGroupConfig(groupMmsiNames, groupMmsiNumbers);
+  }
+  fillIndividualConfig(
+    individualMmsiNamesData: Uint8Array,
+    individualMmsiNumbersData: Uint8Array
+  ) {
+    this.sortIndividual();
     if (this.individualMmsis.length > this.maxIndividualMmsis) {
       throw new Error('Too many MMSIs');
     }
+    individualMmsiNamesData.fill(255);
+    individualMmsiNumbersData.fill(255);
+    for (const [index, mmsi] of this.individualMmsis.entries()) {
+      mmsi.fillConfig(
+        individualMmsiNamesData,
+        individualMmsiNumbersData,
+        index
+      );
+    }
+  }
+  fillGroupConfig(groupMmsiNames: Uint8Array, groupMmsiNumbers: Uint8Array) {
     if (this.groupMmsis.length > this.maxGroupMmsis) {
       throw new Error('Too many group MMSIs');
     }
-    for (const data of [
-      individualMmsiNames,
-      individualMmsiNumbers,
-      groupMmsiNames,
-      groupMmsiNumbers
-    ]) {
-      data.fill(255);
-    }
+    groupMmsiNames.fill(255), groupMmsiNumbers.fill(255);
 
-    for (const [index, mmsi] of this.individualMmsis.entries()) {
-      mmsi.fillConfig(individualMmsiNames, individualMmsiNumbers, index);
-    }
     for (const [index, mmsi] of this.groupMmsis.entries()) {
       mmsi.fillConfig(groupMmsiNames, groupMmsiNumbers, index);
     }

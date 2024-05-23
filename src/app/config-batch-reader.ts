@@ -1,4 +1,3 @@
-import { config } from 'process';
 import { ConfigProtocolInterface } from './config-protocol';
 import { MemoryRangeId } from './config-session';
 

@@ -31,11 +31,10 @@ export class YamlSheetComponent {
   }
   save() {
     if (this.yamlControl.value) {
-      // TODO: save
+      this.configSession.saveYaml(this.yamlControl.value);
     }
   }
   cancel() {
     this.configSession.cancelYamlEdit();
   }
-
 }
