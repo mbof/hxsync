@@ -168,6 +168,7 @@ export class MmsiDirectory {
     }
   }
   fillGroupConfig(groupMmsiNames: Uint8Array, groupMmsiNumbers: Uint8Array) {
+    this.sortGroup();
     if (this.groupMmsis.length > this.maxGroupMmsis) {
       throw new Error('Too many group MMSIs');
     }

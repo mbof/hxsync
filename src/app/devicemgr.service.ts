@@ -36,7 +36,7 @@ export type DeviceConfig = {
   datMagic: Uint8Array;
 };
 
-const DEVICE_CONFIGS: DeviceConfig[] = [
+export const DEVICE_CONFIGS: DeviceConfig[] = [
   {
     name: 'HX890',
     usbFilter: { usbVendorId: 9898, usbProductId: 30 },
