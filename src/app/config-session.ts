@@ -502,7 +502,10 @@ export class ConfigSession {
           throw new Error(`Unexpected pair ${node}`);
         },
         Scalar(key, node, path) {
-          throw new YamlError(`Unexpected scalar ${node.value}`, node.range![0]);
+          throw new YamlError(
+            `Unexpected scalar ${node.value}`,
+            node.range![0]
+          );
         },
         Seq(key, node, path) {
           if (path.length != 1) {
@@ -525,7 +528,8 @@ export class ConfigSession {
           }
           if (!handled) {
             throw new YamlError(
-              `Unknown node ${node.items[0].key}`, node.range![0]
+              `Unknown node ${node.items[0].key}`,
+              node.range![0]
             );
           }
           return visit.SKIP;

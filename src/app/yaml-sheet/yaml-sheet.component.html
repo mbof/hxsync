@@ -2,15 +2,13 @@
   <div class="veil">
     <div class="modal">
       <h2>Yaml Editor</h2>
-        @if (!yamlError) {
-          <div class="info">
-            Edit the radio's configuration as a Yaml file.
-          </div>
-        } @else {
-          <div class="error">
-            {{ yamlError }}
-          </div>
-        }
+      @if (!yamlError) {
+        <div class="info">Edit the radio's configuration as a Yaml file.</div>
+      } @else {
+        <div class="error">
+          {{ yamlError }}
+        </div>
+      }
       <div class="contents">
         <textarea [formControl]="yamlControl"></textarea>
       </div>

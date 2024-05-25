@@ -9,9 +9,8 @@ describe('YamlSheetComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [YamlSheetComponent]
-    })
-    .compileComponents();
-    
+    }).compileComponents();
+
     fixture = TestBed.createComponent(YamlSheetComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

@@ -21,9 +21,7 @@ export class YamlSheetComponent {
   ngOnInit() {
     this.configSession.deviceTaskState$.subscribe((state) => {
       if (state == 'yaml-edit') {
-        this.yamlControl.setValue(
-          this.configSession.yamlText.getValue()
-        );
+        this.yamlControl.setValue(this.configSession.yamlText.getValue());
         this.shown = true;
       } else {
         this.shown = false;
@@ -47,15 +45,18 @@ function offsetToLineAndColumn(data: string, offset: number) {
   var lines = data.split('\n');
   var total_length = 0;
   for (let i = 0; i < lines.length; i++) {
-      if (total_length + lines[i].length + 1 >= offset) {
-          return { line: i + 1, column: offset - total_length + 1};
-      }
-      total_length += lines[i].length + 1
+    if (total_length + lines[i].length + 1 >= offset) {
+      return { line: i + 1, column: offset - total_length + 1 };
+    }
+    total_length += lines[i].length + 1;
   }
   return undefined;
 }
 export class YamlError extends Error {
-  constructor(public msg: string, public location: number) {
+  constructor(
+    public msg: string,
+    public location: number
+  ) {
     super(msg);
   }
   toUserMessage(yamlText: string) {
