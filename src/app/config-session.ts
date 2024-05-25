@@ -14,6 +14,7 @@ import { ConfigBatchReader } from './config-batch-reader';
 import { Document, parseDocument, visit, YAMLSeq } from 'yaml';
 import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 import { ConfigBatchWriter } from './config-batch-writer';
+import { YamlError } from './yaml-sheet/yaml-sheet.component';
 
 export type Config = {
   mmsi?: string;
@@ -64,13 +65,16 @@ export class ConfigSession {
   constructor(private _configProtocol: ConfigProtocolInterface) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
-  yaml: BehaviorSubject<Document> = new BehaviorSubject(new Document());
+  yamlText: BehaviorSubject<string> = new BehaviorSubject('');
 
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
 
   private _progress = new BehaviorSubject<number>(0);
   progress$ = this._progress.asObservable();
+
+  private _yamlError = new BehaviorSubject<string | undefined>(undefined);
+  yamlError$ = this._yamlError.asObservable();
 
   reset(deviceConfig: DeviceConfig, configProtocol: ConfigProtocolInterface) {
     this.config.next({});
@@ -453,6 +457,7 @@ export class ConfigSession {
     }
     this._deviceTaskState.next('yaml-read');
     this._progress.next(0);
+    this._yamlError.next('');
     this.config.next({});
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
@@ -469,7 +474,7 @@ export class ConfigSession {
       module.updateConfig(results, config, yaml)
     );
     this.config.next(config);
-    this.yaml.next(yaml);
+    this.yamlText.next(yaml.toString({}).trim());
     this._deviceTaskState.next('yaml-edit');
   }
 
@@ -480,6 +485,7 @@ export class ConfigSession {
       );
     }
     this._deviceTaskState.next('yaml-save');
+    this.yamlText.next(yamlText);
     this._progress.next(0);
     const yaml = parseDocument(yamlText);
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
@@ -489,10 +495,24 @@ export class ConfigSession {
     const config: Config = {};
     try {
       visit(yaml, {
+        Alias(key, node, path) {
+          throw new YamlError(`Unexpected alias`, node.range![0]);
+        },
+        Pair(key, node, path) {
+          throw new Error(`Unexpected pair ${node}`);
+        },
+        Scalar(key, node, path) {
+          throw new YamlError(`Unexpected scalar ${node.value}`, node.range![0]);
+        },
+        Seq(key, node, path) {
+          if (path.length != 1) {
+            throw new YamlError(`Unexpected sequence`, node.range![0]);
+          }
+        },
         Map(key, node, path) {
           if (path.length != 2) {
             // This should not happen as we're skipping all paths of depth > 2.
-            throw new Error(`Error processing node at ${node.range![0]}`);
+            throw new YamlError(`Error processing ${node}`, node.range![0]);
           }
           let handled = false;
           for (const configModule of configModules) {
@@ -504,8 +524,8 @@ export class ConfigSession {
             if (handled) break;
           }
           if (!handled) {
-            throw new Error(
-              `Unknown node ${key} at ${node.range![0]} - ${node.range![1]}`
+            throw new YamlError(
+              `Unknown node ${node.items[0].key}`, node.range![0]
             );
           }
           return visit.SKIP;
@@ -513,7 +533,12 @@ export class ConfigSession {
       });
     } catch (e) {
       this._deviceTaskState.next('yaml-edit');
-      throw e;
+      if (e instanceof YamlError) {
+        this._yamlError.next(e.toUserMessage(yamlText));
+      } else {
+        this._yamlError.next(e!.toString());
+      }
+      return;
     }
 
     await configBatchWriter.write((progress: number) => {

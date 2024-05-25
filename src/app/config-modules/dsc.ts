@@ -10,6 +10,7 @@ import {
 } from '../mmsi';
 import { ConfigModuleInterface } from './config-module-interface';
 import { ConfigBatchWriter } from '../config-batch-writer';
+import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 
 type DscDeviceConfig = {
   name: DeviceModel;
@@ -104,7 +105,7 @@ export class DscConfig implements ConfigModuleInterface {
             return new Mmsi(name, mmsi);
           }
         }
-        throw new Error(`Unknown node type at ${node.range[0]}`);
+        throw new YamlError(`Unknown node type`, node.range[0]);
       });
       const individualMmsiNamesData = new Uint8Array(
         this.individualMmsiNamesSize
