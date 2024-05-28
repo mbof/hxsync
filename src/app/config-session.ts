@@ -45,7 +45,9 @@ export type MemoryRangeId =
   | 'individual_mmsi_names'
   | 'individual_mmsi_numbers'
   | 'group_mmsi_names'
-  | 'group_mmsi_numbers';
+  | 'group_mmsi_numbers'
+  | 'waypoints'
+  | 'routes';
 
 /*
  * State machine transitions:
@@ -493,6 +495,7 @@ export class ConfigSession {
     );
     const configBatchWriter = new ConfigBatchWriter(this._configProtocol);
     const config: Config = {};
+    const previousConfig = this.config.getValue();
     try {
       visit(yaml, {
         Alias(key, node, path) {
@@ -522,7 +525,8 @@ export class ConfigSession {
             handled = configModule.maybeVisitYamlNode(
               node,
               configBatchWriter,
-              config
+              config,
+              previousConfig
             );
             if (handled) break;
           }

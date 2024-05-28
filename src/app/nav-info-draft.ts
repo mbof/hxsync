@@ -168,22 +168,12 @@ export class NavInfoDraft {
   }
 
   getBinaryWaypointData(wpBaseAddress: number): Uint8Array {
-    // Sort waypoints alphabetically
-    this.waypoints.sort((wpA, wpB) => wpA.wp.name.localeCompare(wpB.wp.name));
-    // Reassign addresses from the top
-    let address = wpBaseAddress;
-    for (let wp of this.waypoints) {
-      wp.wp.address = address;
-      address += WAYPOINTS_BYTE_SIZE;
-    }
     // Prepare all waypoint data
     const wpData = new Uint8Array(
       WAYPOINTS_BYTE_SIZE * this.deviceConfig.waypointsNumber
     );
     wpData.fill(255);
-    for (const wp of this.waypoints) {
-      wp.fillConfig(wpData, wpBaseAddress);
-    }
+    fillWaypointData(this.waypoints, wpBaseAddress, wpData);
     return wpData;
   }
 
@@ -206,5 +196,22 @@ export class NavInfoDraft {
       );
     }
     return routeData;
+  }
+}
+
+export function fillWaypointData(
+  waypoints: Waypoint[],
+  wpBaseAddress: number,
+  wpData: Uint8Array
+) {
+  waypoints.sort((wpA, wpB) => wpA.wp.name.localeCompare(wpB.wp.name));
+  // Reassign addresses from the top
+  let address = wpBaseAddress;
+  for (let wp of waypoints) {
+    wp.wp.address = address;
+    address += WAYPOINTS_BYTE_SIZE;
+  }
+  for (const wp of waypoints) {
+    wp.fillConfig(wpData, wpBaseAddress);
   }
 }

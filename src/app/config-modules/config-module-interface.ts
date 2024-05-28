@@ -12,7 +12,8 @@ export interface ConfigModuleInterface {
   maybeVisitYamlNode(
     node: YAMLMap,
     configBatchWriter: ConfigBatchWriter,
-    config: Config
+    configOut: Config,
+    previousConfig: Config
   ): boolean;
   addRangesToRead(configBatchReader: ConfigBatchReader): void;
   updateConfig(
