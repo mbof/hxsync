@@ -3,7 +3,9 @@
   state == 'nav-read' ||
   state == 'nav-save' ||
   state == 'mmsi-read' ||
-  state == 'mmsi-save'
+  state == 'mmsi-save' ||
+  state == 'yaml-read' ||
+  state == 'yaml-save'
 ) {
   <div class="veil">
     <div class="modal">
@@ -18,6 +20,10 @@
           Reading MMSI directory ({{ progressPct }}%)
         } @else if (state == 'mmsi-save') {
           Saving MMSI directory ({{ progressPct }}%)
+        } @else if (state == 'yaml-read') {
+          Reading for Yaml edit ({{ progressPct }}%)
+        } @else if (state == 'yaml-save') {
+          Saving Yaml configuration ({{ progressPct }}%)
         }
       </div>
       <div class="spinner"></div>

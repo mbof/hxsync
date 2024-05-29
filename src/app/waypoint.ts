@@ -24,18 +24,24 @@ export class Waypoint {
       return wpStr;
     }
   }
-  getLat() {
+  getLat(compact?: boolean) {
     const lat_min_int = Math.floor(this.wp.lat_min / 10000)
       .toString(10)
       .padStart(2, '0');
     const lat_min_flt = (this.wp.lat_min % 10000).toString(10).padStart(4, '0');
+    if (compact) {
+      return `${this.wp.lat_deg}${this.wp.lat_dir}${lat_min_int}.${lat_min_flt}`;
+    }
     return `${this.wp.lat_deg}° ${lat_min_int}.${lat_min_flt}’ ${this.wp.lat_dir}`;
   }
-  getLon() {
+  getLon(compact?: boolean) {
     const lon_min_int = Math.floor(this.wp.lon_min / 10000)
       .toString(10)
       .padStart(2, '0');
     const lon_min_flt = (this.wp.lon_min % 10000).toString(10).padStart(4, '0');
+    if (compact) {
+      return `${this.wp.lon_deg}${this.wp.lon_dir}${lon_min_int}.${lon_min_flt}`;
+    }
     return `${this.wp.lon_deg}° ${lon_min_int}.${lon_min_flt}’ ${this.wp.lon_dir}`;
   }
   getMapLink() {

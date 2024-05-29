@@ -1,6 +1,6 @@
-import { BehaviorSubject, max, range } from 'rxjs';
-import { DeviceConfig, DevicemgrService } from './devicemgr.service';
-import { Message, hex, hexarr, unhex } from './message';
+import { BehaviorSubject } from 'rxjs';
+import { DeviceConfig } from './devicemgr.service';
+import { unhex } from './message';
 import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
 import { NavInfoDraft } from './nav-info-draft';
 import { routeFromConfig } from './route';
@@ -9,11 +9,12 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-import {
-  ConfigProtocol,
-  ConfigProtocolInterface,
-  DatConfigProtocol
-} from './config-protocol';
+import { ConfigProtocolInterface, DatConfigProtocol } from './config-protocol';
+import { ConfigBatchReader } from './config-batch-reader';
+import { Document, parseDocument, visit, YAMLSeq } from 'yaml';
+import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
+import { ConfigBatchWriter } from './config-batch-writer';
+import { YamlError } from './yaml-sheet/yaml-sheet.component';
 
 export type Config = {
   mmsi?: string;
@@ -24,6 +25,9 @@ export type Config = {
   mmsiDirectory?: MmsiDirectory;
 };
 
+// TODO: refactor this into
+// a distinct class for each of nav / mmsi / yaml
+// and an orthogonal read / edit / save state
 export type DeviceTaskState =
   | 'idle'
   | 'gpslog-read'
@@ -32,7 +36,18 @@ export type DeviceTaskState =
   | 'nav-save'
   | 'mmsi-read'
   | 'mmsi-edit'
-  | 'mmsi-save';
+  | 'mmsi-save'
+  | 'yaml-read'
+  | 'yaml-edit'
+  | 'yaml-save';
+
+export type MemoryRangeId =
+  | 'individual_mmsi_names'
+  | 'individual_mmsi_numbers'
+  | 'group_mmsi_names'
+  | 'group_mmsi_numbers'
+  | 'waypoints'
+  | 'routes';
 
 /*
  * State machine transitions:
@@ -42,6 +57,9 @@ export type DeviceTaskState =
  * nav-edit --cancelNavInfoDraft()--> idle
  * idle --readMmsiDirectory()--> mmsi-read --(wait)--> mmsi-edit (success) / idle (error)
  * mmsi-edit --writeMmsiDirectory()--> mmsi-save --(wait)--> idle
+ * idle --startYamlEdit()--> yaml-read --(wait)--> yaml-edit (success) / idle (error)
+ * yaml-edit --writeYamlEdit()--> yaml-save --(wait)--> idle
+ * yaml-edit --cancelYamlEdit()--> idle
  */
 
 export class ConfigSession {
@@ -49,6 +67,7 @@ export class ConfigSession {
   constructor(private _configProtocol: ConfigProtocolInterface) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
+  yamlText: BehaviorSubject<string> = new BehaviorSubject('');
 
   private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
@@ -56,11 +75,19 @@ export class ConfigSession {
   private _progress = new BehaviorSubject<number>(0);
   progress$ = this._progress.asObservable();
 
+  private _yamlError = new BehaviorSubject<string | undefined>(undefined);
+  yamlError$ = this._yamlError.asObservable();
+
   reset(deviceConfig: DeviceConfig, configProtocol: ConfigProtocolInterface) {
     this.config.next({});
     this._deviceTaskState.next('idle');
     this._configProtocol = configProtocol;
     this._deviceConfig = deviceConfig;
+  }
+
+  disconnect() {
+    this.config.next({});
+    this._deviceTaskState.next('idle');
   }
 
   // Used to refresh config after in-place changes to drafts
@@ -427,5 +454,114 @@ export class ConfigSession {
       return this._configProtocol.datImage;
     }
     throw new Error('DAT is only available in this configuration.');
+  }
+
+  async startYaml() {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't start Yaml from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('yaml-read');
+    this._progress.next(0);
+    this._yamlError.next('');
+    this.config.next({});
+    const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
+      (moduleClass) => new moduleClass(this._deviceConfig!.name)
+    );
+    const batchReader = new ConfigBatchReader(this._configProtocol);
+    configModules.forEach((module) => module.addRangesToRead(batchReader));
+    const results = await batchReader.read((v: number) =>
+      this._progress.next(v)
+    );
+    const yaml = new Document();
+    yaml.contents = yaml.createNode([]);
+    const config: Config = {};
+    configModules.forEach((module) =>
+      module.updateConfig(results, config, yaml)
+    );
+    this.config.next(config);
+    this.yamlText.next(yaml.toString({}).trim());
+    this._deviceTaskState.next('yaml-edit');
+  }
+
+  async saveYaml(yamlText: string) {
+    if (this._deviceTaskState.getValue() != 'yaml-edit') {
+      throw new Error(
+        `Can't save Yaml from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('yaml-save');
+    this.yamlText.next(yamlText);
+    this._progress.next(0);
+    const yaml = parseDocument(yamlText);
+    const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
+      (moduleClass) => new moduleClass(this._deviceConfig!.name)
+    );
+    const configBatchWriter = new ConfigBatchWriter(this._configProtocol);
+    const config: Config = {};
+    const previousConfig = this.config.getValue();
+    try {
+      visit(yaml, {
+        Alias(key, node, path) {
+          throw new YamlError(`Unexpected alias`, node.range![0]);
+        },
+        Pair(key, node, path) {
+          throw new Error(`Unexpected pair ${node}`);
+        },
+        Scalar(key, node, path) {
+          throw new YamlError(
+            `Unexpected scalar ${node.value}`,
+            node.range![0]
+          );
+        },
+        Seq(key, node, path) {
+          if (path.length != 1) {
+            throw new YamlError(`Unexpected sequence`, node.range![0]);
+          }
+        },
+        Map(key, node, path) {
+          if (path.length != 2) {
+            // This should not happen as we're skipping all paths of depth > 2.
+            throw new YamlError(`Error processing ${node}`, node.range![0]);
+          }
+          let handled = false;
+          for (const configModule of configModules) {
+            handled = configModule.maybeVisitYamlNode(
+              node,
+              configBatchWriter,
+              config,
+              previousConfig
+            );
+            if (handled) break;
+          }
+          if (!handled) {
+            throw new YamlError(
+              `Unknown node ${node.items[0].key}`,
+              node.range![0]
+            );
+          }
+          return visit.SKIP;
+        }
+      });
+    } catch (e) {
+      this._deviceTaskState.next('yaml-edit');
+      if (e instanceof YamlError) {
+        this._yamlError.next(e.toUserMessage(yamlText));
+      } else {
+        this._yamlError.next(e!.toString());
+      }
+      return;
+    }
+
+    await configBatchWriter.write((progress: number) => {
+      this._progress.next(progress);
+    });
+
+    this._deviceTaskState.next('idle');
+  }
+
+  cancelYamlEdit() {
+    this._deviceTaskState.next('idle');
   }
 }

@@ -3,10 +3,12 @@
 This project is an Angular web application that connects to the Standard Horizon
 HX870 and HX890 portable VHF radios. It has the following features:
 
-- Reading and editing waypoints
+- Reading and editing waypoints and routes
 - Reading and editing MMSI directories for DSC
 - Downloading the GPS log from the device as a GPX file
 - Loading and saving DAT files on the computer
+
+Editing can be done in a UI or using a [YAML file](yaml.md).
 
 It is very incomplete, and could break your device. **Use at your own risk!**
 

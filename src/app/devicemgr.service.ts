@@ -12,8 +12,10 @@ export enum DeviceMode {
   NMEA = 2
 }
 
+export type DeviceModel = 'HX890' | 'HX870';
+
 export type DeviceConfig = {
-  name: string;
+  name: DeviceModel;
   usbFilter: {
     usbVendorId: number;
     usbProductId: number;
@@ -34,7 +36,7 @@ export type DeviceConfig = {
   datMagic: Uint8Array;
 };
 
-const DEVICE_CONFIGS: DeviceConfig[] = [
+export const DEVICE_CONFIGS: DeviceConfig[] = [
   {
     name: 'HX890',
     usbFilter: { usbVendorId: 9898, usbProductId: 30 },
@@ -172,6 +174,7 @@ export class DevicemgrService {
       this.port = undefined;
       console.error(`Error while disconnecting: ${e}`);
     }
+    this.configSession.disconnect();
     this._connectionState.next('disconnected');
   }
 
