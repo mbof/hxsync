@@ -141,7 +141,6 @@ function parseYamlWaypoint(waypoint: any): Waypoint {
       waypoint.range![0]
     );
   }
-  wptName = wptName.trim();
   if (wptName.length > 15) {
     throw new YamlError(
       `Waypoint name too long "${wptName}"`,
