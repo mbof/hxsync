@@ -13,7 +13,7 @@ export class ConfigBatchWriter {
     let previousOffsets = 0;
     for (const [_, [offset, data]] of this.data) {
       await this.configProtocol.writeConfigMemory(data, offset, (progress) => {
-        progressCallback((previousOffsets + offset) / totalSize);
+        progressCallback((previousOffsets + progress) / totalSize);
       });
       previousOffsets += data.length;
     }
