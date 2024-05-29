@@ -1,6 +1,7 @@
 import { __values } from 'tslib';
 import { hexarr, unhexInto } from './message';
 import { parse } from 'csv-parse/sync';
+import { fillPaddedString, readPaddedString } from './util';
 
 export function validateMmsi(name: string, number: string) {
   if (!number.match(/^G?[0-9]{9}$/)) {
@@ -11,9 +12,6 @@ export function validateMmsi(name: string, number: string) {
   }
   return;
 }
-
-const decoder = new TextDecoder();
-const encoder = new TextEncoder();
 
 export const MMSI_NAME_BYTE_SIZE = 16;
 
@@ -38,8 +36,7 @@ export class Mmsi {
       nameOffset,
       nameOffset + MMSI_NAME_BYTE_SIZE
     );
-    destName.fill(255);
-    encoder.encodeInto(this.name!, destName);
+    fillPaddedString(destName, this.name!);
     // Number layout: every 5 bytes, with a padding byte every 3 numbers
     const numberOffset = numberOffsetFromIndex(index);
     unhexInto(this.number + '0', destNumbers!.subarray(numberOffset));
@@ -58,12 +55,7 @@ function decodeMmsi(
   nameData: Uint8Array,
   numberData: Uint8Array
 ): Mmsi | undefined {
-  for (
-    var lastChar = MMSI_NAME_BYTE_SIZE - 1;
-    lastChar >= 0 && [0, 255, 32].includes(nameData[lastChar]);
-    lastChar -= 1
-  );
-  const name = decoder.decode(nameData.subarray(0, lastChar + 1));
+  const name = readPaddedString(nameData.subarray(0, MMSI_NAME_BYTE_SIZE));
   const number = hexarr(numberData.subarray(0, 5)).slice(0, 9);
   try {
     validateMmsi(name, number);

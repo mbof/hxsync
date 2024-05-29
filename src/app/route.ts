@@ -1,10 +1,9 @@
+import { fillPaddedString, readPaddedString } from './util';
+
 export type RouteData = {
   name: string;
   waypointIds: number[];
 };
-
-const decoder = new TextDecoder();
-const encoder = new TextEncoder();
 
 export class Route {
   public route: RouteData;
@@ -28,9 +27,7 @@ export class Route {
       console.log(`Route name too long ${name}, truncating`);
       name = name.substring(0, 15);
     }
-    const destName = dest.subarray(offset, offset + 16);
-    const { written: nameByteLength } = encoder.encodeInto(name, destName);
-    destName.fill(255, nameByteLength, 16);
+    fillPaddedString(dest.subarray(offset, offset + 16), name);
     let waypointsId = this.route.waypointIds;
     if (waypointsId.length > maxWaypointsPerRoute) {
       console.log(
@@ -50,12 +47,7 @@ export function routeFromConfig(
   routeData: Uint8Array,
   maxWaypointsPerRoute: number
 ): Route | undefined {
-  for (
-    var lastChar = 15;
-    lastChar >= 0 && [0, 255, 32].includes(routeData[lastChar]);
-    lastChar -= 1
-  );
-  const name = decoder.decode(routeData.slice(0, lastChar + 1));
+  const name = readPaddedString(routeData.subarray(0, 16));
   for (
     var lastWaypoint = maxWaypointsPerRoute - 1;
     lastWaypoint >= 0 && routeData[16 + lastWaypoint] == 255;

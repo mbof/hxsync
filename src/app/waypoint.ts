@@ -1,5 +1,6 @@
-import { hex, hexarr, unhex, unhexInto } from './message';
+import { hex, hexarr, unhexInto } from './message';
 import { parseLat, parseLon } from './parseLatLon';
+import { fillPaddedString, readPaddedString } from './util';
 
 export type WaypointData = {
   id: number;
@@ -75,9 +76,7 @@ export class Waypoint {
       destWaypoint.set([0xff, 0xff, 0xff, 0xff, 0xf0]);
     }
     destWaypoint[31] = this.wp.id;
-    const destName = destWaypoint.subarray(16, 31);
-    const { written: nameByteLength } = encoder.encodeInto(name, destName);
-    destName.fill(255, nameByteLength, 15);
+    fillPaddedString(destWaypoint.subarray(16, 31), name);
     const destLat = destWaypoint.subarray(5, 9);
     let lat_hex = this.wp.lat_deg.toString(10).padStart(2, '0');
     lat_hex += this.wp.lat_min.toString(10).padStart(6, '0');
@@ -98,7 +97,6 @@ export class Waypoint {
 }
 
 const decoder = new TextDecoder();
-const encoder = new TextEncoder();
 
 export function waypointFromConfig(
   wpData: Uint8Array,
@@ -108,12 +106,7 @@ export function waypointFromConfig(
   if (id == 255) {
     return;
   }
-  for (
-    var lastChar = 30;
-    lastChar >= 16 && [0, 255, 32].includes(wpData[lastChar]);
-    lastChar -= 1
-  );
-  let name = decoder.decode(wpData.slice(16, lastChar + 1));
+  const name = readPaddedString(wpData.subarray(16, 31));
   let lat_str = hexarr(wpData.slice(5, 9));
   let lat_deg = Number(lat_str.slice(0, 2));
   let lat_min = Number(lat_str.slice(2, 9));
