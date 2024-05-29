@@ -174,6 +174,7 @@ export class DevicemgrService {
       this.port = undefined;
       console.error(`Error while disconnecting: ${e}`);
     }
+    this.configSession.disconnect();
     this._connectionState.next('disconnected');
   }
 

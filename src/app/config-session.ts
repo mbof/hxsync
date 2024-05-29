@@ -85,6 +85,11 @@ export class ConfigSession {
     this._deviceConfig = deviceConfig;
   }
 
+  disconnect() {
+    this.config.next({});
+    this._deviceTaskState.next('idle');
+  }
+
   // Used to refresh config after in-place changes to drafts
   private noopConfigCallback() {
     return () => this.config.next(this.config.getValue());
