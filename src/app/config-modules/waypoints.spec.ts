@@ -5,7 +5,7 @@ import { DatConfigProtocol } from '../config-protocol';
 import { createMockDat } from '../devicemgr.service.spec';
 import { WaypointConfig } from './waypoints';
 import { Config } from '../config-session';
-import { hexarr, unhex } from '../message';
+import { unhex } from '../message';
 
 const WAYPOINTS_DIR_YAML = `
 - waypoints:
