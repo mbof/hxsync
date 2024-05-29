@@ -9,9 +9,13 @@ import {
   MMSI_NAME_BYTE_SIZE,
   numberOffsetFromIndex
 } from './mmsi';
-import { ConfigProtocolInterface, DatConfigProtocol } from './config-protocol';
+import {
+  ConfigProtocol,
+  ConfigProtocolInterface,
+  DatConfigProtocol
+} from './config-protocol';
 import { ConfigBatchReader } from './config-batch-reader';
-import { Document, parseDocument, visit, YAMLSeq } from 'yaml';
+import { Document, parseDocument, visit } from 'yaml';
 import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
@@ -39,7 +43,9 @@ export type DeviceTaskState =
   | 'mmsi-save'
   | 'yaml-read'
   | 'yaml-edit'
-  | 'yaml-save';
+  | 'yaml-save'
+  | 'dat-read'
+  | 'dat-restore';
 
 export type MemoryRangeId =
   | 'individual_mmsi_names'
@@ -60,6 +66,8 @@ export type MemoryRangeId =
  * idle --startYamlEdit()--> yaml-read --(wait)--> yaml-edit (success) / idle (error)
  * yaml-edit --writeYamlEdit()--> yaml-save --(wait)--> idle
  * yaml-edit --cancelYamlEdit()--> idle
+ * idle --readDat()--> dat-read --(wait)--> idle
+ * idle --restoreDat()--> dat-restore --(wait)--> idle
  */
 
 export class ConfigSession {
@@ -449,12 +457,6 @@ export class ConfigSession {
     this.config.next({ ...this.config.getValue(), gpslog: gpslog });
     this._deviceTaskState.next('idle');
   }
-  getDat(): Uint8Array {
-    if (this._configProtocol instanceof DatConfigProtocol) {
-      return this._configProtocol.datImage;
-    }
-    throw new Error('DAT is only available in this configuration.');
-  }
 
   async startYaml() {
     if (this._deviceTaskState.getValue() != 'idle') {
@@ -562,6 +564,61 @@ export class ConfigSession {
   }
 
   cancelYamlEdit() {
+    this._deviceTaskState.next('idle');
+  }
+
+  async readDat(): Promise<Uint8Array> {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't start reading Dat from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    let dat: Uint8Array;
+    if (this._configProtocol instanceof DatConfigProtocol) {
+      dat = this._configProtocol.datImage;
+    } else {
+      if (!this._deviceConfig) {
+        throw new Error('No device config');
+      }
+      const deviceConfig = this._deviceConfig;
+      this._deviceTaskState.next('dat-read');
+      this._progress.next(0);
+      dat = await this._configProtocol.readConfigMemory(
+        0,
+        deviceConfig.datLength,
+        (progress) => this._progress.next(progress / deviceConfig.datLength)
+      );
+    }
+    this._deviceTaskState.next('idle');
+    return dat;
+  }
+
+  async restoreDat(dat: Uint8Array): Promise<void> {
+    if (this._deviceTaskState.getValue() != 'idle') {
+      throw new Error(
+        `Can't restore DAT from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    if (!(this._configProtocol instanceof ConfigProtocol)) {
+      throw new Error(`Can't restore DAT file to a DAT file.`);
+    }
+    if (!this._deviceConfig) {
+      throw new Error('Missing device config.');
+    }
+    const deviceConfig = this._deviceConfig;
+    if (dat.length != deviceConfig.datLength) {
+      throw new Error(
+        `DAT file does not have the expected size (expected ${deviceConfig.datLength}, found ${dat.length})`
+      );
+    }
+    if (!deviceConfig.datMagic.every((value, index) => dat[index] == value)) {
+      throw new Error(`DAT file does not have the expected magic`);
+    }
+    this._progress.next(0);
+    this._deviceTaskState.next('dat-restore');
+    await this._configProtocol.writeConfigMemory(dat, 0, (offset) =>
+      this._progress.next(offset / deviceConfig.datLength)
+    );
     this._deviceTaskState.next('idle');
   }
 }

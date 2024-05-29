@@ -54,3 +54,7 @@
   align-items: center;
   justify-content: center;
 }
+
+.connected-buttons {
+  flex-flow: wrap;
+}

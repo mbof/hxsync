@@ -5,7 +5,9 @@
   state == 'mmsi-read' ||
   state == 'mmsi-save' ||
   state == 'yaml-read' ||
-  state == 'yaml-save'
+  state == 'yaml-save' ||
+  state == 'dat-read' ||
+  state == 'dat-restore'
 ) {
   <div class="veil">
     <div class="modal">
@@ -21,9 +23,13 @@
         } @else if (state == 'mmsi-save') {
           Saving MMSI directory ({{ progressPct }}%)
         } @else if (state == 'yaml-read') {
-          Reading for Yaml edit ({{ progressPct }}%)
+          Reading for YAML edit ({{ progressPct }}%)
         } @else if (state == 'yaml-save') {
-          Saving Yaml configuration ({{ progressPct }}%)
+          Saving YAML configuration ({{ progressPct }}%)
+        } @else if (state == 'dat-read') {
+          Reading DAT configuration ({{ progressPct }}%)
+        } @else if (state == 'dat-restore') {
+          Restoring DAT configuration ({{ progressPct }}%)
         }
       </div>
       <div class="spinner"></div>

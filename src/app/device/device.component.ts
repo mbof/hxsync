@@ -2,7 +2,7 @@
 
 import { Component, ViewChild } from '@angular/core';
 import { DeviceConnectionState, DevicemgrService } from '../devicemgr.service';
-import { BehaviorSubject, Observable, Subscription } from 'rxjs';
+import { BehaviorSubject, Subscription } from 'rxjs';
 import { hex } from '../message';
 import { Config, DeviceTaskState } from '../config-session';
 import { saveAs } from 'file-saver';
@@ -115,7 +115,16 @@ export class DeviceComponent {
   }
 
   async saveDat() {
-    const handle = await window.showSaveFilePicker({
+    const dat = await this.deviceMgr.configSession.readDat();
+    const file = new Blob([dat], {
+      type: 'application/octet-stream'
+    });
+    saveAs(file, `hx.dat`);
+  }
+
+  async restoreDat() {
+    const [handle] = await window.showOpenFilePicker({
+      multiple: false,
       types: [
         {
           description: 'DAT files',
@@ -125,9 +134,13 @@ export class DeviceComponent {
         }
       ]
     });
-    const out = await handle.createWritable();
-    await out.write(this.deviceMgr.configSession.getDat());
-    await out.close();
+    try {
+      const f = await handle.getFile();
+      const dat = new Uint8Array(await f.arrayBuffer());
+      await this.deviceMgr.configSession.restoreDat(dat);
+    } catch (e) {
+      window.alert(e);
+    }
   }
 
   hex = hex;
