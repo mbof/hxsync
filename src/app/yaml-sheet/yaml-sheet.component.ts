@@ -2,6 +2,8 @@ import { Component } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfigSession } from '../config-session';
 import { DevicemgrService } from '../devicemgr.service';
+import { HttpParams } from '@angular/common/http';
+import { Router, UrlSegment } from '@angular/router';
 
 @Component({
   selector: 'yaml-sheet',
@@ -15,6 +17,7 @@ export class YamlSheetComponent {
   configSession: ConfigSession;
   yamlControl = new FormControl('Uninitialized');
   yamlError: string | undefined;
+  clipboardConfirmation: any;
   constructor(deviceMgr: DevicemgrService) {
     this.configSession = deviceMgr.configSession;
   }
@@ -38,6 +41,24 @@ export class YamlSheetComponent {
   }
   cancel() {
     this.configSession.cancelYamlEdit();
+  }
+  async share() {
+    if (!this.yamlControl.value) {
+      return;
+    }
+    const sharedUrl =
+      window.location.href.split('#')[0] +
+      '#/share#' +
+      encodeURIComponent(this.yamlControl.value);
+    await navigator.clipboard.write([
+      new ClipboardItem({
+        'text/plain': new Blob([sharedUrl], { type: 'text/plain' }),
+        'text/html': new Blob([`<a href="${sharedUrl}">Configuration</a>`], {
+          type: 'text/html'
+        })
+      })
+    ]);
+    this.clipboardConfirmation = 'Copied to clipboard!';
   }
 }
 

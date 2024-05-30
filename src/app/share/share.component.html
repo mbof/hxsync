@@ -1,0 +1,26 @@
+<div>
+  A configuration for HX870 or HX890 radio has been shared with you.
+  <div class="yaml-preview">
+    <pre id="yaml-content">{{ yaml }}</pre>
+  </div>
+  <div class="warning">
+    Warning! This will overwrite data on your device. Review the configuration before proceeding.
+  </div>
+  <div class="controls">
+    <div class="instructions">
+      To apply this configuration to a HX870 or HX890 radio:
+      <ol>
+        <li>Connect your radio with a USB cable</li>
+        <li>Power the device off</li>
+        <li>Press and hold the Menu key</li>
+        <li>While holding the Menu key, press the power button</li>
+        <li>Release both keys when the screen lights up</li>
+        <li>Click Apply</li>
+      </ol>
+    </div>
+    <div class="buttons">
+      <button (click)="apply()">Apply</button>
+      <div class="status">{{ getStatus() }}</div>
+    </div>
+  </div>
+</div>

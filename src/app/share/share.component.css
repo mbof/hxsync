@@ -1,0 +1,37 @@
+.yaml-preview {
+  background: #eee;
+  border: solid 1px #777;
+  margin: 0.5em 0;
+  padding: 0.5em;
+  max-height: 150px;
+  overflow: scroll;
+}
+
+.yaml-preview pre {
+  margin: 0;
+}
+
+.controls {
+  display: flex;
+}
+
+.instructions {
+  width: 70%;
+}
+
+.buttons {
+  width: 30%;
+  align-self: center;
+  text-align: center;
+}
+
+.status {
+  font-size: 14px;
+}
+
+.warning {
+  font-size: 16px;
+  background-color: lightyellow;
+  text-align: center;
+  margin: 0.5em 0;
+}
