@@ -87,12 +87,6 @@ describe('WaypointConfig', () => {
     config.waypoints![0].wp.id = 0xaa;
 
     expect(yaml.toString()).toBe(`
-# Waypoints. Example:
-# - waypoints
-#     # Coordinates in degrees and decimal minutes
-#     - Marina: 33N57.8490 118W27.8290
-#     # Coordinates in decimal degrees
-#     - Marina: 33.84905 -118.27829
 - waypoints:
     - Avalon: 33N20.7200 118W19.4170
     - Marina: 33N50.9430 118W16.6974

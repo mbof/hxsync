@@ -9,7 +9,6 @@ import { hexarr, unhex } from '../message';
 import { ChannelGroup, ChannelGroupData } from '../channel-group';
 
 const CHANNEL_GROUPS_YAML = `
-# Channel groups
 - channel_groups:
     - USA:
         enable: true
@@ -29,7 +28,6 @@ const CHANNEL_GROUPS_YAML = `
 `;
 
 const CHANNEL_GROUPS_YAML_NO_OPTIONS = `
-# Channel groups
 - channel_groups:
     - USA:
         enable: true

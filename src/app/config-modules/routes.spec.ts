@@ -6,7 +6,7 @@ import { createMockDat } from '../devicemgr.service.spec';
 import { Config } from '../config-session';
 import { unhex } from '../message';
 import { RouteConfig } from './routes';
-import { Waypoint, WaypointData } from '../waypoint';
+import { Waypoint } from '../waypoint';
 
 const waypoints: Waypoint[] = [
   {
@@ -125,8 +125,6 @@ describe('RoutesConfig', () => {
     routeConfigModule.updateConfig(results, config, yaml);
 
     expect(yaml.toString()).toBe(`
-# Routes. Each route is a list of waypoints, from first to last.
-# This section must come after waypoints.
 - routes:
     - Route A:
         - Alpha

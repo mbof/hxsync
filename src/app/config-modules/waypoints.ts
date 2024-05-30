@@ -110,13 +110,6 @@ export class WaypointConfig implements ConfigModuleInterface {
       [wp.wp.name]: `${wp.getLat(true)} ${wp.getLon(true)}`
     }));
     const waypointsNode = yaml.createNode({ waypoints: waypointDirectory });
-    waypointsNode.commentBefore = `
- Waypoints. Example:
- - waypoints
-     # Coordinates in degrees and decimal minutes
-     - Marina: 33N57.8490 118W27.8290
-     # Coordinates in decimal degrees
-     - Marina: 33.84905 -118.27829`;
     waypointsNode.spaceBefore = true;
     yaml.add(waypointsNode);
   }

@@ -131,9 +131,6 @@ export class RouteConfig implements ConfigModuleInterface {
     }));
     const routesNode = yaml.createNode({ routes: routeDirectory });
     routesNode.spaceBefore = true;
-    routesNode.commentBefore = `
- Routes. Each route is a list of waypoints, from first to last.
- This section must come after waypoints.`;
     yaml.add(routesNode);
   }
 }

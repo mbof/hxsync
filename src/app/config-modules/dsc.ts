@@ -230,12 +230,6 @@ export class DscConfig implements ConfigModuleInterface {
       [mmsi.name]: mmsi.number
     }));
     const dsc = yaml.createNode({ dsc_directory });
-    dsc.commentBefore =
-      ' DSC directory for individual calls. Wrap MMSIs in quotes.\n' +
-      ' Example:\n' +
-      ' - dsc_directory:\n' +
-      '     - Alpha: "123456789"\n' +
-      '     - Bravo: "987654321"';
     dsc.spaceBefore = true;
     yaml.add(dsc);
 
@@ -243,12 +237,6 @@ export class DscConfig implements ConfigModuleInterface {
       [mmsi.name]: mmsi.number
     }));
     const group = yaml.createNode({ group_directory });
-    group.commentBefore =
-      ' DSC directory for group calls. Wrap MMSIs in quotes.\n' +
-      ' Example:\n' +
-      ' - group_directory:\n' +
-      '     - Golf: "012345678"\n' +
-      '     - Foxtrot: "098765432"';
     group.spaceBefore = true;
     yaml.add(group);
   }

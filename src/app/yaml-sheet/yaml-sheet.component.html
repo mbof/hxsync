@@ -3,7 +3,14 @@
     <div class="modal">
       <h2>Yaml Editor</h2>
       @if (!yamlError) {
-        <div class="info">Edit the radio's configuration as a Yaml file.</div>
+        <div class="info">
+          Edit the radio's configuration as a YAML file.
+          <a
+            href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+            target="_blank"
+            >Documentation</a
+          >
+        </div>
       } @else {
         <div class="error">
           {{ yamlError }}

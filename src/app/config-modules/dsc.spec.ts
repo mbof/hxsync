@@ -136,22 +136,12 @@ describe('DscConfig', () => {
     const config: Config = {};
     dscConfigModule.updateConfig(results, config, yaml);
     expect(yaml.toString()).toBe(`
-# DSC directory for individual calls. Wrap MMSIs in quotes.
-# Example:
-# - dsc_directory:
-#     - Alpha: "123456789"
-#     - Bravo: "987654321"
 - dsc_directory:
     - AAA: "876543210"
     - BBB: "888888888"
     - CCC: "999999999"
     - DDD: "123456789"
 
-# DSC directory for group calls. Wrap MMSIs in quotes.
-# Example:
-# - group_directory:
-#     - Golf: "012345678"
-#     - Foxtrot: "098765432"
 - group_directory:
     - AAA: "076543210"
     - BBB: "088888888"

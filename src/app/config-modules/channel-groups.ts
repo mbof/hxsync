@@ -138,7 +138,6 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
     const channelGroupsNode = yaml.createNode({
       channel_groups: channelGroupObjects
     });
-    channelGroupsNode.commentBefore = ` Channel groups`;
     channelGroupsNode.spaceBefore = true;
     channelGroupsNode;
     yaml.add(channelGroupsNode);
