@@ -1,0 +1,12 @@
+.yaml-preview {
+  background: #eee;
+  border: solid 1px #777;
+  margin: 0.5em 0;
+  padding: 0.5em;
+  max-height: 150px;
+  overflow: scroll;
+}
+
+.yaml-preview pre {
+  margin: 0;
+}

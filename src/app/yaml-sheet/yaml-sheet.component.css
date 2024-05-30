@@ -60,3 +60,7 @@ h2 {
   box-sizing: border-box;
   background-color: lightpink;
 }
+
+.copy-confirm {
+  font-size: 10px;
+}

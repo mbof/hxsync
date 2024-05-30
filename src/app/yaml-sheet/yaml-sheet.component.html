@@ -19,9 +19,13 @@
       <div class="contents">
         <textarea [formControl]="yamlControl"></textarea>
       </div>
+      @if (clipboardConfirmation) {
+        <div class="copy-confirm">{{ clipboardConfirmation }}</div>
+      }
       <div class="controls">
         <button (click)="cancel()">Cancel</button>
         <button (click)="save()">Save</button>
+        <button (click)="share()">Share as link</button>
       </div>
     </div>
   </div>
