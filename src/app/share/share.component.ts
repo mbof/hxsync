@@ -37,6 +37,7 @@ export class ShareComponent {
       }
       await this.deviceMgr.configSession.startYaml();
       await this.deviceMgr.configSession.saveYaml(this.yaml);
+      this.status = 'Done!'
     } catch (e) {
       this.status = e!.toString();
     }

@@ -26,5 +26,12 @@
 }
 
 .status {
-  font-size: 12px;
+  font-size: 14px;
+}
+
+.warning {
+  font-size: 16px;
+  background-color: lightyellow;
+  text-align: center;
+  margin: 0.5em 0;
 }
