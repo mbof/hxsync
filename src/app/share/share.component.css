@@ -10,3 +10,21 @@
 .yaml-preview pre {
   margin: 0;
 }
+
+.controls {
+  display: flex;
+}
+
+.instructions {
+  width: 70%;
+}
+
+.buttons {
+  width: 30%;
+  align-self: center;
+  text-align: center;
+}
+
+.status {
+  font-size: 12px;
+}
