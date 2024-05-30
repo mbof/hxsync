@@ -6,6 +6,7 @@ HX870 and HX890 portable VHF radios. It has the following features:
 - Reading and editing waypoints and routes
 - Reading and editing MMSI directories for DSC
 - Downloading the GPS log from the device as a GPX file
+- Changing the channel group configuration
 - Loading and saving DAT files on the computer
 - Saving and restoring the whole device's configuration as a DAT file
 

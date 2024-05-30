@@ -19,6 +19,7 @@ import { Document, parseDocument, visit } from 'yaml';
 import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
+import { ChannelGroup } from './channel-group';
 
 export type Config = {
   mmsi?: string;
@@ -27,6 +28,7 @@ export type Config = {
   atis?: string;
   gpslog?: Uint8Array;
   mmsiDirectory?: MmsiDirectory;
+  channelGroups?: ChannelGroup[];
 };
 
 // TODO: refactor this into
@@ -53,7 +55,8 @@ export type MemoryRangeId =
   | 'group_mmsi_names'
   | 'group_mmsi_numbers'
   | 'waypoints'
-  | 'routes';
+  | 'routes'
+  | 'channel_groups';
 
 /*
  * State machine transitions:

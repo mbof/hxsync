@@ -1,6 +1,7 @@
 # YAML configuration file format
 
-You can edit device configuration using a YAML file, using the directives described below. Here's a demo:
+You can edit device configuration using a YAML file, using the directives
+described below. Here's a demo:
 
 https://github.com/mbof/hxsync/assets/1308709/df649b4c-65ca-42f7-bace-c769260a9384
 
@@ -65,4 +66,40 @@ Example:
     - Another route:
         - Bravo
         - Alpha
+```
+
+## `channel_groups`
+
+Set the channel group configuration. Exaclty 3 channel groups must be provided.
+Each channel group can be enabled or disabled; additionally, DSC and ATIS can be
+enabled or disabled for each channel group.
+
+Default values are as follows:
+
+- `enable` defaults to `true`
+- `enable_dsc` defaults to `true`
+- `enable_atis` defaults to `false`
+- `model_name` defaults to the value already stored in the device for this
+  channel group
+
+Example:
+
+```
+- channel_groups:
+    - USA:
+        enable: true
+        enable_dsc: true
+        enable_atis: false
+        model_name: HX890
+    - INTL:
+        enable: true
+        enable_dsc: true
+        enable_atis: false
+        model_name: HX890E
+    - CAN:
+        enable: true
+        enable_dsc: true
+        enable_atis: false
+        model_name: HX890
+
 ```
