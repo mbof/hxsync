@@ -3,7 +3,7 @@ import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { DatConfigProtocol } from '../config-protocol';
 import { createMockDat } from '../devicemgr.service.spec';
-import { Config } from '../config-session';
+import { Config } from './device-configs';
 import { unhex } from '../message';
 import { RouteConfig } from './routes';
 import { Waypoint } from '../waypoint';

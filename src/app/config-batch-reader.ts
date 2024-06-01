@@ -1,5 +1,5 @@
 import { ConfigProtocolInterface } from './config-protocol';
-import { MemoryRangeId } from './config-session';
+import { MemoryRangeId } from './config-modules/device-configs';
 
 export type BatchReaderRanges = Map<
   MemoryRangeId,

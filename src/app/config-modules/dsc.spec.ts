@@ -3,7 +3,7 @@ import { DatConfigProtocol } from '../config-protocol';
 import { createMockDat } from '../devicemgr.service.spec';
 import { DscConfig } from './dsc';
 import { Document, YAMLMap, YAMLSeq, parseDocument } from 'yaml';
-import { Config } from '../config-session';
+import { Config } from './device-configs';
 import { unhex } from '../message';
 import { ConfigBatchReader } from '../config-batch-reader';
 

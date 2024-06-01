@@ -1,12 +1,16 @@
 import {
   WAYPOINT_DEVICE_CONFIGS,
   WaypointDeviceConfig
-} from './config-modules/waypoints';
+} from './waypoints';
 import {
   ROUTE_DEVICE_CONFIGS,
   RouteDeviceConfig
-} from './config-modules/routes';
-import { DSC_DEVICE_CONFIGS, DscDeviceConfig } from './config-modules/dsc';
+} from './routes';
+import { DSC_DEVICE_CONFIGS, DscDeviceConfig } from './dsc';
+import { ChannelGroup } from '../channel-group';
+import { MmsiDirectory } from '../mmsi';
+import { NavInfoDraft } from '../nav-info-draft';
+import { Waypoint } from '../waypoint';
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400'];
@@ -70,3 +74,22 @@ export const DEVICE_CONFIGS = new Map(
     }
   ])
 );
+
+export type Config = {
+  mmsi?: string;
+  waypoints?: Array<Waypoint>;
+  draftWaypoints?: NavInfoDraft;
+  atis?: string;
+  gpslog?: Uint8Array;
+  mmsiDirectory?: MmsiDirectory;
+  channelGroups?: ChannelGroup[];
+};
+
+export type MemoryRangeId =
+  | 'individual_mmsi_names'
+  | 'individual_mmsi_numbers'
+  | 'group_mmsi_names'
+  | 'group_mmsi_numbers'
+  | 'waypoints'
+  | 'routes'
+  | 'channel_groups';

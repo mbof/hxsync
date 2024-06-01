@@ -1,7 +1,7 @@
 import { Document, Node, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { BatchReaderResults, ConfigBatchReader } from '../config-batch-reader';
-import { Config } from '../config-session';
-import { DeviceModel } from '../device-configs';
+import { Config } from './device-configs';
+import { DeviceModel } from './device-configs';
 import {
   MMSI_NAME_BYTE_SIZE,
   Mmsi,

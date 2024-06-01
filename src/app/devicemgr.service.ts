@@ -9,7 +9,7 @@ import {
   USB_DEVICE_CONFIGS,
   DEVICE_CONFIGS,
   DAT_DEVICE_CONFIGS
-} from './device-configs';
+} from './config-modules/device-configs';
 
 export enum DeviceMode {
   Unknown = 0,

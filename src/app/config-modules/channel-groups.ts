@@ -1,8 +1,8 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
-import { Config } from '../config-session';
-import { DeviceModel } from '../device-configs';
+import { Config } from './device-configs';
+import { DeviceModel } from './device-configs';
 import { ConfigModuleInterface } from './config-module-interface';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { ChannelGroup, parseChannelGroupData } from '../channel-group';

@@ -1,7 +1,7 @@
 import { hexarr, unhex } from './message';
 import { NavInfoDraft } from './nav-info-draft';
 import { Waypoint, waypointFromConfig } from './waypoint';
-import { DeviceConfig } from './device-configs';
+import { DeviceConfig } from './config-modules/device-configs';
 import { Route, RouteData } from './route';
 import { WaypointDeviceConfig } from './config-modules/waypoints';
 

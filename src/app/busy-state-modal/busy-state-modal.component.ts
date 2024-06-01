@@ -1,5 +1,6 @@
 import { Component } from '@angular/core';
-import { Config, ConfigSession, DeviceTaskState } from '../config-session';
+import { ConfigSession, DeviceTaskState } from '../config-session';
+import { Config } from '../config-modules/device-configs';
 import { DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject } from 'rxjs';
 

@@ -4,7 +4,7 @@ import { ConfigBatchWriter } from '../config-batch-writer';
 import { DatConfigProtocol } from '../config-protocol';
 import { createMockDat } from '../devicemgr.service.spec';
 import { WaypointConfig } from './waypoints';
-import { Config } from '../config-session';
+import { Config } from './device-configs';
 import { unhex } from '../message';
 
 const WAYPOINTS_DIR_YAML = `

@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 
 import { DevicemgrService } from './devicemgr.service';
-import { DEVICE_CONFIGS, DeviceModel } from './device-configs';
+import { DEVICE_CONFIGS, DeviceModel } from './config-modules/device-configs';
 
 export function createMockDat(deviceModel: DeviceModel) {
   const deviceConfig = DEVICE_CONFIGS.get(deviceModel);

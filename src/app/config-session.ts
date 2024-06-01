@@ -1,7 +1,7 @@
 import { BehaviorSubject } from 'rxjs';
-import { DeviceConfig } from './device-configs';
+import { DeviceConfig } from './config-modules/device-configs';
 import { unhex } from './message';
-import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
+import { waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
 import { NavInfoDraft } from './nav-info-draft';
 import { routeFromConfig } from './route';
 import {
@@ -19,18 +19,8 @@ import { Document, parseDocument, visit } from 'yaml';
 import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
-import { ChannelGroup } from './channel-group';
 import { DscDeviceConfig } from './config-modules/dsc';
-
-export type Config = {
-  mmsi?: string;
-  waypoints?: Array<Waypoint>;
-  draftWaypoints?: NavInfoDraft;
-  atis?: string;
-  gpslog?: Uint8Array;
-  mmsiDirectory?: MmsiDirectory;
-  channelGroups?: ChannelGroup[];
-};
+import { Config } from './config-modules/device-configs';
 
 // TODO: refactor this into
 // a distinct class for each of nav / mmsi / yaml
@@ -49,15 +39,6 @@ export type DeviceTaskState =
   | 'yaml-save'
   | 'dat-read'
   | 'dat-restore';
-
-export type MemoryRangeId =
-  | 'individual_mmsi_names'
-  | 'individual_mmsi_numbers'
-  | 'group_mmsi_names'
-  | 'group_mmsi_numbers'
-  | 'waypoints'
-  | 'routes'
-  | 'channel_groups';
 
 /*
  * State machine transitions:

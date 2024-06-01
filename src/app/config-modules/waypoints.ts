@@ -1,9 +1,9 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
-import { Config } from '../config-session';
+import { Config } from './device-configs';
 import { ConfigModuleInterface } from './config-module-interface';
-import { DeviceModel } from '../device-configs';
+import { DeviceModel } from './device-configs';
 import { WAYPOINTS_BYTE_SIZE, Waypoint, waypointFromConfig } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { parseLat, parseLon } from '../parseLatLon';

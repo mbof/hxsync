@@ -4,7 +4,7 @@ import { ConfigBatchWriter } from '../config-batch-writer';
 import { DatConfigProtocol } from '../config-protocol';
 import { createMockDat } from '../devicemgr.service.spec';
 import { ChannelGroupConfig } from './channel-groups';
-import { Config } from '../config-session';
+import { Config } from './device-configs';
 import { hexarr, unhex } from '../message';
 import { ChannelGroup, ChannelGroupData } from '../channel-group';
 
