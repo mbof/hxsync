@@ -21,7 +21,18 @@ export class ShareComponent {
     private route: ActivatedRoute
   ) {}
   ngOnInit() {
-    this.route.fragment.subscribe((f) => (this.yaml = f || ''));
+    this.route.fragment.subscribe((f) => {
+      if (f && f.length > 0) {
+        this.yaml = f;
+      }
+    });
+    this.route.url.subscribe((u) => {
+      if (u.length == 0) return;
+      const yaml = /^(share(%23|#)).*/.exec(u[0].path);
+      if (yaml && yaml.length > 2) {
+        this.yaml = u[0].path.slice(yaml[1].length);
+      }
+    });
     this.deviceMgr.configSession.deviceTaskState$.subscribe((state) => {
       this.state = state;
     });
@@ -37,7 +48,7 @@ export class ShareComponent {
       }
       await this.deviceMgr.configSession.startYaml();
       await this.deviceMgr.configSession.saveYaml(this.yaml);
-      this.status = 'Done!'
+      this.status = 'Done!';
     } catch (e) {
       this.status = e!.toString();
     }
