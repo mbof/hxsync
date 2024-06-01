@@ -1,5 +1,5 @@
 import { BehaviorSubject } from 'rxjs';
-import { DeviceConfig } from './devicemgr.service';
+import { DeviceConfig } from './device-configs';
 import { unhex } from './message';
 import { Waypoint, waypointFromConfig, WAYPOINTS_BYTE_SIZE } from './waypoint';
 import { NavInfoDraft } from './nav-info-draft';
@@ -20,6 +20,7 @@ import { CONFIG_MODULE_CONSTRUCTORS } from './config-modules/module-list';
 import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
 import { ChannelGroup } from './channel-group';
+import { DscDeviceConfig } from './config-modules/dsc';
 
 export type Config = {
   mmsi?: string;
@@ -112,18 +113,21 @@ export class ConfigSession {
         `Can't read waypoints from state ${this._deviceTaskState.getValue()}`
       );
     }
+    if (!this._deviceConfig!.waypoints || !this._deviceConfig!.routes) {
+      throw new Error(`Can't handle nav info on ${this._deviceConfig!.name}`);
+    }
     this._deviceTaskState.next('nav-read');
     this._progress.next(0);
 
     // Sizing info
     const chunkSize = 0x40;
-    const wpNum = this._deviceConfig!.waypointsNumber;
+    const wpNum = this._deviceConfig!.waypoints.number;
     const wpSize = WAYPOINTS_BYTE_SIZE * wpNum;
-    const routeNum = this._deviceConfig!.routesNumber;
-    const routeSize = this._deviceConfig!.routeBytes * routeNum;
+    const routeNum = this._deviceConfig!.routes.numRoutes;
+    const routeSize = this._deviceConfig!.routes.bytesPerRoute * routeNum;
 
     // Read waypoints
-    const wpBegin = this._deviceConfig!.waypointsStartAddress;
+    const wpBegin = this._deviceConfig!.waypoints.startAddress;
     const wpData = await this._configProtocol.readConfigMemory(
       wpBegin,
       wpSize,
@@ -142,7 +146,7 @@ export class ConfigSession {
     }
 
     // Read routes
-    const routeBegin = this._deviceConfig!.routesStartAddress;
+    const routeBegin = this._deviceConfig!.routes.startAddress;
     const routeData = await this._configProtocol.readConfigMemory(
       routeBegin,
       routeSize,
@@ -150,10 +154,13 @@ export class ConfigSession {
     );
     let routes = [];
     for (var routeId = 0; routeId < routeNum; routeId++) {
-      let offset = routeId * this._deviceConfig!.routeBytes;
+      let offset = routeId * this._deviceConfig!.routes.bytesPerRoute;
       let route = routeFromConfig(
-        routeData.subarray(offset, offset + this._deviceConfig!.routeBytes),
-        this._deviceConfig!.numWaypointsPerRoute
+        routeData.subarray(
+          offset,
+          offset + this._deviceConfig!.routes.bytesPerRoute
+        ),
+        this._deviceConfig!.routes.numWaypointsPerRoute
       );
       if (route) {
         routes.push(route);
@@ -166,7 +173,8 @@ export class ConfigSession {
       draftWaypoints: new NavInfoDraft(
         waypoints,
         routes,
-        this._deviceConfig!,
+        this._deviceConfig!.waypoints,
+        this._deviceConfig!.routes,
         this.noopConfigCallback()
       )
     });
@@ -179,6 +187,9 @@ export class ConfigSession {
         `Can't write draft from state ${this._deviceTaskState.getValue()}`
       );
     }
+    if (!this._deviceConfig!.waypoints || !this._deviceConfig!.routes) {
+      throw new Error(`Can't handle nav info on ${this._deviceConfig!.name}`);
+    }
     this._deviceTaskState.next('nav-save');
     this._progress.next(0);
     const draftWaypoints = this.config.getValue().draftWaypoints;
@@ -188,7 +199,7 @@ export class ConfigSession {
       return;
     }
     const wpData = draftWaypoints?.getBinaryWaypointData(
-      this._deviceConfig!.waypointsStartAddress
+      this._deviceConfig!.waypoints.startAddress
     );
     if (!wpData) {
       throw new Error('Error getting draft binary data');
@@ -200,7 +211,7 @@ export class ConfigSession {
     // Write waypoints
     await this._configProtocol.writeConfigMemory(
       wpData,
-      this._deviceConfig!.waypointsStartAddress,
+      this._deviceConfig!.waypoints.startAddress,
       (offset) =>
         this._progress.next(offset / (wpData.length + routeData.length))
     );
@@ -208,7 +219,7 @@ export class ConfigSession {
     // Write routes
     await this._configProtocol.writeConfigMemory(
       routeData,
-      this._deviceConfig!.routesStartAddress,
+      this._deviceConfig!.routes.startAddress,
       (offset) =>
         this._progress.next(
           (wpData.length + offset) / (wpData.length + routeData.length)
@@ -220,7 +231,8 @@ export class ConfigSession {
       draftWaypoints: new NavInfoDraft(
         draftWaypoints.waypoints,
         [],
-        this._deviceConfig!,
+        this._deviceConfig!.waypoints,
+        this._deviceConfig!.routes,
         this.noopConfigCallback()
       )
     });
@@ -241,12 +253,7 @@ export class ConfigSession {
     }
     this.config.next({
       ...this.config.getValue(),
-      draftWaypoints: new NavInfoDraft(
-        waypoints,
-        [],
-        this._deviceConfig!,
-        this.noopConfigCallback()
-      )
+      draftWaypoints: undefined
     });
     this._deviceTaskState.next('idle');
   }
@@ -256,6 +263,9 @@ export class ConfigSession {
       throw new Error(
         `Can't read MMSI directory from state ${this._deviceTaskState.getValue()}`
       );
+    }
+    if (!this._deviceConfig!.dsc) {
+      throw new Error(`Can't handle DSC info on ${this._deviceConfig!.name}`);
     }
     this._deviceTaskState.next('mmsi-read');
     this._progress.next(0);
@@ -267,36 +277,36 @@ export class ConfigSession {
       groupMmsiNamesSize,
       groupMmsiNumbersSize,
       totalSize
-    } = this.getMmsiMemoryLayout();
+    } = this.getMmsiMemoryLayout(this._deviceConfig!.dsc);
 
     const individualMmsiNamesData = await this._configProtocol.readConfigMemory(
-      this._deviceConfig!.individualMmsiNamesAddress,
+      this._deviceConfig!.dsc.individualNamesAddress,
       individualMmsiNamesSize,
       (offset) => this._progress.next(offset / totalSize)
     );
     let previousOffsets = individualMmsiNamesSize;
     const individualMmsiNumbersData =
       await this._configProtocol.readConfigMemory(
-        this._deviceConfig!.individualMmsiNumbersAddress,
+        this._deviceConfig!.dsc.individualNumbersAddress,
         individualMmsiNumbersSize,
         (offset) => this._progress.next((previousOffsets + offset) / totalSize)
       );
     previousOffsets += individualMmsiNumbersSize;
     const groupMmsiNamesData = await this._configProtocol.readConfigMemory(
-      this._deviceConfig!.groupMmsiNamesAddress,
+      this._deviceConfig!.dsc.groupNamesAddress,
       groupMmsiNamesSize,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += groupMmsiNamesSize;
     const groupMmsiNumbersData = await this._configProtocol.readConfigMemory(
-      this._deviceConfig!.groupMmsiNumbersAddress,
+      this._deviceConfig!.dsc.groupNumbersAddress,
       groupMmsiNumbersSize,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
 
     const mmsiDirectory = new MmsiDirectory(
-      this._deviceConfig!.individualMmsiNum,
-      this._deviceConfig!.groupMmsiNum
+      this._deviceConfig!.dsc.individualNum,
+      this._deviceConfig!.dsc.groupNum
     );
     mmsiDirectory.initFromConfig(
       individualMmsiNamesData,
@@ -311,11 +321,11 @@ export class ConfigSession {
     this._deviceTaskState.next('mmsi-edit');
   }
 
-  private getMmsiMemoryLayout() {
-    const individualMmsiNum = this._deviceConfig!.individualMmsiNum;
+  private getMmsiMemoryLayout(dsc: DscDeviceConfig) {
+    const individualMmsiNum = dsc.individualNum;
     const individualMmsiNamesSize = MMSI_NAME_BYTE_SIZE * individualMmsiNum;
     const individualMmsiNumbersSize = numberOffsetFromIndex(individualMmsiNum);
-    const groupMmsiNum = this._deviceConfig!.groupMmsiNum;
+    const groupMmsiNum = dsc.groupNum;
     const groupMmsiNamesSize = MMSI_NAME_BYTE_SIZE * groupMmsiNum;
     const groupMmsiNumbersSize = numberOffsetFromIndex(groupMmsiNum);
     return {
@@ -337,6 +347,9 @@ export class ConfigSession {
         `Can't read MMSI directory from state ${this._deviceTaskState.getValue()}`
       );
     }
+    if (!this._deviceConfig!.dsc) {
+      throw new Error(`Can't handle DSC info on ${this._deviceConfig!.name}`);
+    }
     this._deviceTaskState.next('mmsi-save');
     this._progress.next(0);
     const {
@@ -345,7 +358,7 @@ export class ConfigSession {
       groupMmsiNamesSize,
       groupMmsiNumbersSize,
       totalSize
-    } = this.getMmsiMemoryLayout();
+    } = this.getMmsiMemoryLayout(this._deviceConfig!.dsc);
 
     const individualMmsiNamesData = new Uint8Array(individualMmsiNamesSize);
     const individualMmsiNumbersData = new Uint8Array(individualMmsiNumbersSize);
@@ -361,25 +374,25 @@ export class ConfigSession {
       );
     await this._configProtocol.writeConfigMemory(
       individualMmsiNamesData,
-      this._deviceConfig!.individualMmsiNamesAddress,
+      this._deviceConfig!.dsc.individualNamesAddress,
       (offset) => this._progress.next(offset / totalSize)
     );
     let previousOffsets = individualMmsiNamesSize;
     await this._configProtocol.writeConfigMemory(
       individualMmsiNumbersData,
-      this._deviceConfig!.individualMmsiNumbersAddress,
+      this._deviceConfig!.dsc.individualNumbersAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += individualMmsiNumbersSize;
     await this._configProtocol.writeConfigMemory(
       groupMmsiNamesData,
-      this._deviceConfig!.groupMmsiNamesAddress,
+      this._deviceConfig!.dsc.groupNamesAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     previousOffsets += groupMmsiNamesSize;
     await this._configProtocol.writeConfigMemory(
       groupMmsiNumbersData,
-      this._deviceConfig!.groupMmsiNumbersAddress,
+      this._deviceConfig!.dsc.groupNumbersAddress,
       (offset) => this._progress.next((previousOffsets + offset) / totalSize)
     );
     this._deviceTaskState.next('idle');
@@ -576,6 +589,11 @@ export class ConfigSession {
         `Can't start reading Dat from state ${this._deviceTaskState.getValue()}`
       );
     }
+    if (!this._deviceConfig!.dat) {
+      throw new Error(
+        `DAT layout unknown for device ${this._deviceConfig?.name}`
+      );
+    }
     let dat: Uint8Array;
     if (this._configProtocol instanceof DatConfigProtocol) {
       dat = this._configProtocol.datImage;
@@ -583,13 +601,13 @@ export class ConfigSession {
       if (!this._deviceConfig) {
         throw new Error('No device config');
       }
-      const deviceConfig = this._deviceConfig;
+      const datDeviceConfig = this._deviceConfig!.dat;
       this._deviceTaskState.next('dat-read');
       this._progress.next(0);
       dat = await this._configProtocol.readConfigMemory(
         0,
-        deviceConfig.datLength,
-        (progress) => this._progress.next(progress / deviceConfig.datLength)
+        datDeviceConfig.length,
+        (progress) => this._progress.next(progress / datDeviceConfig.length)
       );
     }
     this._deviceTaskState.next('idle');
@@ -608,19 +626,24 @@ export class ConfigSession {
     if (!this._deviceConfig) {
       throw new Error('Missing device config.');
     }
-    const deviceConfig = this._deviceConfig;
-    if (dat.length != deviceConfig.datLength) {
+    if (!this._deviceConfig.dat) {
       throw new Error(
-        `DAT file does not have the expected size (expected ${deviceConfig.datLength}, found ${dat.length})`
+        `DAT layout unknown for device ${this._deviceConfig?.name}`
       );
     }
-    if (!deviceConfig.datMagic.every((value, index) => dat[index] == value)) {
+    const datDeviceConfig = this._deviceConfig.dat;
+    if (dat.length != datDeviceConfig.length) {
+      throw new Error(
+        `DAT file does not have the expected size (expected ${datDeviceConfig.length}, found ${dat.length})`
+      );
+    }
+    if (!datDeviceConfig.magic.every((value, index) => dat[index] == value)) {
       throw new Error(`DAT file does not have the expected magic`);
     }
     this._progress.next(0);
     this._deviceTaskState.next('dat-restore');
     await this._configProtocol.writeConfigMemory(dat, 0, (offset) =>
-      this._progress.next(offset / deviceConfig.datLength)
+      this._progress.next(offset / datDeviceConfig.length)
     );
     this._deviceTaskState.next('idle');
   }

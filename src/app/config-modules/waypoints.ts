@@ -3,35 +3,39 @@ import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from '../config-session';
 import { ConfigModuleInterface } from './config-module-interface';
-import { DeviceModel } from '../devicemgr.service';
+import { DeviceModel } from '../device-configs';
 import { WAYPOINTS_BYTE_SIZE, Waypoint, waypointFromConfig } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { parseLat, parseLon } from '../parseLatLon';
 import { fillWaypointData } from '../nav-info-draft';
 
-type WaypointDeviceConfig = {
-  name: DeviceModel;
-  waypointsStartAddress: number;
-  waypointsNumber: number;
+export type WaypointDeviceConfig = {
+  startAddress: number;
+  number: number;
 };
 
-const DEVICE_CONFIGS: WaypointDeviceConfig[] = [
-  {
-    name: 'HX890',
-    waypointsStartAddress: 0xd700,
-    waypointsNumber: 250
-  },
-  {
-    name: 'HX870',
-    waypointsStartAddress: 0x4300,
-    waypointsNumber: 200
-  }
-];
+export const WAYPOINT_DEVICE_CONFIGS: Map<DeviceModel, WaypointDeviceConfig> =
+  new Map([
+    [
+      'HX890',
+      {
+        startAddress: 0xd700,
+        number: 250
+      }
+    ],
+    [
+      'HX870',
+      {
+        startAddress: 0x4300,
+        number: 200
+      }
+    ]
+  ]);
 
 export class WaypointConfig implements ConfigModuleInterface {
   deviceConfig: WaypointDeviceConfig | undefined;
   constructor(readonly deviceModel: DeviceModel) {
-    this.deviceConfig = DEVICE_CONFIGS.find((c) => c.name == deviceModel);
+    this.deviceConfig = WAYPOINT_DEVICE_CONFIGS.get(deviceModel);
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
@@ -55,17 +59,13 @@ export class WaypointConfig implements ConfigModuleInterface {
     const waypointArray = waypoints.items.map(parseYamlWaypoint);
     assignIndices(waypointArray, previousConfig.waypoints);
     const wpData = new Uint8Array(
-      WAYPOINTS_BYTE_SIZE * this.deviceConfig.waypointsNumber
+      WAYPOINTS_BYTE_SIZE * this.deviceConfig.number
     );
     wpData.fill(255);
-    fillWaypointData(
-      waypointArray,
-      this.deviceConfig.waypointsStartAddress,
-      wpData
-    );
+    fillWaypointData(waypointArray, this.deviceConfig.startAddress, wpData);
     configBatchWriter.prepareWrite(
       'waypoints',
-      this.deviceConfig.waypointsStartAddress,
+      this.deviceConfig.startAddress,
       wpData
     );
     configOut.waypoints = waypointArray;
@@ -75,9 +75,9 @@ export class WaypointConfig implements ConfigModuleInterface {
     if (this.deviceConfig) {
       configBatchReader.addRange(
         'waypoints',
-        this.deviceConfig.waypointsStartAddress,
-        this.deviceConfig.waypointsStartAddress +
-          WAYPOINTS_BYTE_SIZE * this.deviceConfig.waypointsNumber
+        this.deviceConfig.startAddress,
+        this.deviceConfig.startAddress +
+          WAYPOINTS_BYTE_SIZE * this.deviceConfig.number
       );
     }
   }
@@ -93,13 +93,13 @@ export class WaypointConfig implements ConfigModuleInterface {
     let waypoints = [];
     for (
       var waypointId = 0;
-      waypointId < this.deviceConfig.waypointsNumber;
+      waypointId < this.deviceConfig.number;
       waypointId += 1
     ) {
       let wpOffset = waypointId * 32;
       let waypoint = waypointFromConfig(
         data.subarray(wpOffset, wpOffset + 32),
-        this.deviceConfig.waypointsStartAddress + wpOffset
+        this.deviceConfig.startAddress + wpOffset
       );
       if (waypoint) {
         waypoints.push(waypoint);

@@ -5,75 +5,17 @@ import { BehaviorSubject } from 'rxjs';
 import { ChunkReader } from './chunkreader';
 import { ConfigSession } from './config-session';
 import { ConfigProtocol, DatConfigProtocol } from './config-protocol';
+import {
+  USB_DEVICE_CONFIGS,
+  DEVICE_CONFIGS,
+  DAT_DEVICE_CONFIGS
+} from './device-configs';
 
 export enum DeviceMode {
   Unknown = 0,
   CP = 1,
   NMEA = 2
 }
-
-export type DeviceModel = 'HX890' | 'HX870';
-
-export type DeviceConfig = {
-  name: DeviceModel;
-  usbFilter: {
-    usbVendorId: number;
-    usbProductId: number;
-  };
-  waypointsStartAddress: number;
-  waypointsNumber: number;
-  routesStartAddress: number;
-  routesNumber: number;
-  numWaypointsPerRoute: number;
-  routeBytes: number;
-  individualMmsiNamesAddress: number;
-  individualMmsiNumbersAddress: number;
-  individualMmsiNum: number;
-  groupMmsiNamesAddress: number;
-  groupMmsiNumbersAddress: number;
-  groupMmsiNum: number;
-  datLength: number;
-  datMagic: Uint8Array;
-};
-
-export const DEVICE_CONFIGS: DeviceConfig[] = [
-  {
-    name: 'HX890',
-    usbFilter: { usbVendorId: 9898, usbProductId: 30 },
-    waypointsStartAddress: 0xd700,
-    waypointsNumber: 250,
-    routesStartAddress: 0xc700,
-    routesNumber: 20,
-    numWaypointsPerRoute: 31,
-    routeBytes: 64,
-    individualMmsiNamesAddress: 0x4500,
-    individualMmsiNumbersAddress: 0x4200,
-    individualMmsiNum: 100,
-    groupMmsiNamesAddress: 0x5100,
-    groupMmsiNumbersAddress: 0x5000,
-    groupMmsiNum: 20,
-    datLength: 0x10000,
-    datMagic: new Uint8Array([0x03, 0x7a])
-  },
-  {
-    name: 'HX870',
-    usbFilter: { usbVendorId: 9898, usbProductId: 16 },
-    waypointsStartAddress: 0x4300,
-    waypointsNumber: 200,
-    routesStartAddress: 0x5c00,
-    routesNumber: 20,
-    numWaypointsPerRoute: 16,
-    routeBytes: 32,
-    individualMmsiNamesAddress: 0x3730,
-    individualMmsiNumbersAddress: 0x3500,
-    individualMmsiNum: 100,
-    groupMmsiNamesAddress: 0x3e80,
-    groupMmsiNumbersAddress: 0x3e00,
-    groupMmsiNum: 20,
-    datLength: 0x8000,
-    datMagic: new Uint8Array([0x03, 0x67])
-  }
-];
 
 export type DeviceConnectionState =
   | 'disconnected'
@@ -124,14 +66,17 @@ export class DevicemgrService {
     try {
       this._connectionState.next('usb-connecting');
       this.port = await this.serial.requestPort({
-        filters: DEVICE_CONFIGS.map((conf) => conf.usbFilter)
+        filters: [...USB_DEVICE_CONFIGS.values()].filter(
+          (f) => f !== undefined
+        ) as SerialPortFilter[]
       });
       const portInfo = this.port!.getInfo();
-      const deviceConfig = DEVICE_CONFIGS.find(
-        (conf) =>
-          conf.usbFilter.usbProductId == portInfo.usbProductId &&
-          conf.usbFilter.usbVendorId == portInfo.usbVendorId
+      const [model, _] = [...USB_DEVICE_CONFIGS.entries()].find(
+        ([model, filter]) =>
+          filter.usbProductId == portInfo.usbProductId &&
+          filter.usbVendorId == portInfo.usbVendorId
       )!;
+      const deviceConfig = DEVICE_CONFIGS.get(model)!;
       console.log(`Found device ${deviceConfig.name}`);
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
       await this.port.open({ baudRate: 9600 });
@@ -215,11 +160,13 @@ export class DevicemgrService {
         `Cannot load DAT from state: ${this.getConnectionState()}`
       );
     }
-    const deviceConfig = DEVICE_CONFIGS.find(
-      (config) =>
-        datFile.length == config.datLength &&
-        config.datMagic.every((v, offset) => datFile[offset] == v)
-    );
+    const [model, _] = [...DAT_DEVICE_CONFIGS.entries()].find(
+      ([_, dat]) =>
+        dat &&
+        datFile.length == dat.length &&
+        dat.magic.every((v, offset) => datFile[offset] == v)
+    )!;
+    const deviceConfig = DEVICE_CONFIGS.get(model);
     if (!deviceConfig) {
       throw new Error(
         `Unknown DAT file format (length ${datFile.length}, magic ${datFile.subarray(0, 2)}`

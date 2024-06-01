@@ -119,7 +119,10 @@ export class DeviceComponent {
     const file = new Blob([dat], {
       type: 'application/octet-stream'
     });
-    saveAs(file, `hx.dat`);
+    saveAs(
+      file,
+      `${this.deviceMgr.configSession._deviceConfig?.name || 'SH'}.dat`
+    );
   }
 
   async restoreDat() {

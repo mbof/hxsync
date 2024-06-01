@@ -2,37 +2,43 @@ import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from '../config-session';
-import { DeviceModel } from '../devicemgr.service';
+import { DeviceModel } from '../device-configs';
 import { ConfigModuleInterface } from './config-module-interface';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { ChannelGroup, parseChannelGroupData } from '../channel-group';
 
-type ChannelGroupDeviceConfig = {
-  name: DeviceModel;
+export type ChannelGroupDeviceConfig = {
   startAddress: number;
-  numChannelGroups: number;
-  channelGroupBytes: 16;
+  numGroups: number;
+  bytesPerChannelGroup: 16;
 };
 
-const DEVICE_CONFIGS: ChannelGroupDeviceConfig[] = [
-  {
-    name: 'HX890',
-    startAddress: 0x0070,
-    numChannelGroups: 3,
-    channelGroupBytes: 16
-  },
-  {
-    name: 'HX870',
-    startAddress: 0x0070,
-    numChannelGroups: 3,
-    channelGroupBytes: 16
-  }
-];
+export const CHANNEL_GROUP_DEVICE_CONFIGS: Map<
+  DeviceModel,
+  ChannelGroupDeviceConfig
+> = new Map([
+  [
+    'HX890',
+    {
+      startAddress: 0x0070,
+      numGroups: 3,
+      bytesPerChannelGroup: 16
+    }
+  ],
+  [
+    'HX870',
+    {
+      startAddress: 0x0070,
+      numGroups: 3,
+      bytesPerChannelGroup: 16
+    }
+  ]
+]);
 
 export class ChannelGroupConfig implements ConfigModuleInterface {
   deviceConfig: ChannelGroupDeviceConfig | undefined;
   constructor(readonly deviceModel: DeviceModel) {
-    this.deviceConfig = DEVICE_CONFIGS.find((c) => (c.name = deviceModel));
+    this.deviceConfig = CHANNEL_GROUP_DEVICE_CONFIGS.get(deviceModel);
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
@@ -68,20 +74,20 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
       }
       throw e;
     }
-    if (channelGroups.length != this.deviceConfig.numChannelGroups) {
+    if (channelGroups.length != this.deviceConfig.numGroups) {
       throw new YamlError(
-        `Unexpected number of channel groups (expected ${this.deviceConfig.numChannelGroups}, found ${channelGroups.length})`,
+        `Unexpected number of channel groups (expected ${this.deviceConfig.numGroups}, found ${channelGroups.length})`,
         node.range![0]
       );
     }
     const data = new Uint8Array(
-      this.deviceConfig.numChannelGroups * this.deviceConfig.channelGroupBytes
+      this.deviceConfig.numGroups * this.deviceConfig.bytesPerChannelGroup
     );
     for (const [index, channelGroup] of channelGroups.entries()) {
       channelGroup.fillConfig(
         data.subarray(
-          index * this.deviceConfig.channelGroupBytes,
-          (index + 1) * this.deviceConfig.channelGroupBytes
+          index * this.deviceConfig.bytesPerChannelGroup,
+          (index + 1) * this.deviceConfig.bytesPerChannelGroup
         )
       );
     }
@@ -101,7 +107,7 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
       'channel_groups',
       this.deviceConfig.startAddress,
       this.deviceConfig.startAddress +
-        this.deviceConfig.numChannelGroups * this.deviceConfig.channelGroupBytes
+        this.deviceConfig.numGroups * this.deviceConfig.bytesPerChannelGroup
     );
   }
   updateConfig(
@@ -117,11 +123,11 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
       return;
     }
     const channelGroups: ChannelGroup[] = [];
-    for (let i = 0; i < this.deviceConfig.numChannelGroups; i++) {
+    for (let i = 0; i < this.deviceConfig.numGroups; i++) {
       const channelGroup = parseChannelGroupData(
         result.slice(
-          i * this.deviceConfig.channelGroupBytes,
-          (i + 1) * this.deviceConfig.channelGroupBytes
+          i * this.deviceConfig.bytesPerChannelGroup,
+          (i + 1) * this.deviceConfig.bytesPerChannelGroup
         )
       );
       channelGroups.push(channelGroup);

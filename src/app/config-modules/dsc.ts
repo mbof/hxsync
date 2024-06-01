@@ -1,7 +1,7 @@
 import { Document, Node, Scalar, YAMLMap, YAMLSeq } from 'yaml';
 import { BatchReaderResults, ConfigBatchReader } from '../config-batch-reader';
 import { Config } from '../config-session';
-import { DeviceModel } from '../devicemgr.service';
+import { DeviceModel } from '../device-configs';
 import {
   MMSI_NAME_BYTE_SIZE,
   Mmsi,
@@ -12,36 +12,50 @@ import { ConfigModuleInterface } from './config-module-interface';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 
-type DscDeviceConfig = {
-  name: DeviceModel;
-  individualMmsiNamesAddress: number;
-  individualMmsiNumbersAddress: number;
-  individualMmsiNum: number;
-  groupMmsiNamesAddress: number;
-  groupMmsiNumbersAddress: number;
-  groupMmsiNum: number;
+export type DscDeviceConfig = {
+  individualNamesAddress: number;
+  individualNumbersAddress: number;
+  individualNum: number;
+  groupNamesAddress: number;
+  groupNumbersAddress: number;
+  groupNum: number;
 };
 
-const CONFIGS: DscDeviceConfig[] = [
-  {
-    name: 'HX890',
-    individualMmsiNamesAddress: 0x4500,
-    individualMmsiNumbersAddress: 0x4200,
-    individualMmsiNum: 100,
-    groupMmsiNamesAddress: 0x5100,
-    groupMmsiNumbersAddress: 0x5000,
-    groupMmsiNum: 20
-  },
-  {
-    name: 'HX870',
-    individualMmsiNamesAddress: 0x3730,
-    individualMmsiNumbersAddress: 0x3500,
-    individualMmsiNum: 100,
-    groupMmsiNamesAddress: 0x3e80,
-    groupMmsiNumbersAddress: 0x3e00,
-    groupMmsiNum: 20
-  }
-];
+export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
+  [
+    'HX890',
+    {
+      individualNamesAddress: 0x4500,
+      individualNumbersAddress: 0x4200,
+      individualNum: 100,
+      groupNamesAddress: 0x5100,
+      groupNumbersAddress: 0x5000,
+      groupNum: 20
+    }
+  ],
+  [
+    'HX870',
+    {
+      individualNamesAddress: 0x3730,
+      individualNumbersAddress: 0x3500,
+      individualNum: 100,
+      groupNamesAddress: 0x3e80,
+      groupNumbersAddress: 0x3e00,
+      groupNum: 20
+    }
+  ],
+  [
+    'GX1400',
+    {
+      individualNamesAddress: 0x940,
+      individualNumbersAddress: 0x800,
+      individualNum: 60,
+      groupNamesAddress: 0xda0,
+      groupNumbersAddress: 0xd00,
+      groupNum: 30
+    }
+  ]
+]);
 
 export class DscConfig implements ConfigModuleInterface {
   readonly deviceConfig: DscDeviceConfig;
@@ -50,20 +64,19 @@ export class DscConfig implements ConfigModuleInterface {
   groupMmsiNamesSize: number;
   groupMmsiNumbersSize: number;
   constructor(deviceModel: DeviceModel) {
-    const deviceConfig = CONFIGS.find((c) => c.name == deviceModel);
+    const deviceConfig = DSC_DEVICE_CONFIGS.get(deviceModel);
     if (!deviceConfig) {
       throw new Error(`Unsupported device ${deviceModel}`);
     }
     this.deviceConfig = deviceConfig;
     this.individualMmsiNamesSize =
-      MMSI_NAME_BYTE_SIZE * this.deviceConfig.individualMmsiNum;
+      MMSI_NAME_BYTE_SIZE * this.deviceConfig.individualNum;
     this.individualMmsiNumbersSize = numberOffsetFromIndex(
-      this.deviceConfig.individualMmsiNum
+      this.deviceConfig.individualNum
     );
-    this.groupMmsiNamesSize =
-      MMSI_NAME_BYTE_SIZE * this.deviceConfig.groupMmsiNum;
+    this.groupMmsiNamesSize = MMSI_NAME_BYTE_SIZE * this.deviceConfig.groupNum;
     this.groupMmsiNumbersSize = numberOffsetFromIndex(
-      this.deviceConfig.groupMmsiNum
+      this.deviceConfig.groupNum
     );
   }
   // Smells:
@@ -88,8 +101,8 @@ export class DscConfig implements ConfigModuleInterface {
     if (dsc_dir && dsc_dir instanceof YAMLSeq) {
       if (!config.mmsiDirectory) {
         config.mmsiDirectory = new MmsiDirectory(
-          this.deviceConfig!.individualMmsiNum,
-          this.deviceConfig!.groupMmsiNum
+          this.deviceConfig!.individualNum,
+          this.deviceConfig!.groupNum
         );
       }
       config.mmsiDirectory.individualMmsis = dsc_dir.items.map((node) => {
@@ -119,12 +132,12 @@ export class DscConfig implements ConfigModuleInterface {
       );
       configBatchWriter.prepareWrite(
         'individual_mmsi_names',
-        this.deviceConfig!.individualMmsiNamesAddress,
+        this.deviceConfig!.individualNamesAddress,
         individualMmsiNamesData
       );
       configBatchWriter.prepareWrite(
         'individual_mmsi_numbers',
-        this.deviceConfig!.individualMmsiNumbersAddress,
+        this.deviceConfig!.individualNumbersAddress,
         individualMmsiNumbersData
       );
       return true;
@@ -140,8 +153,8 @@ export class DscConfig implements ConfigModuleInterface {
     if (group_dir && group_dir instanceof YAMLSeq) {
       if (!config.mmsiDirectory) {
         config.mmsiDirectory = new MmsiDirectory(
-          this.deviceConfig!.individualMmsiNum,
-          this.deviceConfig!.groupMmsiNum
+          this.deviceConfig!.individualNum,
+          this.deviceConfig!.groupNum
         );
       }
       config.mmsiDirectory.groupMmsis = group_dir.items.map((node) => {
@@ -167,12 +180,12 @@ export class DscConfig implements ConfigModuleInterface {
       );
       configBatchWriter.prepareWrite(
         'group_mmsi_names',
-        this.deviceConfig!.groupMmsiNamesAddress,
+        this.deviceConfig!.groupNamesAddress,
         groupMmsiNamesData
       );
       configBatchWriter.prepareWrite(
         'group_mmsi_numbers',
-        this.deviceConfig!.groupMmsiNumbersAddress,
+        this.deviceConfig!.groupNumbersAddress,
         groupMmsiNumbersData
       );
       return true;
@@ -183,31 +196,31 @@ export class DscConfig implements ConfigModuleInterface {
     if (!this.deviceConfig) {
       return;
     }
-    const individualMmsiNum = this.deviceConfig.individualMmsiNum;
+    const individualMmsiNum = this.deviceConfig.individualNum;
     const individualMmsiNamesSize = MMSI_NAME_BYTE_SIZE * individualMmsiNum;
     const individualMmsiNumbersSize = numberOffsetFromIndex(individualMmsiNum);
-    const groupMmsiNum = this.deviceConfig.groupMmsiNum;
+    const groupMmsiNum = this.deviceConfig.groupNum;
     const groupMmsiNamesSize = MMSI_NAME_BYTE_SIZE * groupMmsiNum;
     const groupMmsiNumbersSize = numberOffsetFromIndex(groupMmsiNum);
     configBatchReader.addRange(
       'individual_mmsi_names',
-      this.deviceConfig.individualMmsiNamesAddress,
-      this.deviceConfig.individualMmsiNamesAddress + individualMmsiNamesSize
+      this.deviceConfig.individualNamesAddress,
+      this.deviceConfig.individualNamesAddress + individualMmsiNamesSize
     );
     configBatchReader.addRange(
       'individual_mmsi_numbers',
-      this.deviceConfig.individualMmsiNumbersAddress,
-      this.deviceConfig.individualMmsiNumbersAddress + individualMmsiNumbersSize
+      this.deviceConfig.individualNumbersAddress,
+      this.deviceConfig.individualNumbersAddress + individualMmsiNumbersSize
     );
     configBatchReader.addRange(
       'group_mmsi_names',
-      this.deviceConfig.groupMmsiNamesAddress,
-      this.deviceConfig.groupMmsiNamesAddress + groupMmsiNamesSize
+      this.deviceConfig.groupNamesAddress,
+      this.deviceConfig.groupNamesAddress + groupMmsiNamesSize
     );
     configBatchReader.addRange(
       'group_mmsi_numbers',
-      this.deviceConfig.groupMmsiNumbersAddress,
-      this.deviceConfig.groupMmsiNumbersAddress + groupMmsiNumbersSize
+      this.deviceConfig.groupNumbersAddress,
+      this.deviceConfig.groupNumbersAddress + groupMmsiNumbersSize
     );
   }
   updateConfig(
@@ -216,8 +229,8 @@ export class DscConfig implements ConfigModuleInterface {
     yaml: Document<Node, true>
   ) {
     const mmsiDirectory = new MmsiDirectory(
-      this.deviceConfig!.individualMmsiNum,
-      this.deviceConfig!.groupMmsiNum
+      this.deviceConfig!.individualNum,
+      this.deviceConfig!.groupNum
     );
     mmsiDirectory.initFromConfig(
       results.get('individual_mmsi_names')!,

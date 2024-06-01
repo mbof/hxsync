@@ -27,15 +27,26 @@
       </button>
     } @else {
       <div class="connected-buttons">
-        <button (click)="readWaypoints()">Waypoints</button>
-        <button (click)="readMmsi()">MMSI Directory</button>
+        @if (deviceMgr.configSession._deviceConfig?.waypoints) {
+          <button (click)="readWaypoints()">Waypoints</button>
+        }
+        @if (deviceMgr.configSession._deviceConfig?.dsc) {
+          <button (click)="readMmsi()">MMSI Directory</button>
+        }
         <button (click)="readYaml()">Edit as Yaml</button>
-        @if (connectionState == 'usb-connected') {
+        @if (
+          connectionState == 'usb-connected' &&
+          deviceMgr.configSession._deviceConfig?.hasGps
+        ) {
           <button (click)="readGpslog()">Download GPS log</button>
         }
-        <button (click)="saveDat()">Save DAT</button>
+        @if (deviceMgr.configSession._deviceConfig?.dat) {
+          <button (click)="saveDat()">Save DAT</button>
+        }
         @if (connectionState == 'usb-connected') {
-          <button (click)="restoreDat()">Restore from DAT</button>
+          @if (deviceMgr.configSession._deviceConfig?.dat) {
+            <button (click)="restoreDat()">Restore from DAT</button>
+          }
           <button (click)="deviceMgr.disconnect()">Disconnect</button>
         } @else if (connectionState == 'dat-connected') {
           <button (click)="deviceMgr.disconnect()">Close</button>

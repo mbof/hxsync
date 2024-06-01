@@ -1,4 +1,4 @@
-import { DeviceConfig, DevicemgrService } from './devicemgr.service';
+import { DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
 
 const CHUNK_SIZE: number = 0x40;

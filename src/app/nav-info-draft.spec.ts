@@ -1,8 +1,9 @@
 import { hexarr, unhex } from './message';
 import { NavInfoDraft } from './nav-info-draft';
 import { Waypoint, waypointFromConfig } from './waypoint';
-import { DeviceConfig } from './devicemgr.service';
+import { DeviceConfig } from './device-configs';
 import { Route, RouteData } from './route';
+import { WaypointDeviceConfig } from './config-modules/waypoints';
 
 // prettier-ignore
 const testEncodedWaypoint = new Uint8Array([
@@ -33,26 +34,21 @@ const testRouteData2: RouteData = {
   waypointIds: Array.from({ length: 10 }, (_, i) => i + 1)
 };
 
-function makeFakeDeviceConfig(waypointsNumber: number): DeviceConfig {
+function makeFakeWaypointDeviceConfig(
+  waypointsNumber: number
+): WaypointDeviceConfig {
   return {
-    name: 'HX870',
-    usbFilter: { usbProductId: 0, usbVendorId: 2 },
-    waypointsStartAddress: 0x1234,
-    waypointsNumber: waypointsNumber,
-    routesStartAddress: 0x5678,
-    routeBytes: 64,
-    numWaypointsPerRoute: 32,
-    routesNumber: 2,
-    individualMmsiNamesAddress: 0xdead,
-    individualMmsiNumbersAddress: 0xbeef,
-    individualMmsiNum: 10,
-    groupMmsiNamesAddress: 0xcafe,
-    groupMmsiNumbersAddress: 0xbabe,
-    groupMmsiNum: 10,
-    datLength: 64,
-    datMagic: new Uint8Array([0x12, 0x34])
+    startAddress: 0x1234,
+    number: waypointsNumber
   };
 }
+
+const FAKE_ROUTE_DEVICE_CONFIG = {
+  startAddress: 0x5678,
+  bytesPerRoute: 64,
+  numWaypointsPerRoute: 32,
+  numRoutes: 2
+};
 
 function getSampleWaypointArray() {
   const wp = waypointFromConfig(testEncodedWaypoint, 0x1234)!;
@@ -64,7 +60,12 @@ function getSampleWaypointArray() {
 describe('NavInfoDraft', () => {
   it('should create a set of draft waypoints', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(100));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(100),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     expect(draft).toBeTruthy();
     expect(draft.waypoints).toEqual(wpArr);
     expect(draft.waypoints).not.toBe(wpArr);
@@ -72,7 +73,12 @@ describe('NavInfoDraft', () => {
   });
   it('should delete waypoints', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(100));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(100),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     draft.deleteWaypoint(wpArr[2]);
     expect(draft.waypoints).toEqual([wpArr[0], wpArr[1], wpArr[3]]);
     expect(draft.dirtyWaypoints).toBeTrue();
@@ -90,7 +96,8 @@ describe('NavInfoDraft', () => {
     const draft = new NavInfoDraft(
       wpArr,
       [route1, route2],
-      makeFakeDeviceConfig(100)
+      makeFakeWaypointDeviceConfig(100),
+      FAKE_ROUTE_DEVICE_CONFIG
     );
     draft.deleteWaypoint(wpArr[2]);
     expect(draft.routes[0].route.waypointIds).toEqual([0, 2, 2, 0]);
@@ -103,7 +110,12 @@ describe('NavInfoDraft', () => {
   });
   it('should edit waypoints', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(100));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(100),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     draft.editWaypoint(wpArr[2], 'New name', '10S34.5678', '100E45.6789');
     expect(draft.waypoints[0]).toBe(wpArr[0]);
     expect(draft.waypoints[1]).toBe(wpArr[1]);
@@ -119,7 +131,12 @@ describe('NavInfoDraft', () => {
   });
   it('should add waypoints', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(100));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(100),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     expect(draft.waypoints.length == 4);
     draft.addWaypoint({
       name: 'Avalon',
@@ -145,7 +162,12 @@ describe('NavInfoDraft', () => {
   });
   it('should reject waypoints when full', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(4));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(4),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     expect(() =>
       draft.addWaypoint({
         name: 'New waypoint',
@@ -157,7 +179,12 @@ describe('NavInfoDraft', () => {
   });
   it('should encode waypoints', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(6));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(6),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     draft.addWaypoint({
       name: 'New waypoint',
       lat: '10S34.5678',
@@ -174,7 +201,12 @@ describe('NavInfoDraft', () => {
   });
   it('should support route editing', () => {
     const wpArr = getSampleWaypointArray();
-    const draft = new NavInfoDraft(wpArr, [], makeFakeDeviceConfig(6));
+    const draft = new NavInfoDraft(
+      wpArr,
+      [],
+      makeFakeWaypointDeviceConfig(6),
+      FAKE_ROUTE_DEVICE_CONFIG
+    );
     const routeId = draft.addRoute('Route 1');
     draft.insertWaypointInRoute(routeId, 1, 0);
     draft.insertWaypointInRoute(routeId, 2, 1);
@@ -202,7 +234,8 @@ describe('NavInfoDraft', () => {
     const draft = new NavInfoDraft(
       wpArr,
       [route1, route2],
-      makeFakeDeviceConfig(6)
+      makeFakeWaypointDeviceConfig(6),
+      FAKE_ROUTE_DEVICE_CONFIG
     );
     const encodedRouteData = draft.getBinaryRouteData();
     expect(hexarr(encodedRouteData)).toBe(

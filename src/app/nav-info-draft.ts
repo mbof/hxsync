@@ -1,4 +1,5 @@
-import { DeviceConfig } from './devicemgr.service';
+import { RouteDeviceConfig } from './config-modules/routes';
+import { WaypointDeviceConfig } from './config-modules/waypoints';
 import { parseLat, parseLon } from './parseLatLon';
 import { Route } from './route';
 import {
@@ -16,7 +17,8 @@ export class NavInfoDraft {
   constructor(
     waypoints: Waypoint[],
     routes: Route[],
-    private deviceConfig: DeviceConfig,
+    private waypointDeviceConfig: WaypointDeviceConfig,
+    private routeDeviceConfig: RouteDeviceConfig,
     private updateCallback?: (() => void) | undefined
   ) {
     this.waypoints = waypoints.slice();
@@ -84,7 +86,7 @@ export class NavInfoDraft {
   }
 
   addWaypoint(wpFormData: WpFormData): void {
-    if (this.waypoints.length >= this.deviceConfig.waypointsNumber) {
+    if (this.waypoints.length >= this.waypointDeviceConfig.number) {
       throw new Error('No more room for waypoints');
     }
     const { lat, lon } = parseAndCheckWaypointData(wpFormData);
@@ -114,7 +116,7 @@ export class NavInfoDraft {
   }
 
   addRoute(name: string): number {
-    if (this.routes.length >= this.deviceConfig.routesNumber) {
+    if (this.routes.length >= this.routeDeviceConfig.numRoutes) {
       throw new Error(`No room for more routes (${this.routes.length})`);
     }
     this.routes.push(new Route({ name: name, waypointIds: [] }));
@@ -129,7 +131,9 @@ export class NavInfoDraft {
     waypointIndex: number
   ): void {
     const route = this.routes[routeIndex].route;
-    if (route.waypointIds.length >= this.deviceConfig.numWaypointsPerRoute) {
+    if (
+      route.waypointIds.length >= this.routeDeviceConfig.numWaypointsPerRoute
+    ) {
       throw new Error(
         `No room for more waypoints (${route.waypointIds.length})`
       );
@@ -170,7 +174,7 @@ export class NavInfoDraft {
   getBinaryWaypointData(wpBaseAddress: number): Uint8Array {
     // Prepare all waypoint data
     const wpData = new Uint8Array(
-      WAYPOINTS_BYTE_SIZE * this.deviceConfig.waypointsNumber
+      WAYPOINTS_BYTE_SIZE * this.waypointDeviceConfig.number
     );
     wpData.fill(255);
     fillWaypointData(this.waypoints, wpBaseAddress, wpData);
@@ -184,15 +188,15 @@ export class NavInfoDraft {
     );
     // Prepare all route data
     const routeData = new Uint8Array(
-      this.deviceConfig.routeBytes * this.deviceConfig.routesNumber
+      this.routeDeviceConfig.bytesPerRoute * this.routeDeviceConfig.numRoutes
     );
     routeData.fill(255);
     for (const [index, route] of this.routes.entries()) {
       route.fillConfig(
         routeData,
-        index * this.deviceConfig.routeBytes,
-        this.deviceConfig.numWaypointsPerRoute,
-        this.deviceConfig.routeBytes
+        index * this.routeDeviceConfig.bytesPerRoute,
+        this.routeDeviceConfig.numWaypointsPerRoute,
+        this.routeDeviceConfig.bytesPerRoute
       );
     }
     return routeData;

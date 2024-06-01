@@ -2,41 +2,45 @@ import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from '../config-session';
-import { DeviceModel } from '../devicemgr.service';
+import { DeviceModel } from '../device-configs';
 import { ConfigModuleInterface } from './config-module-interface';
 import { Route, routeFromConfig } from '../route';
 import { Waypoint } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 
-type RouteDeviceConfig = {
-  name: DeviceModel;
+export type RouteDeviceConfig = {
   startAddress: number;
   numRoutes: number;
   numWaypointsPerRoute: number;
-  routeBytes: number;
+  bytesPerRoute: number;
 };
 
-const DEVICE_CONFIGS: RouteDeviceConfig[] = [
-  {
-    name: 'HX890',
-    startAddress: 0xc700,
-    numRoutes: 20,
-    numWaypointsPerRoute: 31,
-    routeBytes: 64
-  },
-  {
-    name: 'HX870',
-    startAddress: 0x5c00,
-    numRoutes: 20,
-    numWaypointsPerRoute: 16,
-    routeBytes: 32
-  }
-];
+export const ROUTE_DEVICE_CONFIGS: Map<DeviceModel, RouteDeviceConfig> =
+  new Map([
+    [
+      'HX890',
+      {
+        startAddress: 0xc700,
+        numRoutes: 20,
+        numWaypointsPerRoute: 31,
+        bytesPerRoute: 64
+      }
+    ],
+    [
+      'HX870',
+      {
+        startAddress: 0x5c00,
+        numRoutes: 20,
+        numWaypointsPerRoute: 16,
+        bytesPerRoute: 32
+      }
+    ]
+  ]);
 
 export class RouteConfig implements ConfigModuleInterface {
   deviceConfig: RouteDeviceConfig | undefined;
   constructor(readonly deviceModel: DeviceModel) {
-    this.deviceConfig = DEVICE_CONFIGS.find((c) => (c.name = deviceModel));
+    this.deviceConfig = ROUTE_DEVICE_CONFIGS.get(deviceModel);
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
@@ -66,15 +70,15 @@ export class RouteConfig implements ConfigModuleInterface {
         routeA.route.name.localeCompare(routeB.route.name)
       );
     const routeData = new Uint8Array(
-      deviceConfig.routeBytes * deviceConfig.numRoutes
+      deviceConfig.bytesPerRoute * deviceConfig.numRoutes
     );
     routeData.fill(255);
     for (const [index, route] of routesArray.entries()) {
       route.fillConfig(
         routeData,
-        deviceConfig.routeBytes * index,
+        deviceConfig.bytesPerRoute * index,
         deviceConfig.numWaypointsPerRoute,
-        deviceConfig.routeBytes
+        deviceConfig.bytesPerRoute
       );
     }
     configBatchWriter.prepareWrite(
@@ -90,7 +94,7 @@ export class RouteConfig implements ConfigModuleInterface {
         'routes',
         this.deviceConfig.startAddress,
         this.deviceConfig.startAddress +
-          this.deviceConfig.routeBytes * this.deviceConfig.numRoutes
+          this.deviceConfig.bytesPerRoute * this.deviceConfig.numRoutes
       );
     }
   }
@@ -111,9 +115,9 @@ export class RouteConfig implements ConfigModuleInterface {
     }
     const routes: Route[] = [];
     for (let routeId = 0; routeId < this.deviceConfig.numRoutes; routeId++) {
-      let offset = routeId * this.deviceConfig.routeBytes;
+      let offset = routeId * this.deviceConfig.bytesPerRoute;
       let route = routeFromConfig(
-        routeData.subarray(offset, offset + this.deviceConfig.routeBytes),
+        routeData.subarray(offset, offset + this.deviceConfig.bytesPerRoute),
         this.deviceConfig.numWaypointsPerRoute
       );
       if (route) {

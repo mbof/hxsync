@@ -1,19 +1,13 @@
 import { TestBed } from '@angular/core/testing';
 
-import {
-  DEVICE_CONFIGS,
-  DeviceConfig,
-  DeviceModel,
-  DevicemgrService
-} from './devicemgr.service';
+import { DevicemgrService } from './devicemgr.service';
+import { DEVICE_CONFIGS, DeviceModel } from './device-configs';
 
 export function createMockDat(deviceModel: DeviceModel) {
-  const deviceConfig = DEVICE_CONFIGS.find(
-    (c: DeviceConfig) => (c.name = deviceModel)
-  );
-  const datFile = new Uint8Array(deviceConfig!.datLength);
+  const deviceConfig = DEVICE_CONFIGS.get(deviceModel);
+  const datFile = new Uint8Array(deviceConfig!.dat!.length);
   datFile.fill(0xaa);
-  datFile.set(deviceConfig!.datMagic);
+  datFile.set(deviceConfig!.dat!.magic);
   return datFile;
 }
 
