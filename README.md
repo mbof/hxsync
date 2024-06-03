@@ -31,6 +31,9 @@ https://github.com/mbof/hxsync/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff4
 
 ## Development server
 
+First-time installation: after cloning this repository, run `npm install` from
+the project directory to fetch the required modules.
+
 Run `ng serve --serve-path hx` for a dev server. Navigate to
 `http://localhost:4200/hx`. The application will automatically reload if you
 change any of the source files.
