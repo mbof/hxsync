@@ -1,0 +1,34 @@
+button {
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 5px 10px;
+  background: rgb(38, 42, 85);
+  color: white;
+  font-weight: bold;
+}
+
+button:disabled {
+  border: none;
+  border-radius: 5px;
+  padding: 5px 10px;
+  margin: 5px 10px;
+  background: rgb(151, 151, 151);
+  color: rgb(48, 48, 48);
+  font-weight: bold;
+}
+
+body {
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif,
+    'Apple Color Emoji',
+    'Segoe UI Emoji',
+    'Segoe UI Symbol';
+}
