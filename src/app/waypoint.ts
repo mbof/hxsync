@@ -65,9 +65,9 @@ export class Waypoint {
       );
     }
     let name = this.wp.name;
-    if (name.length >= 15) {
+    if (name.length > 15) {
       console.log(`Waypoint name too long ${name}, truncating`);
-      name = name.substring(0, 14);
+      name = name.substring(0, 15);
     }
     const destWaypoint = dest.subarray(destOffset, destOffset + 32);
     if (this.wp.dsc_origin) {

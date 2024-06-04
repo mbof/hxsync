@@ -32,8 +32,20 @@ const testEncodedWaypoint = new Uint8Array([
   0x0B
 ]);
 
+const testWpData2: WaypointData = {
+  id: 10,
+  name: 'Avalonnnnnnnnn!',
+  lat_deg: 33,
+  lat_min: 207200,
+  lat_dir: 'N',
+  lon_deg: 118,
+  lon_min: 194170,
+  lon_dir: 'W',
+  address: 0x1234
+};
+
 const testEncodedWaypoint2 = unhex(
-  'FFFFFFFFF0332072004E0118194170574176616C6F6EFFFFFFFFFFFFFFFFFF0A'
+  'FFFFFFFFF0332072004E0118194170574176616C6F6E6E6E6E6E6E6E6E6E210A'
 );
 
 const testEncodedWaypoint3 = unhex(
@@ -51,6 +63,13 @@ describe('Waypoint', () => {
     dest.fill(0xaa, 0, 32);
     wp.fillConfig(dest, 0x1234);
     expect(dest).toEqual(testEncodedWaypoint);
+  });
+  it('should pack a waypoint with a long name', () => {
+    const wp = new Waypoint(testWpData2);
+    const dest = new Uint8Array(32);
+    dest.fill(0xaa, 0, 32);
+    wp.fillConfig(dest, 0x1234);
+    expect(dest).toEqual(testEncodedWaypoint2);
   });
   it('should return readable lat / lon', () => {
     const wp = new Waypoint(testWpData);
