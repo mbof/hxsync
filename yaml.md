@@ -44,10 +44,8 @@ Example:
 
 ```
 - waypoints:
-    # Example in decimal degrees
-    - Alpha: 33.9803 -118.4517
-    # Example in degrees and decimal minutes
-    - Bravo: 33N58.818 118W27.102
+    - Alpha: 33.9803 -118.4517  # Decimal degrees
+    - Bravo: 33N58.818 118W27.102  # Degrees and decimal minutes
 ```
 
 ## `routes`
@@ -103,3 +101,61 @@ Example:
         model_name: HX890
 
 ```
+
+## `channels`
+
+Note: this is not yet widely available.
+
+Set channel configuration for each channel group (`group_1`, `group_2`, or
+`group_3`), including
+
+- `dsc`: `enabled` or `disabled` depending on whether the channel should appear
+  as an option in the DSC calling menu.
+- `name`: name of the channel
+- `scrambler`: (HX890 only) a scrambler setting for this channel, including
+  - a scrambler `type` of either 4 or 32, depending on whether the 4-code
+    scrambler (CVS2500) or 32-code scrambler (FVP-42) should be used
+  - a scrambler `code` between 0 and `type` - 1.
+
+Example:
+
+```
+- channels:
+    group_1:
+      - "06":
+          dsc: enabled
+      - "09":
+          name: Foo CALLING
+      - "12":
+          name: Bar VTS
+      - "13":
+          dsc: enabled
+      - "68":
+          dsc: enabled
+      - "69":
+          dsc: enabled
+      - "71":
+          dsc: enabled
+      - "72":
+          dsc: enabled
+      - "1078":
+          dsc: enabled
+      - "88":
+          scrambler:
+            type: 32
+            code: 11
+```
+
+The configuration does not have to be provided for all channel groups. If a
+channel group is omitted, the channel configuration for that group will be left
+unmodified.
+
+Within a channel group, the configuration does not have to be provided for all
+channels. If a channel is omitted, its properties will be unmodified, except
+that **DSC calling will be disabled**. In other words, if configuration is
+provided for a channel group, it is necessary to list out all channels for which
+DSC should be enabled.
+
+Within a channel, if `name` is omitted, the previous name will be left
+unchanged. If `scrambler` is omitted, no scrambler will be used on this channel.
+If `dsc` is omitted, DSC will be disabled.
