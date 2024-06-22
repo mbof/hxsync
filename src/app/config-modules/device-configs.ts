@@ -1,16 +1,17 @@
-import {
-  WAYPOINT_DEVICE_CONFIGS,
-  WaypointDeviceConfig
-} from './waypoints';
-import {
-  ROUTE_DEVICE_CONFIGS,
-  RouteDeviceConfig
-} from './routes';
+import { WAYPOINT_DEVICE_CONFIGS, WaypointDeviceConfig } from './waypoints';
+import { ROUTE_DEVICE_CONFIGS, RouteDeviceConfig } from './routes';
 import { DSC_DEVICE_CONFIGS, DscDeviceConfig } from './dsc';
 import { ChannelGroup } from '../channel-group';
 import { MmsiDirectory } from '../mmsi';
 import { NavInfoDraft } from '../nav-info-draft';
 import { Waypoint } from '../waypoint';
+import { MarineChannelMemoryRangeId, MarineChannelSection } from './channels';
+import { MarineChannelConfig } from '../channel';
+import {
+  ExtraChannelConfig,
+  ExtraChannelMemoryRangeId,
+  ExtraChannelType
+} from './extra-channels';
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400'];
@@ -83,6 +84,8 @@ export type Config = {
   gpslog?: Uint8Array;
   mmsiDirectory?: MmsiDirectory;
   channelGroups?: ChannelGroup[];
+  marineChannels?: Map<MarineChannelSection, MarineChannelConfig[]>;
+  extraChannels?: Map<ExtraChannelType, ExtraChannelConfig[]>;
 };
 
 export type MemoryRangeId =
@@ -92,4 +95,6 @@ export type MemoryRangeId =
   | 'group_mmsi_numbers'
   | 'waypoints'
   | 'routes'
-  | 'channel_groups';
+  | 'channel_groups'
+  | MarineChannelMemoryRangeId
+  | ExtraChannelMemoryRangeId;
