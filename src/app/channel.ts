@@ -17,6 +17,72 @@ export type MarineChannelConfig = {
 export const CHANNEL_NAME_BYTES = 16;
 export const MARINE_FLAG_BYTES = 4;
 
+export function parseChannelId(id: string) {
+  let numeric_id: number | undefined;
+  let prefix = 0x7f;
+  let suffix: string | undefined;
+  if (id.length == 2) {
+    numeric_id = Number(id);
+  } else if (id.length == 4) {
+    numeric_id = Number(id.substring(2, 4));
+    prefix = Number(id.substring(0, 2));
+  } else if (id.length == 3) {
+    numeric_id = Number(id.substring(0, 2));
+    suffix = id.substring(2);
+  }
+  if (!numeric_id || (suffix && !['A', 'B'].includes(suffix))) {
+    throw new Error(`Unparseable channel ID ${id}`);
+  }
+  return {
+    numeric_id,
+    prefix,
+    suffix
+  };
+}
+
+export function getChannelIdMatcher(id: string) {
+  const { numeric_id, prefix, suffix } = parseChannelId(id);
+  return function (flags: Uint8Array) {
+    const prefixFlags = flags[2] & 0x7f;
+    const suffixFlags = flags[1] & 0x03;
+    return (
+      flags[0] == numeric_id &&
+      prefixFlags == prefix &&
+      ((suffix == undefined && suffixFlags == 0) ||
+        (suffix == 'A' && suffixFlags == 1) ||
+        (suffix == 'B' && suffixFlags == 2))
+    );
+  };
+}
+
+export function fillChannelFlags(
+  flagsIn: Uint8Array,
+  flagsOut: Uint8Array,
+  dsc: 'enabled' | 'disabled',
+  scrambler: ScramblerCode | undefined
+) {
+  flagsOut.set(flagsIn);
+  if (dsc == 'enabled') {
+    flagsOut[2] |= 0x80;
+  } else {
+    flagsOut[2] &= 0xff ^ 0x80;
+  }
+  if (!scrambler) {
+    flagsOut[3] = 0;
+  } else {
+    flagsOut[3] = 0x80;
+    if (scrambler.type == 32) {
+      flagsOut[3] |= 0x40;
+    }
+    if (scrambler.code < 0 || scrambler.code >= scrambler.type) {
+      throw new Error(
+        `Scrambler code ${scrambler.code} must be between 0 and ${scrambler.type - 1}`
+      );
+    }
+    flagsOut[3] |= scrambler.code;
+  }
+}
+
 export function decodeChannelConfig(
   n: number,
   enabledData: Uint8Array,
