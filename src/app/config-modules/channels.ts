@@ -206,6 +206,10 @@ export class ChannelConfig implements ConfigModuleInterface {
       flagsIn.set(mcc.flags, i * MARINE_FLAG_BYTES)
     );
     const flagsOut = flagsIn.slice();
+    for (let i = 0; i < previousSectionConfig.length; i++) {
+      // Disable DSC unless explicitly allowed
+      flagsOut[i * MARINE_FLAG_BYTES + 2] &= 0x7f
+    }
     const namesOut = new Uint8Array(
       previousSectionConfig.length * CHANNEL_NAME_BYTES
     );
