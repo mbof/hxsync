@@ -27,6 +27,7 @@ export type MarineChannelDeviceConfig = {
 
 export type ChannelDeviceConfig = {
   marineChannels: Map<MarineChannelSection, MarineChannelDeviceConfig>;
+  hasScrambler: boolean;
 };
 
 export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
@@ -34,6 +35,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
     [
       'HX870',
       {
+        hasScrambler: false,
         marineChannels: new Map([
           [
             'group_1',
@@ -68,6 +70,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
     [
       'HX890',
       {
+        hasScrambler: true,
         marineChannels: new Map([
           [
             'group_1',
@@ -208,7 +211,7 @@ export class ChannelConfig implements ConfigModuleInterface {
     const flagsOut = flagsIn.slice();
     for (let i = 0; i < previousSectionConfig.length; i++) {
       // Disable DSC unless explicitly allowed
-      flagsOut[i * MARINE_FLAG_BYTES + 2] &= 0x7f
+      flagsOut[i * MARINE_FLAG_BYTES + 2] &= 0x7f;
     }
     const namesOut = new Uint8Array(
       previousSectionConfig.length * CHANNEL_NAME_BYTES
@@ -237,6 +240,12 @@ export class ChannelConfig implements ConfigModuleInterface {
       }
       const previousChannelConfig = previousSectionConfig[n];
       let { dsc, scrambler, name } = parseYamlChannel(channelNode.get(id));
+      if (scrambler && !deviceConfig.hasScrambler) {
+        throw new YamlError(
+          `Scrambler not supported on ${this.deviceModel}`,
+          channelNode.range![0]
+        );
+      }
       if (!name) {
         name = previousChannelConfig.name;
       }
