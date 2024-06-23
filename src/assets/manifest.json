@@ -1,0 +1,13 @@
+{
+  "name": "HxSync",
+  "icons": [
+    {
+      "src": "hx-512.png",
+      "type": "image/png",
+      "sizes": "512x512"
+    }
+  ],
+  "start_url": "../index.html",
+  "id": "../index.html",
+  "display": "standalone"
+}
