@@ -5,7 +5,10 @@ described below. Here's a demo:
 
 https://github.com/mbof/hxsync/assets/1308709/df649b4c-65ca-42f7-bace-c769260a9384
 
-Only the directives provided will be written.
+## Omitting sections
+
+You can omit sections of configuration. Only the sections provided will be written,
+others will be left unchanged.
 
 ## `dsc_directory`
 
