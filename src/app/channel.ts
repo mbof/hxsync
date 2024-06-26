@@ -17,7 +17,10 @@ export type MarineChannelConfig = {
 export const CHANNEL_NAME_BYTES = 16;
 export const MARINE_FLAG_BYTES = 4;
 
-export function parseChannelId(id: string) {
+export function parseChannelId(id: number | string) {
+  if (typeof id == 'number') {
+    id = `${id}`.padStart(2, '0');
+  }
   let numeric_id: number | undefined;
   let prefix = 0x7f;
   let suffix: string | undefined;
@@ -40,7 +43,7 @@ export function parseChannelId(id: string) {
   };
 }
 
-export function getChannelIdMatcher(id: string) {
+export function getChannelIdMatcher(id: number | string) {
   const { numeric_id, prefix, suffix } = parseChannelId(id);
   return function (flags: Uint8Array) {
     const prefixFlags = flags[2] & 0x7f;
@@ -55,31 +58,31 @@ export function getChannelIdMatcher(id: string) {
   };
 }
 
-export function fillChannelFlags(
-  flagsIn: Uint8Array,
-  flagsOut: Uint8Array,
-  dsc: 'enabled' | 'disabled',
+export function setIntershipFlag(flags: Uint8Array, enabled: boolean) {
+  if (enabled) {
+    flags[2] |= 0x80;
+  } else {
+    flags[2] &= 0xff ^ 0x80;
+  }
+}
+
+export function setScramblerFlag(
+  flags: Uint8Array,
   scrambler: ScramblerCode | undefined
 ) {
-  flagsOut.set(flagsIn);
-  if (dsc == 'enabled') {
-    flagsOut[2] |= 0x80;
-  } else {
-    flagsOut[2] &= 0xff ^ 0x80;
-  }
   if (!scrambler) {
-    flagsOut[3] = 0;
+    flags[3] = 0;
   } else {
-    flagsOut[3] = 0x80;
+    flags[3] = 0x80;
     if (scrambler.type == 32) {
-      flagsOut[3] |= 0x40;
+      flags[3] |= 0x40;
     }
     if (scrambler.code < 0 || scrambler.code >= scrambler.type) {
       throw new Error(
         `Scrambler code ${scrambler.code} must be between 0 and ${scrambler.type - 1}`
       );
     }
-    flagsOut[3] |= scrambler.code;
+    flags[3] |= scrambler.code;
   }
 }
 

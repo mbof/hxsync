@@ -1,4 +1,4 @@
-import { decodeChannelConfig } from './channel';
+import { decodeChannelConfig, parseChannelId } from './channel';
 import { unhex } from './message';
 
 const ENABLED_FLAGS = unhex('fffffffffffffc00');
@@ -106,5 +106,50 @@ describe('decodeChannelConfig', () => {
     expect(channel.enabled).toBeFalse();
     expect(channel.dsc).toBe('disabled');
     expect(channel.name).toBe('COMMERCIAL');
+  });
+});
+
+describe('parseChannelId', () => {
+  it('parses a simple channel', () => {
+    expect(parseChannelId(88)).toEqual({
+      numeric_id: 88,
+      prefix: 0x7f,
+      suffix: undefined
+    });
+  });
+  it('parses a single-digit channel', () => {
+    expect(parseChannelId(6)).toEqual({
+      numeric_id: 6,
+      prefix: 0x7f,
+      suffix: undefined
+    });
+  });
+  it('parses a channel encoded as string', () => {
+    expect(parseChannelId('06')).toEqual({
+      numeric_id: 6,
+      prefix: 0x7f,
+      suffix: undefined
+    });
+  });
+  it('parses a channel with prefix', () => {
+    expect(parseChannelId(1081)).toEqual({
+      numeric_id: 81,
+      prefix: 10,
+      suffix: undefined
+    });
+  });
+  it('parses a channel with prefix encoded as string', () => {
+    expect(parseChannelId('1081')).toEqual({
+      numeric_id: 81,
+      prefix: 10,
+      suffix: undefined
+    });
+  });
+  it('parses a channel with suffix', () => {
+    expect(parseChannelId('39A')).toEqual({
+      numeric_id: 39,
+      prefix: 0x7f,
+      suffix: 'A'
+    });
   });
 });
