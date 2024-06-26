@@ -48,7 +48,7 @@ export class YamlSheetComponent {
     }
     const sharedUrl =
       window.location.href.split('#')[0] +
-      'share#' +
+      '../hx-share#' +
       encodeURIComponent(this.yamlControl.value);
     await navigator.clipboard.write([
       new ClipboardItem({

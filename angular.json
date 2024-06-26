@@ -88,13 +88,14 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "baseHref": "/hx/share/",
+            "baseHref": "/hx-share/",
             "outputPath": "dist/share",
             "index": "projects/share/src/index.html",
             "browser": "projects/share/src/main.ts",
             "polyfills": ["polyfills.ts", "zone.js"],
             "tsConfig": "projects/share/tsconfig.app.json",
             "assets": [
+              "projects/share/src/favicon.ico",
               {
                 "glob": "**/*",
                 "input": "projects/share/public"
