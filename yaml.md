@@ -5,10 +5,7 @@ described below. Here's a demo:
 
 https://github.com/mbof/hxsync/assets/1308709/df649b4c-65ca-42f7-bace-c769260a9384
 
-## Omitting sections
-
-You can omit sections of configuration. Only the sections provided will be written,
-others will be left unchanged.
+Only the directives provided will be written.
 
 ## `dsc_directory`
 
@@ -112,10 +109,16 @@ Note: this is not yet widely available.
 Set channel configuration for each channel group (`group_1`, `group_2`, or
 `group_3`), including
 
-- `dsc`: `enabled` or `disabled` depending on whether the channel should appear
-  as an option in the DSC calling menu.
-- `name`: name of the channel
-- `scrambler`: (HX890 only) a scrambler setting for this channel, including
+- `intership`: list of channels enabled for inter-ship calling (DSC). If this
+  section is omitted, the list of channels enabled for inter-ship calling is
+  left unchanged. If it is present, then all channels for inter-ship calling
+  must be provided (other channels will be disabled for inter-ship calling).
+- `names`: channel names. If this section is omitted, names are unchanged; if a
+  channel is omitted from this list, its name is unchanged too.
+- `scrambler`: (HX890 only) scrambler settings. If this section is omitted,
+  scrambler settings are unchanged; if this section is present, all scrambler
+  settings must be provided (other channels with have scrambling disabled). For
+  each channel in this section, the scrambler setting consists of:
   - a scrambler `type` of either 4 or 32, depending on whether the 4-code
     scrambler (CVS2500) or 32-code scrambler (FVP-42) should be used
   - a scrambler `code` between 0 and `type` - 1.
@@ -125,40 +128,16 @@ Example:
 ```
 - channels:
     group_1:
-      - "06":
-          dsc: enabled
-      - "09":
-          name: Foo CALLING
-      - "12":
-          name: Bar VTS
-      - "13":
-          dsc: enabled
-      - "68":
-          dsc: enabled
-      - "69":
-          dsc: enabled
-      - "71":
-          dsc: enabled
-      - "72":
-          dsc: enabled
-      - "1078":
-          dsc: enabled
-      - "88":
-          scrambler:
-            type: 32
-            code: 11
+        intership: [ 6, 13, 68, 69, 71, 72, 1078 ]
+        names:
+            - 9: Foo-CALLING
+            - 12: Bar-VTS
+            - 1081: Baz-CCG
+            - 88: Bat-COMMER
+        scrambler:
+            - 88: { type: 4, code: 3 }
 ```
 
 The configuration does not have to be provided for all channel groups. If a
 channel group is omitted, the channel configuration for that group will be left
 unmodified.
-
-Within a channel group, the configuration does not have to be provided for all
-channels. If a channel is omitted, its properties will be unmodified, except
-that **DSC calling will be disabled**. In other words, if configuration is
-provided for a channel group, it is necessary to list out all channels for which
-DSC should be enabled.
-
-Within a channel, if `name` is omitted, the previous name will be left
-unchanged. If `scrambler` is omitted, no scrambler will be used on this channel.
-If `dsc` is omitted, DSC will be disabled.
