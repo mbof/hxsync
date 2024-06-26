@@ -15,6 +15,7 @@
           "options": {
             "outputPath": "dist/hxsync",
             "index": "src/index.html",
+            "baseHref": "/hx/",
             "browser": "src/main.ts",
             "polyfills": ["polyfills.ts", "zone.js"],
             "tsConfig": "tsconfig.app.json",
@@ -87,7 +88,7 @@
         "build": {
           "builder": "@angular-devkit/build-angular:application",
           "options": {
-            "baseHref": "hx",
+            "baseHref": "/hx/share/",
             "outputPath": "dist/share",
             "index": "projects/share/src/index.html",
             "browser": "projects/share/src/main.ts",
