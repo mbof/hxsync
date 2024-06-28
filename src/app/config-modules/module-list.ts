@@ -1,4 +1,5 @@
 import { ChannelGroupConfig } from './channel-groups';
+import { ChannelConfig } from './channels';
 import { ConfigModuleConstructor } from './config-module-interface';
 import { DscConfig } from './dsc';
 import { RouteConfig } from './routes';
@@ -8,5 +9,6 @@ export const CONFIG_MODULE_CONSTRUCTORS: ConfigModuleConstructor[] = [
   DscConfig,
   WaypointConfig,
   RouteConfig,
-  ChannelGroupConfig
+  ChannelGroupConfig,
+  ChannelConfig
 ];
