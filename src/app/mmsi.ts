@@ -149,6 +149,10 @@ export class MmsiDirectory {
     if (this.individualMmsis.length > this.maxIndividualMmsis) {
       throw new Error('Too many MMSIs');
     }
+    const maybeDuplicate = hasDuplicateMmsis(this.individualMmsis);
+    if (maybeDuplicate) {
+      throw new Error(`Duplicate MMSI ${maybeDuplicate}`)
+    }
     individualMmsiNamesData.fill(255);
     individualMmsiNumbersData.fill(255);
     for (const [index, mmsi] of this.individualMmsis.entries()) {
@@ -163,6 +167,10 @@ export class MmsiDirectory {
     this.sortGroup();
     if (this.groupMmsis.length > this.maxGroupMmsis) {
       throw new Error('Too many group MMSIs');
+    }
+    const maybeDuplicate = hasDuplicateMmsis(this.groupMmsis);
+    if (maybeDuplicate) {
+      throw new Error(`Duplicate MMSI ${maybeDuplicate}`)
     }
     groupMmsiNames.fill(255), groupMmsiNumbers.fill(255);
 
@@ -199,4 +207,15 @@ export class MmsiDirectory {
     this.individualMmsis = individualMmsis;
     this.groupMmsis = groupMmsis;
   }
+}
+
+function hasDuplicateMmsis(mmsis: Mmsi[]): string | undefined {
+  for (let i = 0; i < mmsis.length; i++) {
+    for (let j = i + 1; j < mmsis.length; j++) {
+      if (mmsis[i].number == mmsis[j].number) {
+        return mmsis[i].number;
+      }
+    }
+  }
+  return undefined;
 }

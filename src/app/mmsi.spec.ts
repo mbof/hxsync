@@ -173,4 +173,29 @@ describe('MmsiDirectory', () => {
     expect(groupMmsiNameBytes).toEqual(unhex(nameData));
     expect(groupMmsiNumberBytes).toEqual(unhex(numberData));
   });
+  it('should reject writing config data with duplicates', () => {
+    const mmsiDirectory = new MmsiDirectory(4, 4);
+    mmsiDirectory.individualMmsis = [mmsi1, mmsi2, mmsi2, mmsi4];
+    mmsiDirectory.groupMmsis = [mmsi1, mmsi2, mmsi3, mmsi4];
+    const individualMmsiNameBytes = new Uint8Array(64);
+    const individualMmsiNumberBytes = new Uint8Array(21);
+    const groupMmsiNameBytes = new Uint8Array(64);
+    const groupMmsiNumberBytes = new Uint8Array(21);
+    expect(() => 
+      mmsiDirectory.fillConfig(
+        individualMmsiNameBytes,
+        individualMmsiNumberBytes,
+        groupMmsiNameBytes,
+        groupMmsiNumberBytes
+      )).toThrowError('Duplicate MMSI 987654321');
+    mmsiDirectory.individualMmsis = [mmsi1, mmsi2, mmsi3, mmsi4];
+    mmsiDirectory.groupMmsis = [mmsi1, mmsi3, mmsi3, mmsi4];
+    expect(() => 
+      mmsiDirectory.fillConfig(
+        individualMmsiNameBytes,
+        individualMmsiNumberBytes,
+        groupMmsiNameBytes,
+        groupMmsiNumberBytes
+      )).toThrowError('Duplicate MMSI 888888888');
+  });
 });
