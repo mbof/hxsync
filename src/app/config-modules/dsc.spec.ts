@@ -8,7 +8,7 @@ import { unhex } from '../message';
 import { ConfigBatchReader } from '../config-batch-reader';
 
 const DSC_DIRECTORY_YAML = `
-- dsc_directory:
+- individual_directory:
     - DDD: "123456789"
     - BBB: "888888888"
     - AAA: "876543210"
@@ -136,7 +136,7 @@ describe('DscConfig', () => {
     const config: Config = {};
     dscConfigModule.updateConfig(results, config, yaml);
     expect(yaml.toString()).toBe(`
-- dsc_directory:
+- individual_directory:
     - AAA: "876543210"
     - BBB: "888888888"
     - CCC: "999999999"

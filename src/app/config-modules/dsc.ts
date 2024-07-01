@@ -97,7 +97,7 @@ export class DscConfig implements ConfigModuleInterface {
     configBatchWriter: ConfigBatchWriter,
     config: Config
   ): boolean {
-    const dsc_dir = node.get('dsc_directory');
+    const dsc_dir = node.get('individual_directory');
     if (dsc_dir && dsc_dir instanceof YAMLSeq) {
       if (!config.mmsiDirectory) {
         config.mmsiDirectory = new MmsiDirectory(
@@ -239,10 +239,10 @@ export class DscConfig implements ConfigModuleInterface {
       results.get('group_mmsi_numbers')!
     );
     config.mmsiDirectory = mmsiDirectory;
-    const dsc_directory = mmsiDirectory.individualMmsis.map((mmsi) => ({
+    const individual_directory = mmsiDirectory.individualMmsis.map((mmsi) => ({
       [mmsi.name]: mmsi.number
     }));
-    const dsc = yaml.createNode({ dsc_directory });
+    const dsc = yaml.createNode({ individual_directory });
     dsc.spaceBefore = true;
     yaml.add(dsc);
 

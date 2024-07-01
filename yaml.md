@@ -7,7 +7,7 @@ https://github.com/mbof/hxsync/assets/1308709/df649b4c-65ca-42f7-bace-c769260a93
 
 Only the directives provided will be written.
 
-## `dsc_directory`
+## `individual_directory`
 
 Provide the directory of MMSI numbers to be used for DSC individual calls. MMSIs
 must be wrapped in quotes.
@@ -15,7 +15,7 @@ must be wrapped in quotes.
 Example:
 
 ```
-- dsc_directory:
+- individual_directory:
     - Boat 1: "123456789"
     - Boat 2: "987654321"
     - USCG: "003669999"
