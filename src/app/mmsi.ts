@@ -5,10 +5,14 @@ import { fillPaddedString, readPaddedString } from './util';
 
 export function validateMmsi(name: string, number: string) {
   if (name.length > 15) {
-    throw new Error(`Max name length is 15 characters. "${name}" is ${name.length} characters long.`);
+    throw new Error(
+      `Max name length is 15 characters. "${name}" is ${name.length} characters long.`
+    );
   }
   if (!number.match(/^G?[0-9]{9}$/)) {
-    throw new Error(`MMSI number for ${name} should have exactly 9 digits (found: "${number}")`);
+    throw new Error(
+      `MMSI number for ${name} should have exactly 9 digits (found: "${number}")`
+    );
   }
   return;
 }
@@ -152,7 +156,7 @@ export class MmsiDirectory {
     }
     const maybeDuplicate = hasDuplicateMmsis(this.individualMmsis);
     if (maybeDuplicate) {
-      throw new Error(`Duplicate MMSI ${maybeDuplicate}`)
+      throw new Error(`Duplicate MMSI ${maybeDuplicate}`);
     }
     individualMmsiNamesData.fill(255);
     individualMmsiNumbersData.fill(255);
@@ -171,7 +175,7 @@ export class MmsiDirectory {
     }
     const maybeDuplicate = hasDuplicateMmsis(this.groupMmsis);
     if (maybeDuplicate) {
-      throw new Error(`Duplicate MMSI ${maybeDuplicate}`)
+      throw new Error(`Duplicate MMSI ${maybeDuplicate}`);
     }
     groupMmsiNames.fill(255), groupMmsiNumbers.fill(255);
 

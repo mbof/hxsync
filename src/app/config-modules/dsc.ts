@@ -118,7 +118,10 @@ export class DscConfig implements ConfigModuleInterface {
             try {
               return new Mmsi(name, mmsi);
             } catch (e: Error | any) {
-              throw new YamlError(e?.message || 'Error parsing MMSI', node.range![0]);
+              throw new YamlError(
+                e?.message || 'Error parsing MMSI',
+                node.range![0]
+              );
             }
           }
         }

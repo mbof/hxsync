@@ -172,21 +172,23 @@ describe('MmsiDirectory', () => {
     const individualMmsiNumberBytes = new Uint8Array(21);
     const groupMmsiNameBytes = new Uint8Array(64);
     const groupMmsiNumberBytes = new Uint8Array(21);
-    expect(() => 
+    expect(() =>
       mmsiDirectory.fillConfig(
         individualMmsiNameBytes,
         individualMmsiNumberBytes,
         groupMmsiNameBytes,
         groupMmsiNumberBytes
-      )).toThrowError('Duplicate MMSI 987654321');
+      )
+    ).toThrowError('Duplicate MMSI 987654321');
     mmsiDirectory.individualMmsis = [mmsi1, mmsi2, mmsi3, mmsi4];
     mmsiDirectory.groupMmsis = [mmsi1, mmsi3, mmsi3, mmsi4];
-    expect(() => 
+    expect(() =>
       mmsiDirectory.fillConfig(
         individualMmsiNameBytes,
         individualMmsiNumberBytes,
         groupMmsiNameBytes,
         groupMmsiNumberBytes
-      )).toThrowError('Duplicate MMSI 888888888');
+      )
+    ).toThrowError('Duplicate MMSI 888888888');
   });
 });
