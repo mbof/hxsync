@@ -16,6 +16,16 @@ describe('readPaddedString', () => {
     const str = readPaddedString(test);
     expect(str).toBe('012');
   });
+  it('should read a string with padding in the middle', () => {
+    const test = new Uint8Array([0x30, 0x31, 0xff, 0x32]);
+    const str = readPaddedString(test);
+    expect(str).toBe('01');
+  });
+  it('should read a string with padding in the middle', () => {
+    const test = new Uint8Array([0x30, 0x31, 0x20, 0xff, 0x32]);
+    const str = readPaddedString(test);
+    expect(str).toBe('01');
+  });
 });
 
 describe('fillPaddedString', () => {

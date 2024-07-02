@@ -4,13 +4,13 @@ import { Mmsi, MmsiDirectory } from './mmsi';
 const mmsi1 = new Mmsi('Alpha', '123456789');
 const mmsi2 = new Mmsi('Bravo', '987654321');
 const mmsi3 = new Mmsi('Charlie', '888888888');
-const mmsi4 = new Mmsi('Delta', '999999999');
+const mmsi4 = new Mmsi('D23456789012345', '999999999');
 
 const nameData =
   '416C706861FFFFFFFFFFFFFFFFFFFFFF' +
   '427261766FFFFFFFFFFFFFFFFFFFFFFF' +
   '436861726C6965FFFFFFFFFFFFFFFFFF' +
-  '44656C7461FFFFFFFFFFFFFFFFFFFFFF';
+  '443233343536373839303132333435FF';
 
 const numberData = '123456789098765432108888888880FF9999999990';
 
@@ -69,11 +69,11 @@ const csvData =
   'Alpha,123456789\n' +
   'Bravo,987654321\n' +
   'Charlie,888888888\n' +
-  'Delta,999999999\n' +
+  'D23456789012345,999999999\n' +
   'Alpha,G023456789\n' +
   'Bravo,G087654321\n' +
   'Charlie,G088888888\n' +
-  'Delta,G099999999\n';
+  'D23456789012345,G099999999\n';
 
 describe('MmsiDirectory', () => {
   it('should decode a few MMSI', () => {
@@ -90,7 +90,7 @@ describe('MmsiDirectory', () => {
       'Alpha',
       'Bravo',
       'Charlie',
-      'Delta'
+      'D23456789012345'
     ]);
     expect(mmsiDirectory.individualMmsis.map((mmsi) => mmsi.number)).toEqual([
       '123456789',
@@ -102,7 +102,7 @@ describe('MmsiDirectory', () => {
       'Alpha',
       'Bravo',
       'Charlie',
-      'Delta'
+      'D23456789012345'
     ]);
     expect(mmsiDirectory.groupMmsis.map((mmsi) => mmsi.number)).toEqual([
       '123456789',
@@ -133,7 +133,7 @@ describe('MmsiDirectory', () => {
       'Alpha',
       'Bravo',
       'Charlie',
-      'Delta'
+      'D23456789012345'
     ]);
     expect(mmsiDirectory.individualMmsis.map((mmsi) => mmsi.number)).toEqual([
       '123456789',
@@ -145,7 +145,7 @@ describe('MmsiDirectory', () => {
       'Alpha',
       'Bravo',
       'Charlie',
-      'Delta'
+      'D23456789012345'
     ]);
     expect(mmsiDirectory.groupMmsis.map((mmsi) => mmsi.number)).toEqual([
       '023456789',

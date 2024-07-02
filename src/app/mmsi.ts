@@ -7,8 +7,8 @@ export function validateMmsi(name: string, number: string) {
   if (!number.match(/^G?[0-9]{9}$/)) {
     throw new Error('MMSI number should have exactly 9 digits');
   }
-  if (name.length > 16) {
-    throw new Error('Name must not be more than 16 characters');
+  if (name.length > 15) {
+    throw new Error('Name must not be more than 15 characters');
   }
   return;
 }
