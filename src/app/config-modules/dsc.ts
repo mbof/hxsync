@@ -115,7 +115,11 @@ export class DscConfig implements ConfigModuleInterface {
           const name = node.items[0].key.value;
           const mmsi = node.items[0].value.value;
           if (typeof name == 'string' && typeof mmsi == 'string') {
-            return new Mmsi(name, mmsi);
+            try {
+              return new Mmsi(name, mmsi);
+            } catch (e: Error | any) {
+              throw new YamlError(e?.message || 'Error parsing MMSI', node.range![0]);
+            }
           }
         }
         throw new YamlError(`Unknown node type`, node.range[0]);

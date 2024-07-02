@@ -37,29 +37,20 @@ describe('Mmsi', () => {
   });
   it('should reject a name that is too long', () => {
     const badName = 'AlphaBetaCharlieD';
-    const mmsi = new Mmsi(badName, mmsi1.number);
-    const nameBytes = new Uint8Array(16);
-    const numberBytes = new Uint8Array(5);
     expect(() => {
-      mmsi.fillConfig(nameBytes, numberBytes, 0);
+      const mmsi = new Mmsi(badName, mmsi1.number);
     }).toThrow();
   });
   it('should reject a number that is too long', () => {
     const badNumber = '1234567899';
-    const mmsi = new Mmsi(mmsi1.name, badNumber);
-    const nameBytes = new Uint8Array(16);
-    const numberBytes = new Uint8Array(5);
     expect(() => {
-      mmsi.fillConfig(nameBytes, numberBytes, 0);
+      const mmsi = new Mmsi(mmsi1.name, badNumber);
     }).toThrow();
   });
   it('should reject a number that is too short', () => {
     const badNumber = '1234567';
-    const mmsi = new Mmsi(mmsi1.name, badNumber);
-    const nameBytes = new Uint8Array(16);
-    const numberBytes = new Uint8Array(5);
     expect(() => {
-      mmsi.fillConfig(nameBytes, numberBytes, 0);
+      const mmsi = new Mmsi(mmsi1.name, badNumber);
     }).toThrow();
   });
 });

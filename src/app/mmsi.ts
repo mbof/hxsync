@@ -4,11 +4,11 @@ import { parse } from 'csv-parse/sync';
 import { fillPaddedString, readPaddedString } from './util';
 
 export function validateMmsi(name: string, number: string) {
-  if (!number.match(/^G?[0-9]{9}$/)) {
-    throw new Error('MMSI number should have exactly 9 digits');
-  }
   if (name.length > 15) {
-    throw new Error('Name must not be more than 15 characters');
+    throw new Error(`Max name length is 15 characters. "${name}" is ${name.length} characters long.`);
+  }
+  if (!number.match(/^G?[0-9]{9}$/)) {
+    throw new Error(`MMSI number for ${name} should have exactly 9 digits (found: "${number}")`);
   }
   return;
 }
@@ -21,6 +21,7 @@ export class Mmsi {
   constructor(name: string, number: string) {
     this.name = name;
     this.number = number;
+    this.validate();
   }
   validate() {
     return validateMmsi(this.name, this.number);
