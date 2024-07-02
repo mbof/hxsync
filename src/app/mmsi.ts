@@ -1,7 +1,7 @@
 import { __values } from 'tslib';
 import { hexarr, unhexInto } from './message';
 import { parse } from 'csv-parse/sync';
-import { fillPaddedString, readPaddedString } from './util';
+import { fillPaddedString, readPaddedString, stringCompare } from './util';
 
 export function validateMmsi(name: string, number: string) {
   if (name.length > 15) {
@@ -82,10 +82,10 @@ export class MmsiDirectory {
     this.sortGroup();
   }
   sortIndividual(): void {
-    this.individualMmsis.sort((a, b) => a.name.localeCompare(b.name));
+    this.individualMmsis.sort((a, b) => stringCompare(a.name, b.name));
   }
   sortGroup(): void {
-    this.groupMmsis.sort((a, b) => a.name.localeCompare(b.name));
+    this.groupMmsis.sort((a, b) => stringCompare(a.name, b.name));
   }
   toCsv(): string {
     let ans = 'name,mmsi\n';

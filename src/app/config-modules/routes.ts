@@ -7,6 +7,7 @@ import { ConfigModuleInterface } from './config-module-interface';
 import { Route, routeFromConfig } from '../route';
 import { Waypoint } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
+import { stringCompare } from '../util';
 
 export type RouteDeviceConfig = {
   startAddress: number;
@@ -67,7 +68,7 @@ export class RouteConfig implements ConfigModuleInterface {
         parseYamlRoute(routeNode, configOut, deviceConfig.numWaypointsPerRoute)
       )
       .sort((routeA: Route, routeB: Route) =>
-        routeA.route.name.localeCompare(routeB.route.name)
+        stringCompare(routeA.route.name, routeB.route.name)
       );
     const routeData = new Uint8Array(
       deviceConfig.bytesPerRoute * deviceConfig.numRoutes

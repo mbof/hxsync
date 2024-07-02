@@ -2,6 +2,7 @@ import { RouteDeviceConfig } from './config-modules/routes';
 import { WaypointDeviceConfig } from './config-modules/waypoints';
 import { parseLat, parseLon } from './parseLatLon';
 import { Route } from './route';
+import { stringCompare } from './util';
 import {
   Waypoint,
   WpFormData,
@@ -184,7 +185,7 @@ export class NavInfoDraft {
   getBinaryRouteData(): Uint8Array {
     // Sort routes alphabetically
     this.routes.sort((routeA, routeB) =>
-      routeA.route.name.localeCompare(routeB.route.name)
+      stringCompare(routeA.route.name, routeB.route.name)
     );
     // Prepare all route data
     const routeData = new Uint8Array(
@@ -208,7 +209,7 @@ export function fillWaypointData(
   wpBaseAddress: number,
   wpData: Uint8Array
 ) {
-  waypoints.sort((wpA, wpB) => wpA.wp.name.localeCompare(wpB.wp.name));
+  waypoints.sort((wpA, wpB) => stringCompare(wpA.wp.name, wpB.wp.name));
   // Reassign addresses from the top
   let address = wpBaseAddress;
   for (let wp of waypoints) {
