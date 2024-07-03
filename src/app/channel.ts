@@ -90,7 +90,8 @@ export function decodeChannelConfig(
   n: number,
   enabledData: Uint8Array,
   flags: Uint8Array,
-  nameData: Uint8Array
+  nameData: Uint8Array,
+  scramblerSupported: boolean
 ): MarineChannelConfig {
   const enabledByte = Math.floor(n / 8);
   const enabledBitMask = 1 << (7 - (n % 8));
@@ -114,7 +115,7 @@ export function decodeChannelConfig(
 
   const scramblerFlag = flags[3];
   let scrambler: ScramblerCode | undefined;
-  if (flags[3] & 0x80) {
+  if (scramblerSupported && flags[3] & 0x80) {
     scrambler = {
       type: flags[3] & 0x40 ? 32 : 4,
       code: flags[3] & 0x1f

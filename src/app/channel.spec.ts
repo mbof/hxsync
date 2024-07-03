@@ -10,7 +10,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('08307F00'),
-      COMMERCIAL_NAME_DATA
+      COMMERCIAL_NAME_DATA,
+      true
     );
     expect(channel.id).toBe('08');
     expect(channel.flags).toEqual(unhex('08307F00'));
@@ -23,7 +24,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('07300A00'),
-      unhex('434F4D4D45524349414CFFFFFFFFFFFF')
+      unhex('434F4D4D45524349414CFFFFFFFFFFFF'),
+      true
     );
     expect(channel.id).toBe('1007');
     expect(channel.flags).toEqual(unhex('07300A00'));
@@ -37,7 +39,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('07317F00'),
-      unhex('434F4D4D45524349414CFFFFFFFFFFFF')
+      unhex('434F4D4D45524349414CFFFFFFFFFFFF'),
+      true
     );
     expect(channel.id).toBe('07A');
     expect(channel.flags).toEqual(unhex('07317F00'));
@@ -51,7 +54,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('0830FF00'),
-      COMMERCIAL_NAME_DATA
+      COMMERCIAL_NAME_DATA,
+      true
     );
     expect(channel.id).toBe('08');
     expect(channel.flags).toEqual(unhex('0830FF00'));
@@ -65,7 +69,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('0830FF81'),
-      COMMERCIAL_NAME_DATA
+      COMMERCIAL_NAME_DATA,
+      true
     );
     expect(channel.id).toBe('08');
     expect(channel.flags).toEqual(unhex('0830FF81'));
@@ -82,7 +87,8 @@ describe('decodeChannelConfig', () => {
       4,
       ENABLED_FLAGS,
       unhex('0830FFDF'),
-      COMMERCIAL_NAME_DATA
+      COMMERCIAL_NAME_DATA,
+      true
     );
     expect(channel.id).toBe('08');
     expect(channel.flags).toEqual(unhex('0830FFDF'));
@@ -99,7 +105,8 @@ describe('decodeChannelConfig', () => {
       4,
       unhex('f7fffffffffffc00'),
       unhex('08307F00'),
-      COMMERCIAL_NAME_DATA
+      COMMERCIAL_NAME_DATA,
+      false
     );
     expect(channel.id).toBe('08');
     expect(channel.flags).toEqual(unhex('08307F00'));

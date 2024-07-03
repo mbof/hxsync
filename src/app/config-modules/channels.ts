@@ -310,7 +310,13 @@ export class ChannelConfig implements ConfigModuleInterface {
           CHANNEL_NAME_BYTES * n,
           CHANNEL_NAME_BYTES * (n + 1)
         );
-        const channel = decodeChannelConfig(n, enabledData, flags, nameData);
+        const channel = decodeChannelConfig(
+          n,
+          enabledData,
+          flags,
+          nameData,
+          deviceConfig.hasScrambler
+        );
         marineChannelConfigs.push(channel);
         if (channel.enabled) {
           const channelDict: any = {
@@ -339,24 +345,32 @@ export class ChannelConfig implements ConfigModuleInterface {
         channelNamesNode.push(new Map([[Number(mcc.id) || mcc.id, mcc.name]]));
       });
       const namesNode = yaml.createNode(channelNamesNode);
-      const scramblerChannels: YAMLMap[] = [];
-      enabledChannels.forEach((mcc) => {
-        if (mcc.scrambler) {
-          const node = yaml.createNode(
-            new Map([[Number(mcc.id) || mcc.id, mcc.scrambler]])
-          );
-          if (node.items[0].value && node.items[0].value instanceof YAMLMap) {
-            node.items[0].value.flow = true;
+      let groupNode;
+      if (deviceConfig.hasScrambler) {
+        const scramblerChannels: YAMLMap[] = [];
+        enabledChannels.forEach((mcc) => {
+          if (mcc.scrambler) {
+            const node = yaml.createNode(
+              new Map([[Number(mcc.id) || mcc.id, mcc.scrambler]])
+            );
+            if (node.items[0].value && node.items[0].value instanceof YAMLMap) {
+              node.items[0].value.flow = true;
+            }
+            scramblerChannels.push(node);
           }
-          scramblerChannels.push(node);
-        }
-      });
-      const scramblerNode = yaml.createNode(scramblerChannels);
-      const groupNode = yaml.createNode({
-        intership: intershipNode,
-        names: channelNamesNode,
-        scrambler: scramblerNode
-      });
+        });
+        const scramblerNode = yaml.createNode(scramblerChannels);
+        groupNode = yaml.createNode({
+          intership: intershipNode,
+          names: channelNamesNode,
+          scrambler: scramblerNode
+        });
+      } else {
+        groupNode = yaml.createNode({
+          intership: intershipNode,
+          names: channelNamesNode
+        });
+      }
       channelGroupNodes.set(section, groupNode);
     }
     config.marineChannels = marine;
