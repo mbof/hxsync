@@ -240,9 +240,15 @@ export class ChannelConfig implements ConfigModuleInterface {
           namesOut
         );
       } else if (channelNode.key.value == 'scrambler') {
-        const scramblerNodes = channelNode.value;
-        parseScramblerNode(scramblerNodes, previousSectionConfig, flagsOut);
-        shouldWriteFlags = true;
+        if (deviceConfig.hasScrambler) {
+          const scramblerNodes = channelNode.value;
+          parseScramblerNode(scramblerNodes, previousSectionConfig, flagsOut);
+          shouldWriteFlags = true;
+        } else {
+          console.log(
+            `Scrambler settings ignored (not available for ${this.deviceModel})`
+          );
+        }
       } else {
         throw new Error(`Unexpected channel node type ${channelNode}`);
       }
@@ -416,41 +422,39 @@ function parseScramblerNode(
     const matcher = getChannelIdMatcher(id);
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
-      throw new YamlError(
-        `Channel ${id} to set scrambler for not found`,
-        scramblerNode.range![0]
+      console.log(`Ignoring scrambler setting for unknown channel ${id}`);
+    } else {
+      const scramblerConfigNode = scramblerNode.items[0].value;
+      if (
+        !(scramblerConfigNode instanceof YAMLMap) ||
+        scramblerConfigNode.items.length != 2
+      ) {
+        throw new YamlError(
+          `Expected scrambler config for ${id} as { type: X, code: Y }`,
+          scramblerNode.range![0]
+        );
+      }
+      const scramblerCode = {
+        type: scramblerConfigNode.get('type'),
+        code: scramblerConfigNode.get('code')
+      };
+      if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
+        throw new YamlError(
+          `Unknown scrambler type for ${id} (${scramblerCode.type})`,
+          scramblerNode.range![0]
+        );
+      }
+      if (!scramblerCode.code || typeof scramblerCode.code != 'number') {
+        throw new YamlError(
+          `Unknown scrambler code for ${id} (${scramblerCode.code})`,
+          scramblerNode.range![0]
+        );
+      }
+      setScramblerFlag(
+        flagsOut.subarray(n * MARINE_FLAG_BYTES, (n + 1) * MARINE_FLAG_BYTES),
+        scramblerCode
       );
     }
-    const scramblerConfigNode = scramblerNode.items[0].value;
-    if (
-      !(scramblerConfigNode instanceof YAMLMap) ||
-      scramblerConfigNode.items.length != 2
-    ) {
-      throw new YamlError(
-        `Expected scrambler config for ${id} as { type: X, code: Y }`,
-        scramblerNode.range![0]
-      );
-    }
-    const scramblerCode = {
-      type: scramblerConfigNode.get('type'),
-      code: scramblerConfigNode.get('code')
-    };
-    if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
-      throw new YamlError(
-        `Unknown scrambler type for ${id} (${scramblerCode.type})`,
-        scramblerNode.range![0]
-      );
-    }
-    if (!scramblerCode.code || typeof scramblerCode.code != 'number') {
-      throw new YamlError(
-        `Unknown scrambler code for ${id} (${scramblerCode.code})`,
-        scramblerNode.range![0]
-      );
-    }
-    setScramblerFlag(
-      flagsOut.subarray(n * MARINE_FLAG_BYTES, (n + 1) * MARINE_FLAG_BYTES),
-      scramblerCode
-    );
   }
 }
 
@@ -479,15 +483,13 @@ function parseChannelNamesNode(
     const matcher = getChannelIdMatcher(id);
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
-      throw new YamlError(
-        `Channel to name ${id} not found`,
-        channelNameNode.range![0]
+      console.log(`Channel ${id} not found, skipping.`);
+    } else {
+      fillPaddedString(
+        namesOut.subarray(n * CHANNEL_NAME_BYTES, (n + 1) * CHANNEL_NAME_BYTES),
+        channelNameNode.items[0].value.value
       );
     }
-    fillPaddedString(
-      namesOut.subarray(n * CHANNEL_NAME_BYTES, (n + 1) * CHANNEL_NAME_BYTES),
-      channelNameNode.items[0].value.value
-    );
   }
 }
 
@@ -518,11 +520,9 @@ function parseIntershipNode(
     const matcher = getChannelIdMatcher(id.value);
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
-      throw new YamlError(
-        `Intership channel ${id} not found`,
-        intershipChannelsNode.range![0]
-      );
+      console.log(`Intership channel ${id} not found, skipping.`);
+    } else {
+      flagsOut[n * MARINE_FLAG_BYTES + 2] |= 0x80;
     }
-    flagsOut[n * MARINE_FLAG_BYTES + 2] |= 0x80;
   });
 }
