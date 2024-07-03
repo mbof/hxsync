@@ -32,3 +32,15 @@ body {
     'Segoe UI Emoji',
     'Segoe UI Symbol';
 }
+
+.footer {
+  text-align: center;
+}
+
+.footer a {
+  margin: 0 0.5em;
+}
+
+.footer .footer-link + .footer-link::before {
+  content: '-';
+}
