@@ -79,7 +79,9 @@ export class DeviceComponent {
 
   async connectUsb() {
     if (!this.deviceMgr.serial) {
-      window.alert('This functionality requires Chrome, Edge, or Opera.');
+      window.alert(
+        'To connect to a radio device, use a computer with Chrome, Edge, or Opera.'
+      );
       return;
     }
     try {
