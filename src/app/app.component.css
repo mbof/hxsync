@@ -173,3 +173,30 @@ main {
     margin-block: 1.5rem;
   }
 }
+
+.footer {
+  text-align: center;
+}
+
+.footer a {
+  margin: 0 0.5em;
+}
+
+.footer .footer-link + .footer-link::before {
+  content: '-';
+}
+
+.version {
+  align-content: start;
+  font-size: 10px;
+  color: #555;
+  padding-top: 20px;
+}
+
+.header {
+  display: flex;
+}
+
+.header h1 {
+  flex-grow: 1;
+}

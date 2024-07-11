@@ -56,8 +56,8 @@ to format files before committing.
 
 ## Build
 
-Run `ng build --base-href=/hx/` to build the project. The build artifacts will
-be stored in the `dist/` directory.
+Run `npm run build -- --base-href=/hx/` to build the project. The build
+artifacts will be stored in the `dist/` directory.
 
 ## Running unit tests
 

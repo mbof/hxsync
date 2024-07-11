@@ -1,6 +1,8 @@
 <main class="main">
   <div class="content">
-    <h1>HxSync</h1>
+    <div class="header">
+      <h1>HxSync</h1>
+    </div>
     <div class="desc">
       This experimental utility is not provided by Standard Horizon. Use at your
       own risk!
@@ -8,3 +10,30 @@
     <router-outlet />
   </div>
 </main>
+<div class="footer">
+  <span class="footer-link">
+    <a target="_blank" href="https://github.com/mbof/hxsync/blob/main/README.md"
+      >Documentation</a
+    >
+  </span>
+  <span class="footer-link">
+    <a target="_blank" href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+      >YAML Format Documentation</a
+    >
+  </span>
+  <span class="footer-link">
+    <a target="_blank" href="https://github.com/mbof/hxsync">Source Code</a>
+  </span>
+  <span class="footer-link">
+    <a target="_blank" href="https://github.com/mbof/hxsync/issues/new"
+      >Report an Issue</a
+    >
+  </span>
+  <span class="footer-link">
+    <a target="_blank" href="https://github.com/mbof/hxsync/discussions"
+      >Discuss</a
+    >
+  </span>
+  <br />
+  <div class="version">{{ version }} ({{ commitHash }}) {{ buildDate }}</div>
+</div>

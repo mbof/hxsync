@@ -21,7 +21,13 @@
             "tsConfig": "tsconfig.app.json",
             "assets": ["src/favicon.ico", "src/assets"],
             "styles": ["src/styles.css"],
-            "scripts": []
+            "scripts": [],
+            "fileReplacements": [
+              {
+                "replace": "src/environments/version.ts",
+                "with": "src/environments/version.prod.ts"
+              }
+            ]
           },
           "configurations": {
             "production": {
@@ -102,7 +108,13 @@
               }
             ],
             "styles": ["projects/share/src/styles.css"],
-            "scripts": []
+            "scripts": [],
+            "fileReplacements": [
+              {
+                "replace": "src/environments/version.ts",
+                "with": "src/environments/version.prod.ts"
+              }
+            ]
           },
           "configurations": {
             "production": {
