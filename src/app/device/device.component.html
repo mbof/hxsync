@@ -21,7 +21,7 @@
       </div>
       <button
         [disabled]="connectionState === 'usb-connecting'"
-        (click)="connectUsb()"
+        (click)="connectUsb($event)"
       >
         Connect
       </button>

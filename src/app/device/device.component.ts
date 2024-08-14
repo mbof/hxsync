@@ -77,7 +77,7 @@ export class DeviceComponent {
     saveAs(file, `gpslog.gpx`);
   }
 
-  async connectUsb() {
+  async connectUsb(event: MouseEvent) {
     if (!this.deviceMgr.serial) {
       window.alert(
         'To connect to a radio device, use a computer with Chrome, Edge, or Opera.'
@@ -85,7 +85,7 @@ export class DeviceComponent {
       return;
     }
     try {
-      await this.deviceMgr.connectUsb();
+      await this.deviceMgr.connectUsb(event.shiftKey);
     } catch (e) {
       window.alert(e);
     }

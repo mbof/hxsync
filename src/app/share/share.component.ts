@@ -40,11 +40,11 @@ export class ShareComponent {
       this.progress = progress;
     });
   }
-  async apply() {
+  async apply(event: MouseEvent) {
     try {
       this.status = '';
       if (this.deviceMgr.getConnectionState() != 'usb-connected') {
-        await this.deviceMgr.connectUsb();
+        await this.deviceMgr.connectUsb(event.shiftKey);
       }
       await this.deviceMgr.configSession.startYaml();
       await this.deviceMgr.configSession.saveYaml(this.yaml);
