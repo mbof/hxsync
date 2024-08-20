@@ -1,7 +1,7 @@
 import { DevicemgrService } from './devicemgr.service';
 import { Message, hex, hexarr, unhex } from './message';
 
-const CHUNK_SIZE: number = 0x40;
+const DEFAULT_CHUNK_SIZE: number = 0x20;
 
 async function asyncWithTimeout<T>(
   asyncPromise: Promise<T>,
@@ -128,17 +128,23 @@ export class ConfigProtocol implements ConfigProtocolInterface {
       throw new Error('Device did not acknowledge write');
     }
   }
+  private getChunkSize(): number {
+    return (
+      this.dev.configSession._deviceConfig?.dat?.maxChunkLength ||
+      DEFAULT_CHUNK_SIZE
+    );
+  }
   public async readConfigMemory(
     address: number,
     size: number,
     progressCallback: (offset: number) => void
   ): Promise<Uint8Array> {
     const data = new Uint8Array(size);
-    for (let offset = 0; offset < size; offset += CHUNK_SIZE) {
+    for (let offset = 0; offset < size; offset += this.getChunkSize()) {
       data.set(
         await this.readConfigMemoryChunk(
           address + offset,
-          Math.min(size - offset, CHUNK_SIZE)
+          Math.min(size - offset, this.getChunkSize())
         ),
         offset
       );
@@ -151,10 +157,13 @@ export class ConfigProtocol implements ConfigProtocolInterface {
     address: number,
     progressCallback: (offset: number) => void
   ): Promise<void> {
-    for (let offset = 0; offset < data.length; offset += CHUNK_SIZE) {
+    for (let offset = 0; offset < data.length; offset += this.getChunkSize()) {
       await this.writeConfigMemoryChunk(
         address + offset,
-        data.subarray(offset, Math.min(offset + CHUNK_SIZE, data.length))
+        data.subarray(
+          offset,
+          Math.min(offset + this.getChunkSize(), data.length)
+        )
       );
       progressCallback(offset);
     }
