@@ -85,38 +85,23 @@ export class DevicemgrService {
           filter.usbVendorId == portInfo.usbVendorId
       )?.[0];
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
-      await this.port.open({ baudRate: 9600 });
+      const baudRate = modelFromUsb ? 9600 : 38400;
+      await this.port.open({ baudRate });
       this._streamReader = this.port?.readable?.getReader();
       this.reader = new ChunkReader(this._streamReader!);
       this.writer = this.port?.writable?.getWriter();
 
       if (modelFromUsb) {
         model = modelFromUsb;
+        await this.detectDeviceMode();
+        if (this.mode != DeviceMode.CP) {
+          throw new Error('Device must be in CP mode');
+        }
       } else {
-        // Device detection using config protocol
-        const magic = await this._configProtocol.readConfigMemory(
-          0,
-          2,
-          () => {}
-        );
-        if (magic.length != 2) {
-          throw new Error(`Unexpected magic size ${magic.length}`);
-        }
-        const modelFromMagic = [...DAT_DEVICE_CONFIGS.entries()].find(
-          ([_, datConfig]) =>
-            datConfig.magic[0] == magic[0] && datConfig.magic[1] == magic[1]
-        );
-        if (!modelFromMagic) {
-          throw new Error(`Unknown magic ${hexarr(magic)}`);
-        }
-        model = modelFromMagic![0];
+        model = await this.detectModelFromMagic();
       }
-      const deviceConfig = DEVICE_CONFIGS.get(model)!;
+      const deviceConfig = DEVICE_CONFIGS.get(model!)!;
       console.log(`Found device ${deviceConfig.name}`);
-      await this.detectDeviceMode();
-      if (this.mode != DeviceMode.CP) {
-        throw new Error('Device must be in CP mode');
-      }
       this._connectionState.next('usb-connected');
       this.configSession.reset(deviceConfig, this._configProtocol);
       console.log('Connected');
@@ -205,5 +190,36 @@ export class DevicemgrService {
     console.log(`Detected DAT file for ${deviceConfig.name}`);
     this.configSession.reset(deviceConfig, new DatConfigProtocol(datFile));
     this._connectionState.next('dat-connected');
+  }
+
+  async detectModelFromMagic() {
+    for (let numTriesLeft = 3; numTriesLeft >= 0; numTriesLeft--) {
+      try {
+        // Device detection using config protocol
+        const magic = await this._configProtocol.readConfigMemory(
+          0,
+          2,
+          () => { }
+        );
+        if (magic.length != 2) {
+          throw new Error(`Unexpected magic size ${magic.length}`);
+        }
+        const modelFromMagic = [...DAT_DEVICE_CONFIGS.entries()].find(
+          ([_, datConfig]) =>
+            datConfig.magic[0] == magic[0] && datConfig.magic[1] == magic[1]
+        );
+        if (!modelFromMagic) {
+          throw new Error(`Unknown magic ${hexarr(magic)}`);
+        }        
+        return modelFromMagic![0];
+      } catch (e) {
+        if (numTriesLeft > 0) {
+          console.log(e);
+        } else {
+          throw e;
+        }
+      }
+    }
+    throw new Error(`Could not detect model from magic`);
   }
 }
