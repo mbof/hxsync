@@ -4,7 +4,8 @@
     <pre id="yaml-content">{{ yaml }}</pre>
   </div>
   <div class="warning">
-    Warning! This will overwrite data on your device. Review the configuration before proceeding.
+    Warning! This will overwrite data on your device. Review the configuration
+    before proceeding.
   </div>
   <div class="controls">
     <div class="instructions">
@@ -19,7 +20,7 @@
       </ol>
     </div>
     <div class="buttons">
-      <button (click)="apply()">Apply</button>
+      <button (click)="apply($event)">Apply</button>
       <div class="status">{{ getStatus() }}</div>
     </div>
   </div>

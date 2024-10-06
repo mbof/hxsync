@@ -20,6 +20,7 @@ export const GPS_DEVICES: DeviceModel[] = ['HX870', 'HX890'];
 export type DatConfig = {
   length: number;
   magic: Uint8Array;
+  maxChunkLength?: number;
 };
 
 export type DeviceConfig = {
@@ -42,21 +43,24 @@ export const DAT_DEVICE_CONFIGS = new Map<DeviceModel, DatConfig>([
     'HX890',
     {
       length: 65536,
-      magic: new Uint8Array([3, 122])
+      magic: new Uint8Array([3, 122]),
+      maxChunkLength: 64
     }
   ],
   [
     'HX870',
     {
       length: 32768,
-      magic: new Uint8Array([3, 103])
+      magic: new Uint8Array([3, 103]),
+      maxChunkLength: 64
     }
   ],
   [
     'GX1400',
     {
       length: 8192,
-      magic: new Uint8Array([5, 120])
+      magic: new Uint8Array([5, 120]),
+      maxChunkLength: 32
     }
   ]
 ]);

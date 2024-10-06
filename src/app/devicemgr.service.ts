@@ -8,8 +8,10 @@ import { ConfigProtocol, DatConfigProtocol } from './config-protocol';
 import {
   USB_DEVICE_CONFIGS,
   DEVICE_CONFIGS,
-  DAT_DEVICE_CONFIGS
+  DAT_DEVICE_CONFIGS,
+  DeviceModel
 } from './config-modules/device-configs';
+import { hexarr } from './message';
 
 export enum DeviceMode {
   Unknown = 0,
@@ -52,7 +54,7 @@ export class DevicemgrService {
     return this._connectionState.getValue();
   }
 
-  async connectUsb() {
+  async connectUsb(allowAnySerialPort: boolean) {
     if (!this.serial) {
       throw new Error(
         "This browser doesn't support the Webserial API. Use Chrome, Edge, or Opera."
@@ -65,28 +67,41 @@ export class DevicemgrService {
     }
     try {
       this._connectionState.next('usb-connecting');
-      this.port = await this.serial.requestPort({
-        filters: [...USB_DEVICE_CONFIGS.values()].filter(
-          (f) => f !== undefined
-        ) as SerialPortFilter[]
-      });
+      let serialPortRequestOptions: SerialPortRequestOptions | undefined =
+        undefined;
+      if (!allowAnySerialPort) {
+        serialPortRequestOptions = {
+          filters: [...USB_DEVICE_CONFIGS.values()].filter(
+            (f) => f !== undefined
+          ) as SerialPortFilter[]
+        };
+      }
+      this.port = await this.serial.requestPort(serialPortRequestOptions);
       const portInfo = this.port!.getInfo();
-      const [model, _] = [...USB_DEVICE_CONFIGS.entries()].find(
-        ([model, filter]) =>
+      let model: DeviceModel;
+      const modelFromUsb = [...USB_DEVICE_CONFIGS.entries()].find(
+        ([_, filter]) =>
           filter.usbProductId == portInfo.usbProductId &&
           filter.usbVendorId == portInfo.usbVendorId
-      )!;
-      const deviceConfig = DEVICE_CONFIGS.get(model)!;
-      console.log(`Found device ${deviceConfig.name}`);
+      )?.[0];
       this.port.addEventListener('disconnect', (ev) => this.disconnect());
-      await this.port.open({ baudRate: 9600 });
+      const baudRate = modelFromUsb ? 9600 : 38400;
+      await this.port.open({ baudRate });
       this._streamReader = this.port?.readable?.getReader();
       this.reader = new ChunkReader(this._streamReader!);
       this.writer = this.port?.writable?.getWriter();
-      await this.detectDeviceMode();
-      if (this.mode != DeviceMode.CP) {
-        throw new Error('Device must be in CP mode');
+
+      if (modelFromUsb) {
+        model = modelFromUsb;
+        await this.detectDeviceMode();
+        if (this.mode != DeviceMode.CP) {
+          throw new Error('Device must be in CP mode');
+        }
+      } else {
+        model = await this.detectModelFromMagic();
       }
+      const deviceConfig = DEVICE_CONFIGS.get(model!)!;
+      console.log(`Found device ${deviceConfig.name}`);
       this._connectionState.next('usb-connected');
       this.configSession.reset(deviceConfig, this._configProtocol);
       console.log('Connected');
@@ -175,5 +190,36 @@ export class DevicemgrService {
     console.log(`Detected DAT file for ${deviceConfig.name}`);
     this.configSession.reset(deviceConfig, new DatConfigProtocol(datFile));
     this._connectionState.next('dat-connected');
+  }
+
+  async detectModelFromMagic() {
+    for (let numTriesLeft = 3; numTriesLeft >= 0; numTriesLeft--) {
+      try {
+        // Device detection using config protocol
+        const magic = await this._configProtocol.readConfigMemory(
+          0,
+          2,
+          () => { }
+        );
+        if (magic.length != 2) {
+          throw new Error(`Unexpected magic size ${magic.length}`);
+        }
+        const modelFromMagic = [...DAT_DEVICE_CONFIGS.entries()].find(
+          ([_, datConfig]) =>
+            datConfig.magic[0] == magic[0] && datConfig.magic[1] == magic[1]
+        );
+        if (!modelFromMagic) {
+          throw new Error(`Unknown magic ${hexarr(magic)}`);
+        }        
+        return modelFromMagic![0];
+      } catch (e) {
+        if (numTriesLeft > 0) {
+          console.log(e);
+        } else {
+          throw e;
+        }
+      }
+    }
+    throw new Error(`Could not detect model from magic`);
   }
 }
