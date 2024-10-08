@@ -54,7 +54,18 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
       groupNumbersAddress: 0xd00,
       groupNum: 30
     }
-  ]
+  ],
+  [
+    'HX891BT',
+    {
+      individualNamesAddress: 0x4500,
+      individualNumbersAddress: 0x4200,
+      individualNum: 100,
+      groupNamesAddress: 0x5100,
+      groupNumbersAddress: 0x5000,
+      groupNum: 20
+    }
+  ],
 ]);
 
 export class DscConfig implements ConfigModuleInterface {

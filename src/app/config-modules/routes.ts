@@ -35,7 +35,16 @@ export const ROUTE_DEVICE_CONFIGS: Map<DeviceModel, RouteDeviceConfig> =
         numWaypointsPerRoute: 16,
         bytesPerRoute: 32
       }
-    ]
+    ],
+    [
+      'HX891BT',
+      {
+        startAddress: 0xc700,
+        numRoutes: 20,
+        numWaypointsPerRoute: 31,
+        bytesPerRoute: 64
+      }
+    ],
   ]);
 
 export class RouteConfig implements ConfigModuleInterface {

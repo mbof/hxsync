@@ -29,6 +29,13 @@ export const WAYPOINT_DEVICE_CONFIGS: Map<DeviceModel, WaypointDeviceConfig> =
         startAddress: 0x4300,
         number: 200
       }
+    ],
+    [
+      'HX891BT',
+      {
+        startAddress: 0xd700,
+        number: 250
+      }
     ]
   ]);
 
