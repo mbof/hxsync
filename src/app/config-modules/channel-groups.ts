@@ -32,7 +32,17 @@ export const CHANNEL_GROUP_DEVICE_CONFIGS: Map<
       numGroups: 3,
       bytesPerChannelGroup: 16
     }
-  ]
+  ],
+  // Not turned on because HX891BT channel group names have a
+  // slightly different memory layout.
+  // [
+  //   'HX891BT',
+  //   {
+  //     startAddress: 0x0070,
+  //     numGroups: 3,
+  //     bytesPerChannelGroup: 16
+  //   }
+  // ],
 ]);
 
 export class ChannelGroupConfig implements ConfigModuleInterface {

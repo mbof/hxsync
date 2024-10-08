@@ -13,9 +13,9 @@ import {
   ExtraChannelType
 } from './extra-channels';
 
-export type DeviceModel = 'HX890' | 'HX870' | 'GX1400';
-export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400'];
-export const GPS_DEVICES: DeviceModel[] = ['HX870', 'HX890'];
+export type DeviceModel = 'HX890' | 'HX870' | 'GX1400' | 'HX891BT';
+export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400', 'HX891BT'];
+export const GPS_DEVICES: DeviceModel[] = ['HX870', 'HX890', 'HX891BT'];
 
 export type DatConfig = {
   length: number;
@@ -35,7 +35,8 @@ export type DeviceConfig = {
 
 export const USB_DEVICE_CONFIGS = new Map<DeviceModel, SerialPortFilter>([
   ['HX890', { usbVendorId: 9898, usbProductId: 30 }],
-  ['HX870', { usbVendorId: 9898, usbProductId: 16 }]
+  ['HX870', { usbVendorId: 9898, usbProductId: 16 }],
+  ['HX891BT', { usbVendorId: 9898, usbProductId: 46 }]
 ]);
 
 export const DAT_DEVICE_CONFIGS = new Map<DeviceModel, DatConfig>([
@@ -61,6 +62,14 @@ export const DAT_DEVICE_CONFIGS = new Map<DeviceModel, DatConfig>([
       length: 8192,
       magic: new Uint8Array([5, 120]),
       maxChunkLength: 32
+    }
+  ],
+  [
+    'HX891BT',
+    {
+      length: 65536,
+      magic: new Uint8Array([3, 123]),
+      maxChunkLength: 64
     }
   ]
 ]);

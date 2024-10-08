@@ -100,6 +100,41 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
           ]
         ])
       }
+    ],
+    [
+      'HX891BT',
+      {
+        hasScrambler: true,
+        marineChannels: new Map([
+          [
+            'group_1',
+            {
+              numChannels: 96,
+              enabledAddress: 0x0120,
+              flagsAddress: 0x0700,
+              namesAddress: 0x1100
+            }
+          ],
+          [
+            'group_2',
+            {
+              numChannels: 96,
+              enabledAddress: 0x0140,
+              flagsAddress: 0x0900,
+              namesAddress: 0x1d00
+            }
+          ],
+          [
+            'group_3',
+            {
+              numChannels: 96,
+              enabledAddress: 0x0160,
+              flagsAddress: 0x0b00,
+              namesAddress: 0x2900
+            }
+          ]
+        ])
+      }
     ]
   ]);
 
