@@ -1,36 +1,44 @@
 # HxSync
 
 This project is an Angular web application that connects to the Standard Horizon
-HX870 and HX890 portable VHF radios. It has the following features:
+HX870, HX890, HX891BT, and GX1400 VHF radios.
 
-- Reading and editing waypoints and routes, MMSI directories for DSC, channel
-  configuration (in a UI or using a [YAML file](yaml.md))
-- Sharing a configuration as a link for others to apply
-- Loading and saving DAT files
-- Offline support via a progressive web app
+**[Try it now](https://mbof.github.io/hx)**
 
-It is very incomplete, and could break your device. **Use at your own risk!**
+Features:
 
-The APIs that this application relies on for connecting to the device
-([WebSerial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility))
-and for opening files
-([File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access#read-file))
-are currently only available in Chrome, Edge, and Opera.
+- Edit waypoints, routes, MMSI directories for DSC, and channel configuration
+- Edit with a UI or as a [YAML file](yaml.md)
+- Share a configuration as a link for others to apply to their device
+- Backup and restore DAT files
+- Available offline via a progressive web app
 
-This software builds on the work published at
-[Robert Elsinga's page on the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld),
-the [`hxtool` Python utility](https://github.com/cr/hx870) by Christiane
-Ruetten, and tests and feedback by
-[Arne Johannessen](https://github.com/johannessen).
+This software could break your device. **Use at your own risk!**
+
+Requires Chrome, Edge, or Opera (due to availability of the
+[WebSerial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility)
+and
+[File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access#read-file)).
 
 ## Demo
 
-- Try it out: https://mbof.github.io/hx
-- Video:
-
 https://github.com/mbof/hxsync/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff474
 
-## Development server
+## Acknowledgements
+
+This software would not have been possible without the prior work of
+
+- [Arne Johannessen](https://github.com/johannessen), who documented the HX870's
+  memory layout, and provided valuable tests and feedback for this project,
+- Robert Elsinga, who documented the
+  [memory layout for the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld),
+- The [`hxtool` Python utility](https://github.com/cr/hx870) by Christiane
+  Ruetten, which provided a model implementation of Standard Horizon's serial
+  protocol.
+
+## Developer setup
+
+### Run locally
 
 First-time installation: after cloning this repository, run `npm install` from
 the project directory to fetch the required modules.
@@ -43,23 +51,23 @@ There is a second app entry point for the share page. It can be started with
 `ng serve share --serve-path /hx/share` and accessed at
 `http://localhost:4200/hx/share`.
 
-## Code scaffolding
+### Code scaffolding
 
 Run `ng generate component component-name` to generate a new component. You can
 also use `ng generate directive|pipe|service|class|guard|interface|enum|module`.
 
-## Text formatting
+### Running unit tests
 
-Run
-`npx prettier --write $(git diff HEAD --name-only | egrep '\.(ts|html|css|md)$')`
-to format files before committing.
+Run `ng test` to execute the unit tests via
+[Karma](https://karma-runner.github.io).
 
-## Build
+### Build
 
 Run `npm run build -- --base-href=/hx/` to build the project. The build
 artifacts will be stored in the `dist/` directory.
 
-## Running unit tests
+### Text formatting
 
-Run `ng test` to execute the unit tests via
-[Karma](https://karma-runner.github.io).
+Run
+`npx prettier --write $(git diff HEAD --name-only | egrep '\.(ts|html|css|md)$')`
+to format files before committing.
