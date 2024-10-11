@@ -6,8 +6,8 @@
     ) {
       <div class="desc">
         To edit device configuration (waypoints, routes, DSC directory...), or
-        download a GPS log in GPX format, connect your HX870 or HX890 radio with
-        a USB cable, and place it in "CP Mode":
+        download a GPS log in GPX format, connect your HX870, HX890, or HX891BT
+        radio with a USB cable, and place it in "CP Mode":
         <ol>
           <li>Power the device off</li>
           <li>Press and hold the Menu key</li>
@@ -15,9 +15,11 @@
           <li>Release both keys when the screen lights up</li>
           <li>Click Connect</li>
         </ol>
-        Alternatively,
-        <a href="#" (click)="showDatPicker()">load a DAT file</a> for your
-        device to edit it.
+        <div>
+          Alternatively,
+          <a href="#" (click)="showDatPicker()">load a DAT file</a> for your
+          device to edit it.
+        </div>
       </div>
       <button
         [disabled]="connectionState === 'usb-connecting'"

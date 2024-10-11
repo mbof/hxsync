@@ -5,6 +5,7 @@
 .device-picture {
   width: 150px;
   height: 150px;
+  margin-right: 1em;
 }
 
 .status-lights {
