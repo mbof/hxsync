@@ -18,3 +18,5 @@ You will need:
 
 Connect the green wire from your radio to Ground (pin 5), the yellow wire to TXD
 (pin 3) and the white wire to RXD (pin 2).
+
+<img width="909" alt="image" src="https://github.com/user-attachments/assets/52f6b74e-e664-4760-8800-c791b58fba4f">
