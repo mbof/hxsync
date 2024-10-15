@@ -1,7 +1,8 @@
-# HxSync
+# SH Sync
 
 This project is an Angular web application that connects to the Standard Horizon
-HX870, HX890, HX891BT, and GX1400 VHF radios.
+HX870, HX890, HX891BT, and GX1400 VHF radios. It is not provided by Standard
+Horizon. Use at your own risk!
 
 **[Try it now](https://mbof.github.io/hx)**
 
@@ -20,13 +21,9 @@ Requires Chrome, Edge, or Opera (due to availability of the
 and
 [File System Access API](https://developer.chrome.com/docs/capabilities/web-apis/file-system-access#read-file)).
 
-## Demo
-
-https://github.com/mbof/hxsync/assets/1308709/8ee0a733-05c3-474d-b0bf-59fce52ff474
-
 ## Acknowledgements
 
-This software would not have been possible without the prior work of
+This software would not have been possible without the help of
 
 - [Arne Johannessen](https://github.com/johannessen), who documented the HX870's
   memory layout, and provided valuable tests and feedback for this project,

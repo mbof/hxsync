@@ -59,3 +59,7 @@
 .connected-buttons {
   flex-flow: wrap;
 }
+
+.desc-para {
+  margin-top: 1em;
+}

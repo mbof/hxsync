@@ -1,8 +1,8 @@
 {
-  "name": "HxSync",
+  "name": "SH Sync",
   "icons": [
     {
-      "src": "hx-512.png",
+      "src": "sh-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
