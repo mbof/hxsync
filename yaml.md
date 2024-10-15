@@ -104,8 +104,6 @@ Example:
 
 ## `channels`
 
-Note: this is not yet widely available.
-
 Set channel configuration for each channel group (`group_1`, `group_2`, or
 `group_3`), including
 
