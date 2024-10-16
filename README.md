@@ -37,14 +37,14 @@ This software would not have been possible without the help of
 
 | Feature                     | HX870 | HX890 | HX891BT | GX1400 |
 | --------------------------- | ----- | ----- | ------- | ------ |
-| Set up DSC directory        | ✓     | ✓     | ✓       | ✓      |
-| GPS log download            | ✓     | ✓     | ✓       | N/A    |
-| Set up waypoints and routes | ✓     | ✓     | ✓       | N/A    |
-| Change channel names        | ✓     | ✓     | ✓       | ✗      |
-| Set up intership channels   | ✓     | ✓     | ✓       | ✗      |
-| Set up scrambler codes      | ✓     | ✓     | ✓       | N/A    |
-| Set up channel groups       | ✓     | ✓     | ✓       | ✗      |
-| DAT file backup / restore   | ✓     | ✓     | ✓       | ✓      |
+| Set up DSC directory        | ✅    | ✅    | ✅      | ✅     |
+| GPS log download            | ✅    | ✅    | ✅      | N/A    |
+| Set up waypoints and routes | ✅    | ✅    | ✅      | N/A    |
+| Change channel names        | ✅    | ✅    | ✅      | N/A    |
+| Set up intership channels   | ✅    | ✅    | ✅      | ❌     |
+| Set up scrambler codes      | ✅    | ✅    | ✅      | N/A    |
+| Set up channel groups       | ✅    | ✅    | ✅      | ❌     |
+| DAT file backup / restore   | ✅    | ✅    | ✅      | ✅     |
 
 ## Developer setup
 
