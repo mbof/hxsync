@@ -16,7 +16,10 @@ You will need:
 
 ## Wiring diagram
 
-Connect the green wire from your radio to Ground (pin 5), the yellow wire to TXD
-(pin 3) and the white wire to RXD (pin 2).
+Connect as follows:
 
-<img width="909" alt="image" src="https://github.com/user-attachments/assets/52f6b74e-e664-4760-8800-c791b58fba4f">
+- The green wire from your radio, together with the shield of the speaker cable, to Ground (pin 5)
+- The yellow wire to TXD (pin 3)
+- The white wire to RXD (pin 2).
+
+<img width="917" alt="image" src="https://github.com/user-attachments/assets/af8f70ce-afa9-4ba3-9473-5abae1620f0e">
