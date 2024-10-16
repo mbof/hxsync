@@ -1,4 +1,4 @@
-# SH Sync
+# SHsync
 
 This project is an Angular web application that connects to the Standard Horizon
 HX870, HX890, HX891BT, and GX1400 VHF radios. It is not provided by Standard
