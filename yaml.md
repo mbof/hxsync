@@ -113,7 +113,7 @@ Set channel configuration for each channel group (`group_1`, `group_2`, or
   must be provided (other channels will be disabled for inter-ship calling).
 - `names`: channel names. If this section is omitted, names are unchanged; if a
   channel is omitted from this list, its name is unchanged too.
-- `scrambler`: (HX890 only) scrambler settings. If this section is omitted,
+- `scrambler`: (HX890 and HX891BT only) scrambler settings. If this section is omitted,
   scrambler settings are unchanged; if this section is present, all scrambler
   settings must be provided (other channels with have scrambling disabled). For
   each channel in this section, the scrambler setting consists of:
