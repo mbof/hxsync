@@ -26,12 +26,15 @@ and
 This software would not have been possible without the help of
 
 - [Arne Johannessen](https://github.com/johannessen), who documented the HX870's
-  memory layout, and provided valuable tests and feedback for this project,
+  memory layout, and provided valuable tests and feedback for this project;
 - Robert Elsinga, who documented the
-  [memory layout for the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld),
+  [memory layout for the HX890](https://pc5e.nl/info/standard-horizon-hx890e-marine-handheld);
 - The [`hxtool` Python utility](https://github.com/cr/hx870) by Christiane
   Ruetten, which provided a model implementation of Standard Horizon's serial
-  protocol.
+  protocol;
+- Norm Perron, who founded the
+  [discussion group for HX devices by Standard Horizon](https://groups.io/g/hx870-hx890)
+  and provided testing and feedback for this project.
 
 ## Feature support matrix
 
