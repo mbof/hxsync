@@ -454,11 +454,18 @@ function parseScramblerNode(
     ) {
       throw new YamlError(
         `Scrambler configuration expects config like "- 99: { type: 32, code: 3 }""`,
-        scramblerNode.range![0]
+        scramblerNode
       );
     }
     const id = scramblerNode.items[0].key.value;
-    const matcher = getChannelIdMatcher(id);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), scramblerNode);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Ignoring scrambler setting for unknown channel ${id}`);
@@ -519,7 +526,14 @@ function parseChannelNamesNode(
       );
     }
     const id = channelNameNode.items[0].key.value;
-    const matcher = getChannelIdMatcher(id);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), channelNameNode);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Channel ${id} not found, skipping.`);
@@ -553,7 +567,14 @@ function parseIntershipNode(
     if (!(id instanceof Scalar)) {
       throw new YamlError(`Unexpected channel ID ${id}`, intershipChannelsNode);
     }
-    const matcher = getChannelIdMatcher(id.value);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id.value);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), id);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Intership channel ${id} not found, skipping.`);
