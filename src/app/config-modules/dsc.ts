@@ -65,7 +65,7 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
       groupNumbersAddress: 0x5000,
       groupNum: 20
     }
-  ],
+  ]
 ]);
 
 export class DscConfig implements ConfigModuleInterface {
@@ -129,10 +129,7 @@ export class DscConfig implements ConfigModuleInterface {
             try {
               return new Mmsi(name, mmsi);
             } catch (e: Error | any) {
-              throw new YamlError(
-                e?.message || 'Error parsing MMSI',
-                node.range![0]
-              );
+              throw new YamlError(e?.message || 'Error parsing MMSI', node);
             }
           }
         }
@@ -188,7 +185,7 @@ export class DscConfig implements ConfigModuleInterface {
             return new Mmsi(name, mmsi);
           }
         }
-        throw new Error(`Unknown node type at ${node.range[0]}`);
+        throw new YamlError(`Unknown node type`, node);
       });
       const groupMmsiNamesData = new Uint8Array(this.groupMmsiNamesSize);
       const groupMmsiNumbersData = new Uint8Array(this.groupMmsiNumbersSize);

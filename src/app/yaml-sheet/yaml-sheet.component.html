@@ -2,23 +2,29 @@
   <div class="veil">
     <div class="modal">
       <h2>Yaml Editor</h2>
-      @if (!yamlError) {
-        <div class="info">
-          Edit the radio's configuration as a YAML file.
-          <a
-            href="https://github.com/mbof/hxsync/blob/main/yaml.md"
-            target="_blank"
-            >Documentation</a
-          >
-        </div>
-      } @else {
+      <div class="info">
+        Edit the radio's configuration as a YAML file.
+        <a
+          href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+          target="_blank"
+          >Documentation</a
+        >
+      </div>
+      <div class="contents">
+        <textarea #yamlText [formControl]="yamlControl"></textarea>
+      </div>
+      @if (yamlError) {
         <div class="error">
-          {{ yamlError }}
+          {{ yamlError.msg }}
+          @if (yamlError.range) {
+            (at
+            <a (click)="selectRange(yamlError.range)" href="#">{{
+              getLocationText(yamlError.range[0])
+            }}</a
+            >)
+          }
         </div>
       }
-      <div class="contents">
-        <textarea [formControl]="yamlControl"></textarea>
-      </div>
       @if (clipboardConfirmation) {
         <div class="copy-confirm">{{ clipboardConfirmation }}</div>
       }

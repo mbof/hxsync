@@ -64,3 +64,8 @@ h2 {
 .copy-confirm {
   font-size: 10px;
 }
+
+textarea {
+  line-height: 16px;
+  font-size: 14px;
+}

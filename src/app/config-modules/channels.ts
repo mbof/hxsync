@@ -190,11 +190,11 @@ export class ChannelConfig implements ConfigModuleInterface {
     if (!deviceConfig) {
       throw new YamlError(
         `Unsupported configuration for ${this.deviceModel}`,
-        node.range![0]
+        node
       );
     }
     if (!(channelsNode instanceof YAMLMap)) {
-      throw new YamlError('Unexpected channels node type', node.range![0]);
+      throw new YamlError('Unexpected channels node type', node);
     }
     const sections = channelsNode.items;
     for (const section of sections) {
@@ -212,20 +212,21 @@ export class ChannelConfig implements ConfigModuleInterface {
       !(sectionNode.key instanceof Scalar) ||
       !marineChannelSections.includes(sectionNode.key.value)
     ) {
-      throw new Error(`Unexpected channel section ${sectionNode.key}`);
+      throw new YamlError(
+        `Unexpected channel section ${sectionNode.key}`,
+        sectionNode.key
+      );
     }
     if (!(sectionNode.value instanceof YAMLMap)) {
-      throw new Error(
-        `Unexpected channel section node type for ${sectionNode.key.value}`
+      throw new YamlError(
+        `Unexpected channel section node type for ${sectionNode.key.value}`,
+        sectionNode.value
       );
     }
     const section = sectionNode.key.value;
     const previousSectionConfig = previousConfig.marineChannels?.get(section);
     if (!previousSectionConfig) {
-      throw new YamlError(
-        `Unknown previous configuration`,
-        sectionNode.value.range![0]
-      );
+      throw new YamlError(`Unknown previous configuration`, sectionNode.key);
     }
     if (
       previousSectionConfig.length !=
@@ -233,7 +234,7 @@ export class ChannelConfig implements ConfigModuleInterface {
     ) {
       throw new YamlError(
         `Wrong length of previous configuration`,
-        sectionNode.value.range![0]
+        sectionNode.value
       );
     }
     const flagsIn = new Uint8Array(
@@ -285,7 +286,10 @@ export class ChannelConfig implements ConfigModuleInterface {
           );
         }
       } else {
-        throw new Error(`Unexpected channel node type ${channelNode}`);
+        throw new YamlError(
+          `Unexpected channel node type ${channelNode.key}`,
+          channelNode.key
+        );
       }
     }
     if (shouldWriteFlags) {
@@ -466,7 +470,7 @@ function parseScramblerNode(
       ) {
         throw new YamlError(
           `Expected scrambler config for ${id} as { type: X, code: Y }`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       const scramblerCode = {
@@ -476,13 +480,13 @@ function parseScramblerNode(
       if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
         throw new YamlError(
           `Unknown scrambler type for ${id} (${scramblerCode.type})`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       if (!scramblerCode.code || typeof scramblerCode.code != 'number') {
         throw new YamlError(
           `Unknown scrambler code for ${id} (${scramblerCode.code})`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       setScramblerFlag(
@@ -547,10 +551,7 @@ function parseIntershipNode(
   }
   intershipChannelsNode.items.forEach((id) => {
     if (!(id instanceof Scalar)) {
-      throw new YamlError(
-        `Unexpected channel ID ${id}`,
-        intershipChannelsNode.range![0]
-      );
+      throw new YamlError(`Unexpected channel ID ${id}`, intershipChannelsNode);
     }
     const matcher = getChannelIdMatcher(id.value);
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));

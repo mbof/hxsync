@@ -57,11 +57,11 @@ export class WaypointConfig implements ConfigModuleInterface {
     if (!this.deviceConfig) {
       throw new YamlError(
         `Waypoints not supported on ${this.deviceModel}`,
-        node.range![0]
+        node
       );
     }
     if (!(waypoints instanceof YAMLSeq)) {
-      throw new YamlError('Unexpected waypoints node type', node.range![0]);
+      throw new YamlError('Unexpected waypoints node type', node);
     }
     const waypointArray = waypoints.items.map(parseYamlWaypoint);
     assignIndices(waypointArray, previousConfig.waypoints);
@@ -131,42 +131,39 @@ function parseYamlWaypoint(waypoint: any): Waypoint {
       waypoint.items[0].value instanceof Scalar
     )
   ) {
-    throw new YamlError('Unexpected waypoint node type', waypoint.range![0]);
+    throw new YamlError('Unexpected waypoint node type', waypoint);
   }
   let wptName = waypoint.items[0].key.value;
   const latLonStr = waypoint.items[0].value.value;
   if (!(typeof wptName == 'string')) {
     throw new YamlError(
       `Unexpected waypoint name type ${typeof latLonStr}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   if (wptName.length > 15) {
-    throw new YamlError(
-      `Waypoint name too long "${wptName}"`,
-      waypoint.range![0]
-    );
+    throw new YamlError(`Waypoint name too long "${wptName}"`, waypoint);
   }
   if (!(typeof latLonStr == 'string')) {
     throw new YamlError(
       `Unexpected coordinate type ${typeof latLonStr}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   const latLon = latLonStr.split(' ').map((s) => s.trim());
   if (latLon.length != 2) {
     throw new YamlError(
       `Expected two coordinates, got ${latLon.length}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   const lat = parseLat(latLon[0]);
   if (!lat) {
-    throw new YamlError(`Unable to parse latitude ${lat}`, waypoint.range![0]);
+    throw new YamlError(`Unable to parse latitude ${lat}`, waypoint);
   }
   const lon = parseLon(latLon[1]);
   if (!lon) {
-    throw new YamlError(`Unable to parse latitude ${lon}`, waypoint.range![0]);
+    throw new YamlError(`Unable to parse latitude ${lon}`, waypoint);
   }
   return new Waypoint({
     id: -1,

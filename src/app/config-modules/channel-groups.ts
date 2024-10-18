@@ -32,7 +32,7 @@ export const CHANNEL_GROUP_DEVICE_CONFIGS: Map<
       numGroups: 3,
       bytesPerChannelGroup: 16
     }
-  ],
+  ]
   // Not turned on because HX891BT channel group names have a
   // slightly different memory layout.
   // [
@@ -63,15 +63,12 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
     if (!this.deviceConfig) {
       throw new YamlError(
         `Unsupported configuration for ${this.deviceModel}`,
-        node.range![0]
+        node
       );
     }
     const deviceConfig = this.deviceConfig;
     if (!(channelGroupsNode instanceof YAMLSeq)) {
-      throw new YamlError(
-        'Unexpected channel groups node type',
-        node.range![0]
-      );
+      throw new YamlError('Unexpected channel groups node type', node);
     }
     try {
       var channelGroups: ChannelGroup[] = channelGroupsNode.items.map(
@@ -80,14 +77,14 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
       );
     } catch (e) {
       if (e instanceof Error) {
-        throw new YamlError(e.toString(), node.range![0]);
+        throw new YamlError(e.toString(), node);
       }
       throw e;
     }
     if (channelGroups.length != this.deviceConfig.numGroups) {
       throw new YamlError(
         `Unexpected number of channel groups (expected ${this.deviceConfig.numGroups}, found ${channelGroups.length})`,
-        node.range![0]
+        node
       );
     }
     const data = new Uint8Array(
@@ -172,10 +169,7 @@ function parseChannelGroupYaml(
       channelGroupNode.items[0].value instanceof YAMLMap
     )
   ) {
-    throw new YamlError(
-      'Unexpected channel group node type',
-      channelGroupNode.range![0]
-    );
+    throw new YamlError('Unexpected channel group node type', channelGroupNode);
   }
   const name = channelGroupNode.items[0].key.value;
   let enable = true;
@@ -192,20 +186,20 @@ function parseChannelGroupYaml(
     ) {
       throw new YamlError(
         'Unexpected channel group property type',
-        channelGroupProperties.range![0]
+        channelGroupProperties
       );
     }
     if (!(typeof channelGroupProperty.key.value == 'string')) {
       throw new YamlError(
         'Unexpected channel group property key',
-        channelGroupProperties.range![0]
+        channelGroupProperties
       );
     }
     if (channelGroupProperty.key.value == 'enable') {
       if (!(typeof channelGroupProperty.value.value == 'boolean')) {
         throw new YamlError(
           'Channel group enable property must be boolean',
-          channelGroupProperties.range![0]
+          channelGroupProperties
         );
       }
       enable = channelGroupProperty.value.value;
@@ -213,7 +207,7 @@ function parseChannelGroupYaml(
       if (!(typeof channelGroupProperty.value.value == 'boolean')) {
         throw new YamlError(
           'Channel group enable_dsc property must be boolean',
-          channelGroupProperties.range![0]
+          channelGroupProperties
         );
       }
       enable_dsc = channelGroupProperty.value.value;
@@ -221,7 +215,7 @@ function parseChannelGroupYaml(
       if (!(typeof channelGroupProperty.value.value == 'boolean')) {
         throw new YamlError(
           'Channel group enable_atis property must be boolean',
-          channelGroupProperties.range![0]
+          channelGroupProperties
         );
       }
       enable_atis = channelGroupProperty.value.value;
@@ -229,14 +223,14 @@ function parseChannelGroupYaml(
       if (!(typeof channelGroupProperty.value.value == 'string')) {
         throw new YamlError(
           'Channel group model_name property must be a string',
-          channelGroupProperties.range![0]
+          channelGroupProperties
         );
       }
       model_name = channelGroupProperty.value.value;
     } else {
       throw new YamlError(
         `Unknown channel group property ${channelGroupProperty.key.value}`,
-        channelGroupProperties.range![0]
+        channelGroupProperties
       );
     }
   }
@@ -246,7 +240,7 @@ function parseChannelGroupYaml(
     } else {
       throw new YamlError(
         'Missing model_name for channel group',
-        channelGroupNode.range![0]
+        channelGroupNode
       );
     }
   }

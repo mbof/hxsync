@@ -1,9 +1,9 @@
-import { Component } from '@angular/core';
+import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfigSession } from '../config-session';
 import { DevicemgrService } from '../devicemgr.service';
-import { HttpParams } from '@angular/common/http';
-import { Router, UrlSegment } from '@angular/router';
+import { NodeBase } from 'yaml/dist/nodes/Node';
+import { debounceTime } from 'rxjs/operators';
 
 @Component({
   selector: 'yaml-sheet',
@@ -16,8 +16,11 @@ export class YamlSheetComponent {
   shown = false;
   configSession: ConfigSession;
   yamlControl = new FormControl('Uninitialized');
-  yamlError: string | undefined;
+  yamlError:
+    | { msg: string; range?: Array<number>; validation: boolean }
+    | undefined;
   clipboardConfirmation: any;
+  @ViewChild('yamlText') _yamlText: ElementRef | undefined;
   constructor(deviceMgr: DevicemgrService) {
     this.configSession = deviceMgr.configSession;
   }
@@ -30,6 +33,13 @@ export class YamlSheetComponent {
         this.shown = false;
       }
     });
+    this.yamlControl.valueChanges
+      .pipe(debounceTime(1000))
+      .subscribe((value) => {
+        if (value) {
+          this.configSession.validateYaml(value);
+        }
+      });
     this.configSession.yamlError$.subscribe((error) => {
       this.yamlError = error;
     });
@@ -60,6 +70,33 @@ export class YamlSheetComponent {
     ]);
     this.clipboardConfirmation = 'Copied to clipboard!';
   }
+  getLocationText(offset: number) {
+    const lineAndCol = offsetToLineAndColumn(
+      this.yamlControl.value || '',
+      offset
+    );
+    if (lineAndCol) {
+      return `line ${lineAndCol.line}, column ${lineAndCol.column}`;
+    }
+    return;
+  }
+  selectRange(range: Array<number>) {
+    const lineAndCol = offsetToLineAndColumn(
+      this.yamlControl.value || '',
+      range[0]
+    );
+    const yamlText = this._yamlText?.nativeElement;
+    yamlText.setSelectionRange(range[0], range[1]);
+    yamlText.focus();
+    if (lineAndCol) {
+      yamlText.scrollTop =
+        (lineAndCol.line - 1) *
+        parseInt(
+          getComputedStyle(yamlText).getPropertyValue('line-height'),
+          10
+        );
+    }
+  }
 }
 
 function offsetToLineAndColumn(data: string, offset: number) {
@@ -73,19 +110,12 @@ function offsetToLineAndColumn(data: string, offset: number) {
   }
   return undefined;
 }
+
 export class YamlError extends Error {
   constructor(
     public msg: string,
-    public location: number
+    public node: NodeBase
   ) {
     super(msg);
-  }
-  toUserMessage(yamlText: string) {
-    const lineAndCol = offsetToLineAndColumn(yamlText, this.location);
-    if (!lineAndCol) {
-      return `${this.msg} (at ${this.location})`;
-    } else {
-      return `${this.msg} (at line ${lineAndCol.line}, column ${lineAndCol.column})`;
-    }
   }
 }
