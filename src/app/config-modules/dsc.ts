@@ -8,7 +8,7 @@ import {
   MmsiDirectory,
   numberOffsetFromIndex
 } from '../mmsi';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 
@@ -93,14 +93,14 @@ export class DscConfig implements ConfigModuleInterface {
   // Smells:
   // - the individual and group directories may be split into two modules.
   // - not sure we need the MmsiDirectory structure.
-  maybeVisitYamlNode(
-    node: YAMLMap,
-    configBatchWriter: ConfigBatchWriter,
-    config: Config
-  ): boolean {
+  maybeVisitYamlNode(node: YAMLMap, ctx: YamlContext): boolean {
     return (
-      this.maybeVisitYamlNodeIndividual(node, configBatchWriter, config) ||
-      this.maybeVisitYamlNodeGroup(node, configBatchWriter, config)
+      this.maybeVisitYamlNodeIndividual(
+        node,
+        ctx.configBatchWriter,
+        ctx.configOut
+      ) ||
+      this.maybeVisitYamlNodeGroup(node, ctx.configBatchWriter, ctx.configOut)
     );
   }
   maybeVisitYamlNodeIndividual(

@@ -179,7 +179,7 @@ describe('MmsiDirectory', () => {
         groupMmsiNameBytes,
         groupMmsiNumberBytes
       )
-    ).toThrowError('Duplicate MMSI 987654321');
+    ).toThrowError('Duplicate individual MMSI 987654321');
     mmsiDirectory.individualMmsis = [mmsi1, mmsi2, mmsi3, mmsi4];
     mmsiDirectory.groupMmsis = [mmsi1, mmsi3, mmsi3, mmsi4];
     expect(() =>
@@ -189,6 +189,6 @@ describe('MmsiDirectory', () => {
         groupMmsiNameBytes,
         groupMmsiNumberBytes
       )
-    ).toThrowError('Duplicate MMSI 888888888');
+    ).toThrowError('Duplicate group MMSI 888888888');
   });
 });

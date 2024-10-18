@@ -77,9 +77,11 @@ describe('RoutesConfig', () => {
     const config: Config = { waypoints };
     const result = routeConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      {}
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeTrue();
     const [offset, data] = configBatchWriter.data.get('routes')!;
@@ -98,9 +100,11 @@ describe('RoutesConfig', () => {
     const config: Config = { waypoints };
     const result = routeConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      {}
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeFalse();
   });

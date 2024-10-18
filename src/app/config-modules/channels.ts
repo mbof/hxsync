@@ -1,8 +1,8 @@
 import { YAMLMap, Document, Node, Scalar, YAMLSeq, Pair } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
-import { ConfigModuleInterface } from './config-module-interface';
-import { Config, DeviceModel, MemoryRangeId } from './device-configs';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
+import { Config, DeviceModel } from './device-configs';
 import {
   CHANNEL_NAME_BYTES,
   MARINE_FLAG_BYTES,
@@ -178,9 +178,7 @@ export class ChannelConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const channelsNode = node.get('channels');
     if (!channelsNode) {
@@ -198,7 +196,7 @@ export class ChannelConfig implements ConfigModuleInterface {
     }
     const sections = channelsNode.items;
     for (const section of sections) {
-      this.parseYamlSection(section, configBatchWriter, previousConfig);
+      this.parseYamlSection(section, ctx.configBatchWriter, ctx.previousConfig);
     }
     return true;
   }

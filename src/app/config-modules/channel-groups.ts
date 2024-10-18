@@ -1,9 +1,8 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
 import { DeviceModel } from './device-configs';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { ChannelGroup, parseChannelGroupData } from '../channel-group';
 
@@ -52,9 +51,7 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const channelGroupsNode = node.get('channel_groups');
     if (!channelGroupsNode) {
@@ -73,7 +70,10 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
     try {
       var channelGroups: ChannelGroup[] = channelGroupsNode.items.map(
         (cgNode, index) =>
-          parseChannelGroupYaml(cgNode, previousConfig.channelGroups?.[index])
+          parseChannelGroupYaml(
+            cgNode,
+            ctx.previousConfig.channelGroups?.[index]
+          )
       );
     } catch (e) {
       if (e instanceof Error) {
@@ -98,8 +98,8 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
         )
       );
     }
-    configOut.channelGroups = channelGroups;
-    configBatchWriter.prepareWrite(
+    ctx.configOut.channelGroups = channelGroups;
+    ctx.configBatchWriter.prepareWrite(
       'channel_groups',
       this.deviceConfig.startAddress,
       data

@@ -535,12 +535,11 @@ export class ConfigSession {
           }
           let handled = false;
           for (const configModule of configModules) {
-            handled = configModule.maybeVisitYamlNode(
-              node,
+            handled = configModule.maybeVisitYamlNode(node, {
               configBatchWriter,
-              config,
+              configOut: config,
               previousConfig
-            );
+            });
             if (handled) break;
           }
           if (!handled) {

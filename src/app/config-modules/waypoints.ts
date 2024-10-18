@@ -1,8 +1,7 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { DeviceModel } from './device-configs';
 import { WAYPOINTS_BYTE_SIZE, Waypoint, waypointFromConfig } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
@@ -46,9 +45,7 @@ export class WaypointConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const waypoints = node.get('waypoints');
     if (!waypoints) {
@@ -64,18 +61,18 @@ export class WaypointConfig implements ConfigModuleInterface {
       throw new YamlError('Unexpected waypoints node type', node);
     }
     const waypointArray = waypoints.items.map(parseYamlWaypoint);
-    assignIndices(waypointArray, previousConfig.waypoints);
+    assignIndices(waypointArray, ctx.previousConfig.waypoints);
     const wpData = new Uint8Array(
       WAYPOINTS_BYTE_SIZE * this.deviceConfig.number
     );
     wpData.fill(255);
     fillWaypointData(waypointArray, this.deviceConfig.startAddress, wpData);
-    configBatchWriter.prepareWrite(
+    ctx.configBatchWriter.prepareWrite(
       'waypoints',
       this.deviceConfig.startAddress,
       wpData
     );
-    configOut.waypoints = waypointArray;
+    ctx.configOut.waypoints = waypointArray;
     return true;
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {

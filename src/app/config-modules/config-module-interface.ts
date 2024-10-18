@@ -8,13 +8,14 @@ export interface ConfigModuleConstructor {
   new (deviceModel: DeviceModel): ConfigModuleInterface;
 }
 
+export type YamlContext = {
+  configBatchWriter: ConfigBatchWriter;
+  configOut: Config;
+  previousConfig: Config;
+};
+
 export interface ConfigModuleInterface {
-  maybeVisitYamlNode(
-    node: YAMLMap,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
-  ): boolean;
+  maybeVisitYamlNode(node: YAMLMap, context: YamlContext): boolean;
   addRangesToRead(configBatchReader: ConfigBatchReader): void;
   updateConfig(
     results: BatchReaderResults,

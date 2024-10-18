@@ -1,9 +1,8 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
 import { DeviceModel } from './device-configs';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { Route, routeFromConfig } from '../route';
 import { Waypoint } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
@@ -54,9 +53,7 @@ export class RouteConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const routesNode = node.get('routes');
     if (!routesNode) {
@@ -71,7 +68,11 @@ export class RouteConfig implements ConfigModuleInterface {
     }
     const routesArray: Route[] = routesNode.items
       .map((routeNode) =>
-        parseYamlRoute(routeNode, configOut, deviceConfig.numWaypointsPerRoute)
+        parseYamlRoute(
+          routeNode,
+          ctx.configOut,
+          deviceConfig.numWaypointsPerRoute
+        )
       )
       .sort((routeA: Route, routeB: Route) =>
         stringCompare(routeA.route.name, routeB.route.name)
@@ -88,7 +89,7 @@ export class RouteConfig implements ConfigModuleInterface {
         deviceConfig.bytesPerRoute
       );
     }
-    configBatchWriter.prepareWrite(
+    ctx.configBatchWriter.prepareWrite(
       'routes',
       deviceConfig.startAddress,
       routeData

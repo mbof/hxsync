@@ -1,7 +1,6 @@
 import { YAMLMap, Document, Node } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { Config, DeviceModel } from './device-configs';
 import { CHANNEL_NAME_BYTES } from '../channel';
 
@@ -93,9 +92,7 @@ export class ExtraChannelConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     throw new Error('Method not implemented.');
   }

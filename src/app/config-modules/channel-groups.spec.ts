@@ -113,9 +113,11 @@ describe('ChannelGroupsConfig', () => {
     const config: Config = {};
     const result = channelGroupConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      {}
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeTrue();
     expect(config.channelGroups![0].cg).toEqual(CHANNEL_GROUP_DATAS[0]);
@@ -133,9 +135,11 @@ describe('ChannelGroupsConfig', () => {
     const config: Config = {};
     const result = channelGroupConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      previousConfig
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig
+      }
     );
     expect(result).toBeTrue();
     expect(config.channelGroups![0].cg).toEqual(
