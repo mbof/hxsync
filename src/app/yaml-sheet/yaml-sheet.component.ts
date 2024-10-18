@@ -4,6 +4,7 @@ import { ConfigSession } from '../config-session';
 import { DevicemgrService } from '../devicemgr.service';
 import { NodeBase } from 'yaml/dist/nodes/Node';
 import { debounceTime } from 'rxjs/operators';
+import { YamlDiagnostics } from '../config-modules/config-module-interface';
 
 @Component({
   selector: 'yaml-sheet',
@@ -19,6 +20,7 @@ export class YamlSheetComponent {
   yamlError:
     | { msg: string; range?: Array<number>; validation: boolean }
     | undefined;
+  yamlDiagnostics: YamlDiagnostics = {};
   clipboardConfirmation: any;
   @ViewChild('yamlText') _yamlText: ElementRef | undefined;
   constructor(deviceMgr: DevicemgrService) {
@@ -42,6 +44,9 @@ export class YamlSheetComponent {
       });
     this.configSession.yamlError$.subscribe((error) => {
       this.yamlError = error;
+    });
+    this.configSession.yamlDiagnostics$.subscribe((diagnostics) => {
+      this.yamlDiagnostics = diagnostics;
     });
   }
   save() {

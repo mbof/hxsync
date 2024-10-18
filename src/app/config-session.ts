@@ -21,6 +21,7 @@ import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
 import { DscDeviceConfig } from './config-modules/dsc';
 import { Config } from './config-modules/device-configs';
+import { YamlDiagnostics } from './config-modules/config-module-interface';
 
 // TODO: refactor this into
 // a distinct class for each of nav / mmsi / yaml
@@ -72,6 +73,9 @@ export class ConfigSession {
     { msg: string; range?: Array<number>; validation: boolean } | undefined
   >(undefined);
   yamlError$ = this._yamlError.asObservable();
+
+  private _yamlDiagnostics = new BehaviorSubject<YamlDiagnostics>({});
+  yamlDiagnostics$ = this._yamlDiagnostics.asObservable();
 
   reset(deviceConfig: DeviceConfig, configProtocol: ConfigProtocolInterface) {
     this.config.next({});
@@ -466,6 +470,7 @@ export class ConfigSession {
     this._deviceTaskState.next('yaml-read');
     this._progress.next(0);
     this._yamlError.next(undefined);
+    this._yamlDiagnostics.next({});
     this.config.next({});
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
@@ -512,6 +517,12 @@ export class ConfigSession {
     const configBatchWriter = new ConfigBatchWriter(this._configProtocol);
     const config: Config = {};
     const previousConfig = this.config.getValue();
+    const ctx = {
+      configBatchWriter,
+      configOut: config,
+      previousConfig,
+      diagnosticsLog: {}
+    };
     try {
       visit(yaml, {
         Alias(key, node, path) {
@@ -535,11 +546,7 @@ export class ConfigSession {
           }
           let handled = false;
           for (const configModule of configModules) {
-            handled = configModule.maybeVisitYamlNode(node, {
-              configBatchWriter,
-              configOut: config,
-              previousConfig
-            });
+            handled = configModule.maybeVisitYamlNode(node, ctx);
             if (handled) break;
           }
           if (!handled) {
@@ -564,9 +571,11 @@ export class ConfigSession {
           validation: dryRun
         });
       }
+      this._yamlDiagnostics.next({});
       return;
     }
     this._yamlError.next(undefined);
+    this._yamlDiagnostics.next(ctx.diagnosticsLog);
     if (!dryRun) {
       await configBatchWriter.write((progress: number) => {
         this._progress.next(progress);

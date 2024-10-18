@@ -94,6 +94,13 @@ export class RouteConfig implements ConfigModuleInterface {
       deviceConfig.startAddress,
       routeData
     );
+    ctx.diagnosticsLog = {
+      ...(ctx.diagnosticsLog || {}),
+      routes: {
+        used: routesArray.length,
+        remaining: deviceConfig.numRoutes - routesArray.length
+      }
+    };
     return true;
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {

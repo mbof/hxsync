@@ -95,84 +95,83 @@ export class DscConfig implements ConfigModuleInterface {
   // - not sure we need the MmsiDirectory structure.
   maybeVisitYamlNode(node: YAMLMap, ctx: YamlContext): boolean {
     return (
-      this.maybeVisitYamlNodeIndividual(
-        node,
-        ctx.configBatchWriter,
-        ctx.configOut
-      ) ||
-      this.maybeVisitYamlNodeGroup(node, ctx.configBatchWriter, ctx.configOut)
+      this.maybeVisitYamlNodeIndividual(node, ctx) ||
+      this.maybeVisitYamlNodeGroup(node, ctx)
     );
   }
-  maybeVisitYamlNodeIndividual(
-    node: YAMLMap,
-    configBatchWriter: ConfigBatchWriter,
-    config: Config
-  ): boolean {
+  maybeVisitYamlNodeIndividual(node: YAMLMap, ctx: YamlContext): boolean {
     const dsc_dir = node.get('individual_directory');
     if (dsc_dir && dsc_dir instanceof YAMLSeq) {
-      if (!config.mmsiDirectory) {
-        config.mmsiDirectory = new MmsiDirectory(
+      if (!ctx.configOut.mmsiDirectory) {
+        ctx.configOut.mmsiDirectory = new MmsiDirectory(
           this.deviceConfig!.individualNum,
           this.deviceConfig!.groupNum
         );
       }
-      config.mmsiDirectory.individualMmsis = dsc_dir.items.map((node) => {
-        if (
-          node instanceof YAMLMap &&
-          node.items.length == 1 &&
-          node.items[0].key instanceof Scalar &&
-          node.items[0].value instanceof Scalar
-        ) {
-          const name = node.items[0].key.value;
-          const mmsi = node.items[0].value.value;
-          if (typeof name == 'string' && typeof mmsi == 'string') {
-            try {
-              return new Mmsi(name, mmsi);
-            } catch (e: Error | any) {
-              throw new YamlError(e?.message || 'Error parsing MMSI', node);
+      ctx.configOut.mmsiDirectory.individualMmsis = dsc_dir.items.map(
+        (node) => {
+          if (
+            node instanceof YAMLMap &&
+            node.items.length == 1 &&
+            node.items[0].key instanceof Scalar &&
+            node.items[0].value instanceof Scalar
+          ) {
+            const name = node.items[0].key.value;
+            const mmsi = node.items[0].value.value;
+            if (typeof name == 'string' && typeof mmsi == 'string') {
+              try {
+                return new Mmsi(name, mmsi);
+              } catch (e: Error | any) {
+                throw new YamlError(e?.message || 'Error parsing MMSI', node);
+              }
             }
           }
+          throw new YamlError(`Unknown node type`, node.range[0]);
         }
-        throw new YamlError(`Unknown node type`, node.range[0]);
-      });
+      );
       const individualMmsiNamesData = new Uint8Array(
         this.individualMmsiNamesSize
       );
       const individualMmsiNumbersData = new Uint8Array(
         this.individualMmsiNumbersSize
       );
-      config.mmsiDirectory.fillIndividualConfig(
+      ctx.configOut.mmsiDirectory.fillIndividualConfig(
         individualMmsiNamesData,
         individualMmsiNumbersData
       );
-      configBatchWriter.prepareWrite(
+      ctx.configBatchWriter.prepareWrite(
         'individual_mmsi_names',
         this.deviceConfig!.individualNamesAddress,
         individualMmsiNamesData
       );
-      configBatchWriter.prepareWrite(
+      ctx.configBatchWriter.prepareWrite(
         'individual_mmsi_numbers',
         this.deviceConfig!.individualNumbersAddress,
         individualMmsiNumbersData
       );
+      ctx.diagnosticsLog = {
+        ...(ctx.diagnosticsLog || {}),
+        dsc_individual: {
+          used: ctx.configOut.mmsiDirectory.individualMmsis.length,
+          remaining:
+            ctx.configOut.mmsiDirectory.maxIndividualMmsis -
+            ctx.configOut.mmsiDirectory.individualMmsis.length
+        }
+      };
       return true;
     }
     return false;
   }
-  maybeVisitYamlNodeGroup(
-    node: YAMLMap,
-    configBatchWriter: ConfigBatchWriter,
-    config: Config
-  ): boolean {
+  maybeVisitYamlNodeGroup(node: YAMLMap, ctx: YamlContext): boolean {
     const group_dir = node.get('group_directory');
     if (group_dir && group_dir instanceof YAMLSeq) {
-      if (!config.mmsiDirectory) {
-        config.mmsiDirectory = new MmsiDirectory(
+      if (!ctx.configOut.mmsiDirectory) {
+        ctx.configOut.mmsiDirectory = new MmsiDirectory(
           this.deviceConfig!.individualNum,
           this.deviceConfig!.groupNum
         );
       }
-      config.mmsiDirectory.groupMmsis = group_dir.items.map((node) => {
+      ctx.configOut.mmsiDirectory.groupMmsis = group_dir.items.map((node) => {
         if (
           node instanceof YAMLMap &&
           node.items.length == 1 &&
@@ -189,20 +188,29 @@ export class DscConfig implements ConfigModuleInterface {
       });
       const groupMmsiNamesData = new Uint8Array(this.groupMmsiNamesSize);
       const groupMmsiNumbersData = new Uint8Array(this.groupMmsiNumbersSize);
-      config.mmsiDirectory.fillGroupConfig(
+      ctx.configOut.mmsiDirectory.fillGroupConfig(
         groupMmsiNamesData,
         groupMmsiNumbersData
       );
-      configBatchWriter.prepareWrite(
+      ctx.configBatchWriter.prepareWrite(
         'group_mmsi_names',
         this.deviceConfig!.groupNamesAddress,
         groupMmsiNamesData
       );
-      configBatchWriter.prepareWrite(
+      ctx.configBatchWriter.prepareWrite(
         'group_mmsi_numbers',
         this.deviceConfig!.groupNumbersAddress,
         groupMmsiNumbersData
       );
+      ctx.diagnosticsLog = {
+        ...(ctx.diagnosticsLog || {}),
+        dsc_group: {
+          used: ctx.configOut.mmsiDirectory.groupMmsis.length,
+          remaining:
+            ctx.configOut.mmsiDirectory.maxGroupMmsis -
+            ctx.configOut.mmsiDirectory.groupMmsis.length
+        }
+      };
       return true;
     }
     return false;

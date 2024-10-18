@@ -25,6 +25,38 @@
           }
         </div>
       }
+      @if (yamlDiagnostics) {
+        <div class="diagnostics">
+          @if (yamlDiagnostics.dsc_individual) {
+            <span class="diagnostic">
+              Individual DSC:
+              {{ yamlDiagnostics.dsc_individual.used }} used,
+              {{ yamlDiagnostics.dsc_individual.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.dsc_group) {
+            <span class="diagnostic">
+              Group DSC:
+              {{ yamlDiagnostics.dsc_group.used }} used,
+              {{ yamlDiagnostics.dsc_group.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.waypoints) {
+            <span class="diagnostic">
+              Waypoints:
+              {{ yamlDiagnostics.waypoints.used }} used,
+              {{ yamlDiagnostics.waypoints.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.routes) {
+            <span class="diagnostic">
+              Routes:
+              {{ yamlDiagnostics.routes.used }} used,
+              {{ yamlDiagnostics.routes.remaining }} left.
+            </span>
+          }
+        </div>
+      }
       @if (clipboardConfirmation) {
         <div class="copy-confirm">{{ clipboardConfirmation }}</div>
       }

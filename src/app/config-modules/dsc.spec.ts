@@ -56,8 +56,11 @@ describe('DscConfig', () => {
     const config: Config = {};
     const result = dscConfigModule.maybeVisitYamlNodeIndividual(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeTrue();
     const [offset, data] = configBatchWriter.data.get('individual_mmsi_names')!;
@@ -74,8 +77,11 @@ describe('DscConfig', () => {
     const config: Config = {};
     const result = dscConfigModule.maybeVisitYamlNodeGroup(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeTrue();
     const [offset, data] = configBatchWriter.data.get('group_mmsi_names')!;

@@ -72,6 +72,13 @@ export class WaypointConfig implements ConfigModuleInterface {
       this.deviceConfig.startAddress,
       wpData
     );
+    ctx.diagnosticsLog = {
+      ...(ctx.diagnosticsLog || {}),
+      waypoints: {
+        used: waypointArray.length,
+        remaining: this.deviceConfig.number - waypointArray.length
+      }
+    };
     ctx.configOut.waypoints = waypointArray;
     return true;
   }

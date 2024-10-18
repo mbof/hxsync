@@ -8,10 +8,30 @@ export interface ConfigModuleConstructor {
   new (deviceModel: DeviceModel): ConfigModuleInterface;
 }
 
+export type YamlDiagnostics = {
+  dsc_individual?: {
+    used: number;
+    remaining: number;
+  };
+  dsc_group?: {
+    used: number;
+    remaining: number;
+  };
+  waypoints?: {
+    used: number;
+    remaining: number;
+  };
+  routes?: {
+    used: number;
+    remaining: number;
+  };
+};
+
 export type YamlContext = {
   configBatchWriter: ConfigBatchWriter;
   configOut: Config;
   previousConfig: Config;
+  diagnosticsLog?: YamlDiagnostics;
 };
 
 export interface ConfigModuleInterface {

@@ -61,6 +61,20 @@ h2 {
   background-color: lightpink;
 }
 
+.diagnostics {
+  width: 600px;
+  font-size: 12px;
+  padding: 0.5em 2em;
+  margin: 0 0 0.5em;
+  box-sizing: border-box;
+  color: #444;
+}
+
+.diagnostic {
+  display: inline-block;
+  margin-right: 0.5em;
+}
+
 .copy-confirm {
   font-size: 10px;
 }
