@@ -14,8 +14,6 @@ Features:
 - Backup and restore DAT files
 - Available offline via a progressive web app
 
-This software could break your device. **Use at your own risk!**
-
 Requires Chrome, Edge, or Opera (due to availability of the
 [WebSerial API](https://developer.mozilla.org/en-US/docs/Web/API/Web_Serial_API#browser_compatibility)
 and
