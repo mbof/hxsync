@@ -102,6 +102,9 @@ export class YamlSheetComponent {
         );
     }
   }
+  hasDiagnostics() {
+    return this.yamlDiagnostics && Object.keys(this.yamlDiagnostics).length > 0;
+  }
 }
 
 function offsetToLineAndColumn(data: string, offset: number) {

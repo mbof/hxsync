@@ -25,7 +25,7 @@
           }
         </div>
       }
-      @if (yamlDiagnostics) {
+      @if (hasDiagnostics()) {
         <div class="diagnostics">
           @if (yamlDiagnostics.dsc_individual) {
             <span class="diagnostic">
