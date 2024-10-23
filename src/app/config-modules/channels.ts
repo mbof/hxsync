@@ -1,8 +1,8 @@
 import { YAMLMap, Document, Node, Scalar, YAMLSeq, Pair } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
-import { ConfigModuleInterface } from './config-module-interface';
-import { Config, DeviceModel, MemoryRangeId } from './device-configs';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
+import { Config, DeviceModel } from './device-configs';
 import {
   CHANNEL_NAME_BYTES,
   MARINE_FLAG_BYTES,
@@ -178,9 +178,7 @@ export class ChannelConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const channelsNode = node.get('channels');
     if (!channelsNode) {
@@ -190,15 +188,15 @@ export class ChannelConfig implements ConfigModuleInterface {
     if (!deviceConfig) {
       throw new YamlError(
         `Unsupported configuration for ${this.deviceModel}`,
-        node.range![0]
+        node
       );
     }
     if (!(channelsNode instanceof YAMLMap)) {
-      throw new YamlError('Unexpected channels node type', node.range![0]);
+      throw new YamlError('Unexpected channels node type', node);
     }
     const sections = channelsNode.items;
     for (const section of sections) {
-      this.parseYamlSection(section, configBatchWriter, previousConfig);
+      this.parseYamlSection(section, ctx.configBatchWriter, ctx.previousConfig);
     }
     return true;
   }
@@ -212,20 +210,21 @@ export class ChannelConfig implements ConfigModuleInterface {
       !(sectionNode.key instanceof Scalar) ||
       !marineChannelSections.includes(sectionNode.key.value)
     ) {
-      throw new Error(`Unexpected channel section ${sectionNode.key}`);
+      throw new YamlError(
+        `Unexpected channel section ${sectionNode.key}`,
+        sectionNode.key
+      );
     }
     if (!(sectionNode.value instanceof YAMLMap)) {
-      throw new Error(
-        `Unexpected channel section node type for ${sectionNode.key.value}`
+      throw new YamlError(
+        `Unexpected channel section node type for ${sectionNode.key.value}`,
+        sectionNode.value
       );
     }
     const section = sectionNode.key.value;
     const previousSectionConfig = previousConfig.marineChannels?.get(section);
     if (!previousSectionConfig) {
-      throw new YamlError(
-        `Unknown previous configuration`,
-        sectionNode.value.range![0]
-      );
+      throw new YamlError(`Unknown previous configuration`, sectionNode.key);
     }
     if (
       previousSectionConfig.length !=
@@ -233,7 +232,7 @@ export class ChannelConfig implements ConfigModuleInterface {
     ) {
       throw new YamlError(
         `Wrong length of previous configuration`,
-        sectionNode.value.range![0]
+        sectionNode.value
       );
     }
     const flagsIn = new Uint8Array(
@@ -285,7 +284,10 @@ export class ChannelConfig implements ConfigModuleInterface {
           );
         }
       } else {
-        throw new Error(`Unexpected channel node type ${channelNode}`);
+        throw new YamlError(
+          `Unexpected channel node type ${channelNode.key}`,
+          channelNode.key
+        );
       }
     }
     if (shouldWriteFlags) {
@@ -450,11 +452,18 @@ function parseScramblerNode(
     ) {
       throw new YamlError(
         `Scrambler configuration expects config like "- 99: { type: 32, code: 3 }""`,
-        scramblerNode.range![0]
+        scramblerNode
       );
     }
     const id = scramblerNode.items[0].key.value;
-    const matcher = getChannelIdMatcher(id);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), scramblerNode);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Ignoring scrambler setting for unknown channel ${id}`);
@@ -466,7 +475,7 @@ function parseScramblerNode(
       ) {
         throw new YamlError(
           `Expected scrambler config for ${id} as { type: X, code: Y }`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       const scramblerCode = {
@@ -476,13 +485,13 @@ function parseScramblerNode(
       if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
         throw new YamlError(
           `Unknown scrambler type for ${id} (${scramblerCode.type})`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       if (!scramblerCode.code || typeof scramblerCode.code != 'number') {
         throw new YamlError(
           `Unknown scrambler code for ${id} (${scramblerCode.code})`,
-          scramblerNode.range![0]
+          scramblerNode
         );
       }
       setScramblerFlag(
@@ -515,7 +524,14 @@ function parseChannelNamesNode(
       );
     }
     const id = channelNameNode.items[0].key.value;
-    const matcher = getChannelIdMatcher(id);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), channelNameNode);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Channel ${id} not found, skipping.`);
@@ -547,12 +563,16 @@ function parseIntershipNode(
   }
   intershipChannelsNode.items.forEach((id) => {
     if (!(id instanceof Scalar)) {
-      throw new YamlError(
-        `Unexpected channel ID ${id}`,
-        intershipChannelsNode.range![0]
-      );
+      throw new YamlError(`Unexpected channel ID ${id}`, intershipChannelsNode);
     }
-    const matcher = getChannelIdMatcher(id.value);
+    let matcher: (arg0: Uint8Array) => boolean;
+    try {
+      matcher = getChannelIdMatcher(id.value);
+    } catch (e) {
+      if (e instanceof Error) {
+        throw new YamlError(e.toString(), id);
+      }
+    }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
     if (n == -1) {
       console.log(`Intership channel ${id} not found, skipping.`);

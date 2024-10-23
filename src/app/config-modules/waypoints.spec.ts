@@ -38,9 +38,11 @@ describe('WaypointConfig', () => {
     const config: Config = {};
     const result = waypointConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      {}
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeTrue();
     const [offset, data] = configBatchWriter.data.get('waypoints')!;
@@ -59,9 +61,11 @@ describe('WaypointConfig', () => {
     const config: Config = {};
     const result = waypointConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config,
-      {}
+      {
+        configBatchWriter,
+        configOut: config,
+        previousConfig: {}
+      }
     );
     expect(result).toBeFalse();
   });
@@ -115,9 +119,11 @@ describe('WaypointConfig', () => {
     const config2: Config = {};
     const result = waypointConfigModule.maybeVisitYamlNode(
       (yaml.contents as YAMLSeq).items[0] as YAMLMap,
-      configBatchWriter,
-      config2,
-      config
+      {
+        configBatchWriter,
+        configOut: config2,
+        previousConfig: config
+      }
     );
     expect(config2.waypoints![0].wp.id).toBe(1);
     expect(config2.waypoints![1].wp.id).toBe(100);

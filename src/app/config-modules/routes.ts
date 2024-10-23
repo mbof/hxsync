@@ -1,9 +1,8 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
 import { DeviceModel } from './device-configs';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { Route, routeFromConfig } from '../route';
 import { Waypoint } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
@@ -44,7 +43,7 @@ export const ROUTE_DEVICE_CONFIGS: Map<DeviceModel, RouteDeviceConfig> =
         numWaypointsPerRoute: 31,
         bytesPerRoute: 64
       }
-    ],
+    ]
   ]);
 
 export class RouteConfig implements ConfigModuleInterface {
@@ -54,27 +53,26 @@ export class RouteConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const routesNode = node.get('routes');
     if (!routesNode) {
       return false;
     }
     if (!this.deviceConfig) {
-      throw new YamlError(
-        `Routes not supported on ${this.deviceModel}`,
-        node.range![0]
-      );
+      throw new YamlError(`Routes not supported on ${this.deviceModel}`, node);
     }
     const deviceConfig = this.deviceConfig;
     if (!(routesNode instanceof YAMLSeq)) {
-      throw new YamlError('Unexpected routes node type', node.range![0]);
+      throw new YamlError('Unexpected routes node type', node);
     }
     const routesArray: Route[] = routesNode.items
       .map((routeNode) =>
-        parseYamlRoute(routeNode, configOut, deviceConfig.numWaypointsPerRoute)
+        parseYamlRoute(
+          routeNode,
+          ctx.configOut,
+          deviceConfig.numWaypointsPerRoute
+        )
       )
       .sort((routeA: Route, routeB: Route) =>
         stringCompare(routeA.route.name, routeB.route.name)
@@ -91,11 +89,18 @@ export class RouteConfig implements ConfigModuleInterface {
         deviceConfig.bytesPerRoute
       );
     }
-    configBatchWriter.prepareWrite(
+    ctx.configBatchWriter.prepareWrite(
       'routes',
       deviceConfig.startAddress,
       routeData
     );
+    ctx.diagnosticsLog = {
+      ...(ctx.diagnosticsLog || {}),
+      routes: {
+        used: routesArray.length,
+        remaining: deviceConfig.numRoutes - routesArray.length
+      }
+    };
     return true;
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {
@@ -179,54 +184,39 @@ function parseYamlRoute(
       routeNode.items[0].value instanceof YAMLSeq
     )
   ) {
-    throw new YamlError('Unexpected route node type', routeNode.range![0]);
+    throw new YamlError('Unexpected route node type', routeNode);
   }
   if (!configOut.waypoints) {
-    throw new YamlError(
-      'Waypoints must be declared before routes',
-      routeNode.range![0]
-    );
+    throw new YamlError('Waypoints must be declared before routes', routeNode);
   }
   let routeName = routeNode.items[0].key.value;
   if (routeName.length > 15) {
-    throw new YamlError(
-      `Route name too long "${routeName}"`,
-      routeNode.range![0]
-    );
+    throw new YamlError(`Route name too long "${routeName}"`, routeNode);
   }
   const waypointsSeq = routeNode.items[0].value;
   if (waypointsSeq.items.length == 0) {
-    throw new YamlError(
-      `No waypoints in route "${routeName}"`,
-      routeNode.range![0]
-    );
+    throw new YamlError(`No waypoints in route "${routeName}"`, routeNode);
   }
   if (waypointsSeq.items.length > maxWaypoints) {
     throw new YamlError(
       `Too many waypoints in route "${routeName}" (found ${waypointsSeq.items.length}, max is ${maxWaypoints})`,
-      routeNode.range![0]
+      routeNode
     );
   }
   const waypointIds = [];
   for (const waypoint of waypointsSeq.items) {
     if (!(waypoint instanceof Scalar && typeof waypoint.value == 'string')) {
-      throw new YamlError(`Unexpected route waypoint type`, waypoint.range![0]);
+      throw new YamlError(`Unexpected route waypoint type`, waypoint);
     }
     const waypointName = waypoint.value;
     const waypoints = configOut.waypoints.filter(
       (wp) => wp.wp.name == waypointName
     );
     if (!waypoints || waypoints.length == 0) {
-      throw new YamlError(
-        `Waypoint ${waypointName} not found`,
-        waypoint.range![0]
-      );
+      throw new YamlError(`Waypoint ${waypointName} not found`, waypoint);
     }
     if (waypoints.length > 1) {
-      throw new YamlError(
-        `Multiple waypoints named ${waypointName}`,
-        waypoint.range![0]
-      );
+      throw new YamlError(`Multiple waypoints named ${waypointName}`, waypoint);
     }
     waypointIds.push(waypoints[0].wp.id);
   }

@@ -21,6 +21,7 @@ import { ConfigBatchWriter } from './config-batch-writer';
 import { YamlError } from './yaml-sheet/yaml-sheet.component';
 import { DscDeviceConfig } from './config-modules/dsc';
 import { Config } from './config-modules/device-configs';
+import { YamlDiagnostics } from './config-modules/config-module-interface';
 
 // TODO: refactor this into
 // a distinct class for each of nav / mmsi / yaml
@@ -68,8 +69,13 @@ export class ConfigSession {
   private _progress = new BehaviorSubject<number>(0);
   progress$ = this._progress.asObservable();
 
-  private _yamlError = new BehaviorSubject<string | undefined>(undefined);
+  private _yamlError = new BehaviorSubject<
+    { msg: string; range?: Array<number>; validation: boolean } | undefined
+  >(undefined);
   yamlError$ = this._yamlError.asObservable();
+
+  private _yamlDiagnostics = new BehaviorSubject<YamlDiagnostics>({});
+  yamlDiagnostics$ = this._yamlDiagnostics.asObservable();
 
   reset(deviceConfig: DeviceConfig, configProtocol: ConfigProtocolInterface) {
     this.config.next({});
@@ -463,7 +469,8 @@ export class ConfigSession {
     }
     this._deviceTaskState.next('yaml-read');
     this._progress.next(0);
-    this._yamlError.next('');
+    this._yamlError.next(undefined);
+    this._yamlDiagnostics.next({});
     this.config.next({});
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
@@ -485,14 +492,24 @@ export class ConfigSession {
   }
 
   async saveYaml(yamlText: string) {
-    if (this._deviceTaskState.getValue() != 'yaml-edit') {
-      throw new Error(
-        `Can't save Yaml from state ${this._deviceTaskState.getValue()}`
-      );
+    return this._saveYamlInternal(yamlText, false);
+  }
+
+  async validateYaml(yamlText: string) {
+    return this._saveYamlInternal(yamlText, true);
+  }
+
+  async _saveYamlInternal(yamlText: string, dryRun: boolean) {
+    if (!dryRun) {
+      if (this._deviceTaskState.getValue() != 'yaml-edit') {
+        throw new Error(
+          `Can't save Yaml from state ${this._deviceTaskState.getValue()}`
+        );
+      }
+      this._deviceTaskState.next('yaml-save');
+      this.yamlText.next(yamlText);
+      this._progress.next(0);
     }
-    this._deviceTaskState.next('yaml-save');
-    this.yamlText.next(yamlText);
-    this._progress.next(0);
     const yaml = parseDocument(yamlText);
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
@@ -500,64 +517,72 @@ export class ConfigSession {
     const configBatchWriter = new ConfigBatchWriter(this._configProtocol);
     const config: Config = {};
     const previousConfig = this.config.getValue();
+    const ctx = {
+      configBatchWriter,
+      configOut: config,
+      previousConfig,
+      diagnosticsLog: {}
+    };
     try {
       visit(yaml, {
         Alias(key, node, path) {
-          throw new YamlError(`Unexpected alias`, node.range![0]);
+          throw new YamlError(`Unexpected alias`, node);
         },
         Pair(key, node, path) {
           throw new Error(`Unexpected pair ${node}`);
         },
         Scalar(key, node, path) {
-          throw new YamlError(
-            `Unexpected scalar ${node.value}`,
-            node.range![0]
-          );
+          throw new YamlError(`Unexpected scalar ${node.value}`, node);
         },
         Seq(key, node, path) {
           if (path.length != 1) {
-            throw new YamlError(`Unexpected sequence`, node.range![0]);
+            throw new YamlError(`Unexpected sequence`, node);
           }
         },
         Map(key, node, path) {
           if (path.length != 2) {
             // This should not happen as we're skipping all paths of depth > 2.
-            throw new YamlError(`Error processing ${node}`, node.range![0]);
+            throw new YamlError(`Error processing ${node}`, node);
           }
           let handled = false;
           for (const configModule of configModules) {
-            handled = configModule.maybeVisitYamlNode(
-              node,
-              configBatchWriter,
-              config,
-              previousConfig
-            );
+            handled = configModule.maybeVisitYamlNode(node, ctx);
             if (handled) break;
           }
           if (!handled) {
-            throw new YamlError(
-              `Unknown node ${node.items[0].key}`,
-              node.range![0]
-            );
+            throw new YamlError(`Unknown node ${node.items[0].key}`, node);
           }
           return visit.SKIP;
         }
       });
     } catch (e) {
-      this._deviceTaskState.next('yaml-edit');
-      if (e instanceof YamlError) {
-        this._yamlError.next(e.toUserMessage(yamlText));
-      } else {
-        this._yamlError.next(e!.toString());
+      if (!dryRun) {
+        this._deviceTaskState.next('yaml-edit');
       }
+      if (e instanceof YamlError) {
+        this._yamlError.next({
+          msg: e.message,
+          validation: dryRun,
+          range: e.node.range || undefined
+        });
+      } else {
+        this._yamlError.next({
+          msg: e!.toString(),
+          validation: dryRun
+        });
+      }
+      this._yamlDiagnostics.next({});
       return;
     }
+    this._yamlError.next(undefined);
+    this._yamlDiagnostics.next(ctx.diagnosticsLog);
+    if (!dryRun) {
+      await configBatchWriter.write((progress: number) => {
+        this._progress.next(progress);
+      });
 
-    await configBatchWriter.write((progress: number) => {
-      this._progress.next(progress);
-    });
-
-    this._deviceTaskState.next('idle');
+      this._deviceTaskState.next('idle');
+    }
   }
 
   cancelYamlEdit() {

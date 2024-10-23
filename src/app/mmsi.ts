@@ -126,10 +126,14 @@ export class MmsiDirectory {
     }
 
     if (individualMmsis.length > this.maxIndividualMmsis) {
-      throw new Error('Too many MMSIs');
+      throw new Error(
+        `Too many MMSIs in individual directory (found ${individualMmsis.length}, max ${this.maxIndividualMmsis})`
+      );
     }
     if (groupMmsis.length > this.maxGroupMmsis) {
-      throw new Error('Too many group MMSIs');
+      throw new Error(
+        `Too many MMSIs in group directory (found ${groupMmsis.length}, max ${this.maxGroupMmsis})`
+      );
     }
     this.individualMmsis = individualMmsis;
     this.groupMmsis = groupMmsis;
@@ -152,11 +156,13 @@ export class MmsiDirectory {
   ) {
     this.sortIndividual();
     if (this.individualMmsis.length > this.maxIndividualMmsis) {
-      throw new Error('Too many MMSIs');
+      throw new Error(
+        `Too many MMSIs in individual directory (found ${this.individualMmsis.length}, max ${this.maxIndividualMmsis})`
+      );
     }
     const maybeDuplicate = hasDuplicateMmsis(this.individualMmsis);
     if (maybeDuplicate) {
-      throw new Error(`Duplicate MMSI ${maybeDuplicate}`);
+      throw new Error(`Duplicate individual MMSI ${maybeDuplicate}`);
     }
     individualMmsiNamesData.fill(255);
     individualMmsiNumbersData.fill(255);
@@ -171,11 +177,13 @@ export class MmsiDirectory {
   fillGroupConfig(groupMmsiNames: Uint8Array, groupMmsiNumbers: Uint8Array) {
     this.sortGroup();
     if (this.groupMmsis.length > this.maxGroupMmsis) {
-      throw new Error('Too many group MMSIs');
+      throw new Error(
+        `Too many MMSIs in group directory (found ${this.groupMmsis.length}, max ${this.maxGroupMmsis})`
+      );
     }
     const maybeDuplicate = hasDuplicateMmsis(this.groupMmsis);
     if (maybeDuplicate) {
-      throw new Error(`Duplicate MMSI ${maybeDuplicate}`);
+      throw new Error(`Duplicate group MMSI ${maybeDuplicate}`);
     }
     groupMmsiNames.fill(255), groupMmsiNumbers.fill(255);
 

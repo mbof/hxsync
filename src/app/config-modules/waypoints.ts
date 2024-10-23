@@ -1,8 +1,7 @@
 import { YAMLMap, Document, Node, YAMLSeq, Scalar } from 'yaml';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
-import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
-import { ConfigModuleInterface } from './config-module-interface';
+import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { DeviceModel } from './device-configs';
 import { WAYPOINTS_BYTE_SIZE, Waypoint, waypointFromConfig } from '../waypoint';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
@@ -46,9 +45,7 @@ export class WaypointConfig implements ConfigModuleInterface {
   }
   maybeVisitYamlNode(
     node: YAMLMap<unknown, unknown>,
-    configBatchWriter: ConfigBatchWriter,
-    configOut: Config,
-    previousConfig: Config
+    ctx: YamlContext
   ): boolean {
     const waypoints = node.get('waypoints');
     if (!waypoints) {
@@ -57,25 +54,32 @@ export class WaypointConfig implements ConfigModuleInterface {
     if (!this.deviceConfig) {
       throw new YamlError(
         `Waypoints not supported on ${this.deviceModel}`,
-        node.range![0]
+        node
       );
     }
     if (!(waypoints instanceof YAMLSeq)) {
-      throw new YamlError('Unexpected waypoints node type', node.range![0]);
+      throw new YamlError('Unexpected waypoints node type', node);
     }
     const waypointArray = waypoints.items.map(parseYamlWaypoint);
-    assignIndices(waypointArray, previousConfig.waypoints);
+    assignIndices(waypointArray, ctx.previousConfig.waypoints);
     const wpData = new Uint8Array(
       WAYPOINTS_BYTE_SIZE * this.deviceConfig.number
     );
     wpData.fill(255);
     fillWaypointData(waypointArray, this.deviceConfig.startAddress, wpData);
-    configBatchWriter.prepareWrite(
+    ctx.configBatchWriter.prepareWrite(
       'waypoints',
       this.deviceConfig.startAddress,
       wpData
     );
-    configOut.waypoints = waypointArray;
+    ctx.diagnosticsLog = {
+      ...(ctx.diagnosticsLog || {}),
+      waypoints: {
+        used: waypointArray.length,
+        remaining: this.deviceConfig.number - waypointArray.length
+      }
+    };
+    ctx.configOut.waypoints = waypointArray;
     return true;
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {
@@ -131,42 +135,39 @@ function parseYamlWaypoint(waypoint: any): Waypoint {
       waypoint.items[0].value instanceof Scalar
     )
   ) {
-    throw new YamlError('Unexpected waypoint node type', waypoint.range![0]);
+    throw new YamlError('Unexpected waypoint node type', waypoint);
   }
   let wptName = waypoint.items[0].key.value;
   const latLonStr = waypoint.items[0].value.value;
   if (!(typeof wptName == 'string')) {
     throw new YamlError(
       `Unexpected waypoint name type ${typeof latLonStr}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   if (wptName.length > 15) {
-    throw new YamlError(
-      `Waypoint name too long "${wptName}"`,
-      waypoint.range![0]
-    );
+    throw new YamlError(`Waypoint name too long "${wptName}"`, waypoint);
   }
   if (!(typeof latLonStr == 'string')) {
     throw new YamlError(
       `Unexpected coordinate type ${typeof latLonStr}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   const latLon = latLonStr.split(' ').map((s) => s.trim());
   if (latLon.length != 2) {
     throw new YamlError(
       `Expected two coordinates, got ${latLon.length}`,
-      waypoint.range![0]
+      waypoint
     );
   }
   const lat = parseLat(latLon[0]);
   if (!lat) {
-    throw new YamlError(`Unable to parse latitude ${lat}`, waypoint.range![0]);
+    throw new YamlError(`Unable to parse latitude ${lat}`, waypoint);
   }
   const lon = parseLon(latLon[1]);
   if (!lon) {
-    throw new YamlError(`Unable to parse latitude ${lon}`, waypoint.range![0]);
+    throw new YamlError(`Unable to parse latitude ${lon}`, waypoint);
   }
   return new Waypoint({
     id: -1,

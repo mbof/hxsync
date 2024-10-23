@@ -2,23 +2,59 @@
   <div class="veil">
     <div class="modal">
       <h2>Yaml Editor</h2>
-      @if (!yamlError) {
-        <div class="info">
-          Edit the radio's configuration as a YAML file.
-          <a
-            href="https://github.com/mbof/hxsync/blob/main/yaml.md"
-            target="_blank"
-            >Documentation</a
-          >
-        </div>
-      } @else {
+      <div class="info">
+        Edit the radio's configuration as a YAML file.
+        <a
+          href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+          target="_blank"
+          >Documentation</a
+        >
+      </div>
+      <div class="contents">
+        <textarea #yamlText [formControl]="yamlControl"></textarea>
+      </div>
+      @if (yamlError) {
         <div class="error">
-          {{ yamlError }}
+          {{ yamlError.msg }}
+          @if (yamlError.range) {
+            (at
+            {{ getLocationText(yamlError.range[0]) }}) -
+            <a (click)="selectRange(yamlError.range)" href="#">show me ↗</a>
+          }
         </div>
       }
-      <div class="contents">
-        <textarea [formControl]="yamlControl"></textarea>
-      </div>
+      @if (hasDiagnostics()) {
+        <div class="diagnostics">
+          @if (yamlDiagnostics.dsc_individual) {
+            <span class="diagnostic">
+              Individual directory:
+              {{ yamlDiagnostics.dsc_individual.used }} used,
+              {{ yamlDiagnostics.dsc_individual.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.dsc_group) {
+            <span class="diagnostic">
+              Group directory:
+              {{ yamlDiagnostics.dsc_group.used }} used,
+              {{ yamlDiagnostics.dsc_group.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.waypoints) {
+            <span class="diagnostic">
+              Waypoints:
+              {{ yamlDiagnostics.waypoints.used }} used,
+              {{ yamlDiagnostics.waypoints.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.routes) {
+            <span class="diagnostic">
+              Routes:
+              {{ yamlDiagnostics.routes.used }} used,
+              {{ yamlDiagnostics.routes.remaining }} left.
+            </span>
+          }
+        </div>
+      }
       @if (clipboardConfirmation) {
         <div class="copy-confirm">{{ clipboardConfirmation }}</div>
       }
