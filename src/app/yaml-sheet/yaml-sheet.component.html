@@ -29,14 +29,14 @@
         <div class="diagnostics">
           @if (yamlDiagnostics.dsc_individual) {
             <span class="diagnostic">
-              Individual DSC:
+              Individual directory:
               {{ yamlDiagnostics.dsc_individual.used }} used,
               {{ yamlDiagnostics.dsc_individual.remaining }} left.
             </span>
           }
           @if (yamlDiagnostics.dsc_group) {
             <span class="diagnostic">
-              Group DSC:
+              Group directory:
               {{ yamlDiagnostics.dsc_group.used }} used,
               {{ yamlDiagnostics.dsc_group.remaining }} left.
             </span>
