@@ -18,10 +18,8 @@
           {{ yamlError.msg }}
           @if (yamlError.range) {
             (at
-            <a (click)="selectRange(yamlError.range)" href="#">{{
-              getLocationText(yamlError.range[0])
-            }}</a
-            >)
+            {{ getLocationText(yamlError.range[0]) }}) -
+            <a (click)="selectRange(yamlError.range)" href="#">show me ↗</a>
           }
         </div>
       }
