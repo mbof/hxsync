@@ -469,8 +469,8 @@ function parseScramblerNode(
     if (
       !(scramblerConfigNode instanceof YAMLMap) ||
       scramblerConfigNode.items.length != 2 ||
-      !scramblerConfigNode.get('type') ||
-      !scramblerConfigNode.get('code')
+      scramblerConfigNode.get('type') === undefined ||
+      scramblerConfigNode.get('code') === undefined
     ) {
       throw new YamlError(
         `Expected scrambler config for ${id} as { type: 4 | 32, code: ... }`,
@@ -488,7 +488,7 @@ function parseScramblerNode(
       );
     }
     if (
-      !scramblerCode.code ||
+      scramblerCode.code === undefined ||
       typeof scramblerCode.code != 'number' ||
       scramblerCode.code < 0 ||
       scramblerCode.code >= scramblerCode.type
