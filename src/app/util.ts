@@ -31,3 +31,20 @@ export function stringCompare(a: string, b: string) {
     return 0;
   }
 }
+
+// Detect bad characters that shouldn't be in names
+export function badChars(s: string): string | undefined {
+  if (!/^[-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]+$/.test(s)) {
+    const badCharRe = /[^-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]/g;
+    const badCharIterator = s.matchAll(badCharRe);
+    let badChars = '';
+    for (let badCharMatch of badCharIterator) {
+      const badChar = badCharMatch[0];
+      if (!badChars.includes(badChar)) {
+        badChars = badChars + badChar;
+      }
+    }
+    return badChars;
+  }
+  return undefined;
+}

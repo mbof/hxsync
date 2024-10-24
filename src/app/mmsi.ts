@@ -1,13 +1,22 @@
 import { __values } from 'tslib';
 import { hexarr, unhexInto } from './message';
 import { parse } from 'csv-parse/sync';
-import { fillPaddedString, readPaddedString, stringCompare } from './util';
+import {
+  badChars,
+  fillPaddedString,
+  readPaddedString,
+  stringCompare
+} from './util';
 
 export function validateMmsi(name: string, number: string) {
   if (name.length > 15) {
     throw new Error(
       `Max name length is 15 characters. "${name}" is ${name.length} characters long.`
     );
+  }
+  const maybeBadChars = badChars(name);
+  if (maybeBadChars) {
+    throw new Error(`Name cannot contain ${maybeBadChars}`);
   }
   if (!number.match(/^G?[0-9]{9}$/)) {
     throw new Error(

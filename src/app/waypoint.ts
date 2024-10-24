@@ -1,6 +1,6 @@
 import { hex, hexarr, unhexInto } from './message';
 import { parseLat, parseLon } from './parseLatLon';
-import { fillPaddedString, readPaddedString } from './util';
+import { badChars, fillPaddedString, readPaddedString } from './util';
 
 export type WaypointData = {
   id: number;
@@ -139,17 +139,9 @@ export function parseAndCheckWaypointData({ name, lat, lon }: WpFormData) {
       `Waypoint name too long "${name}". Consider "${name.trim().substring(0, 14).trim()}".`
     );
   }
-  if (!/^[-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]+$/.test(name)) {
-    const badCharRe = /[^-!"#%&'*+,.:<>\?\[\]_0-9A-Za-z ]/g;
-    const badCharIterator = name.matchAll(badCharRe);
-    let badChars = '';
-    for (let badCharMatch of badCharIterator) {
-      const badChar = badCharMatch[0];
-      if (!badChars.includes(badChar)) {
-        badChars = badChars + badChar;
-      }
-    }
-    throw new Error(`Waypoint name cannot contain ${badChars}`);
+  const maybeBadChars = badChars(name);
+  if (maybeBadChars) {
+    throw new Error(`Waypoint name cannot contain ${maybeBadChars}`);
   }
   const parsedLat = parseLat(lat);
   const parsedLon = parseLon(lon);

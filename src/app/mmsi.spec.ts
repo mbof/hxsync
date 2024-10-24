@@ -41,6 +41,12 @@ describe('Mmsi', () => {
       const mmsi = new Mmsi(badName, mmsi1.number);
     }).toThrow();
   });
+  it('should reject a name that contains invalid characters', () => {
+    const badName = 'Ømbjør’s';
+    expect(() => {
+      const mmsi = new Mmsi(badName, mmsi1.number);
+    }).toThrow();
+  });
   it('should reject a number that is too long', () => {
     const badNumber = '1234567899';
     expect(() => {
