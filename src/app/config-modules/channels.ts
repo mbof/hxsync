@@ -432,7 +432,7 @@ function parseScramblerNode(
 ) {
   if (!(scramblerNodes instanceof YAMLSeq)) {
     throw new YamlError(
-      `Scrambler configuration expects a list of channels`,
+      `Scrambler configuration expects a list of channels like "- 88: { type: 32, code: 3 }"`,
       scramblerNodes.range![0]
     );
   }
@@ -451,7 +451,7 @@ function parseScramblerNode(
       scramblerNode.items.length != 1
     ) {
       throw new YamlError(
-        `Scrambler configuration expects config like "- 99: { type: 32, code: 3 }""`,
+        `Scrambler configuration expects config like "- 88: { type: 32, code: 3 }""`,
         scramblerNode
       );
     }
@@ -461,39 +461,46 @@ function parseScramblerNode(
       matcher = getChannelIdMatcher(id);
     } catch (e) {
       if (e instanceof Error) {
-        throw new YamlError(e.toString(), scramblerNode);
+        throw new YamlError(e.toString(), scramblerNode.items[0].key);
       }
     }
     const n = previousSectionConfig.findIndex((mcc) => matcher(mcc.flags));
+    const scramblerConfigNode = scramblerNode.items[0].value;
+    if (
+      !(scramblerConfigNode instanceof YAMLMap) ||
+      scramblerConfigNode.items.length != 2 ||
+      !scramblerConfigNode.get('type') ||
+      !scramblerConfigNode.get('code')
+    ) {
+      throw new YamlError(
+        `Expected scrambler config for ${id} as { type: 4 | 32, code: ... }`,
+        scramblerConfigNode
+      );
+    }
+    const scramblerCode = {
+      type: scramblerConfigNode.get('type'),
+      code: scramblerConfigNode.get('code')
+    };
+    if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
+      throw new YamlError(
+        `Unknown scrambler type for ${id} (${scramblerCode.type}). Type can only be 4 or 32.`,
+        scramblerConfigNode
+      );
+    }
+    if (
+      !scramblerCode.code ||
+      typeof scramblerCode.code != 'number' ||
+      scramblerCode.code < 0 ||
+      scramblerCode.code >= scramblerCode.type
+    ) {
+      throw new YamlError(
+        `For scrambler type ${scramblerCode.type}, code must be a number between 0 and ${scramblerCode.type - 1} (found ${scramblerCode.code})`,
+        scramblerConfigNode
+      );
+    }
     if (n == -1) {
       console.log(`Ignoring scrambler setting for unknown channel ${id}`);
     } else {
-      const scramblerConfigNode = scramblerNode.items[0].value;
-      if (
-        !(scramblerConfigNode instanceof YAMLMap) ||
-        scramblerConfigNode.items.length != 2
-      ) {
-        throw new YamlError(
-          `Expected scrambler config for ${id} as { type: X, code: Y }`,
-          scramblerNode
-        );
-      }
-      const scramblerCode = {
-        type: scramblerConfigNode.get('type'),
-        code: scramblerConfigNode.get('code')
-      };
-      if (!scramblerCode.type || ![4, 32].includes(scramblerCode.type)) {
-        throw new YamlError(
-          `Unknown scrambler type for ${id} (${scramblerCode.type})`,
-          scramblerNode
-        );
-      }
-      if (!scramblerCode.code || typeof scramblerCode.code != 'number') {
-        throw new YamlError(
-          `Unknown scrambler code for ${id} (${scramblerCode.code})`,
-          scramblerNode
-        );
-      }
       setScramblerFlag(
         flagsOut.subarray(n * MARINE_FLAG_BYTES, (n + 1) * MARINE_FLAG_BYTES),
         scramblerCode
