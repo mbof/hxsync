@@ -126,7 +126,10 @@ export class DscConfig implements ConfigModuleInterface {
               }
             }
           }
-          throw new YamlError(`Unknown node type`, node.range[0]);
+          throw new YamlError(
+            `Invalid MMSI. Expected a string of 9 numbers between quotes, like "123456789"`,
+            node
+          );
         }
       );
       const individualMmsiNamesData = new Uint8Array(
