@@ -6,23 +6,33 @@ export type ScramblerCode = {
 };
 
 export type MarineChannelConfig = {
-  id: string;
+  id: string | undefined;
   enabled: boolean;
   flags: Uint8Array;
   dsc: 'enabled' | 'disabled';
-  name: string;
+  name: string | undefined;
+  scrambler: undefined | ScramblerCode;
+};
+
+export type EnabledMarineChannelConfig = {
+  id: string;
+  enabled: true;
+  flags: Uint8Array;
+  dsc: 'enabled' | 'disabled';
+  name: string | undefined;
   scrambler: undefined | ScramblerCode;
 };
 
 export const CHANNEL_NAME_BYTES = 16;
 export const MARINE_FLAG_BYTES = 4;
+export const GX_MARINE_FLAG_BYTES = 2;
 
 export function parseChannelId(id: number | string) {
   if (typeof id == 'number') {
     id = `${id}`.padStart(2, '0');
   }
   let numeric_id: number | undefined;
-  let prefix = 0x7f;
+  let prefix = undefined;
   let suffix: string | undefined;
   if (id.length == 2) {
     numeric_id = Number(id);
@@ -43,14 +53,25 @@ export function parseChannelId(id: number | string) {
   };
 }
 
-export function getChannelIdMatcher(id: number | string) {
+export function getChannelIdMatcher(
+  flagType: 'HX' | 'GX',
+  id: number | string
+) {
+  if (flagType == 'HX') {
+    return hxGetChannelIdMatcher(id);
+  } else {
+    return gxGetChannelIdMatcher(id);
+  }
+}
+
+export function hxGetChannelIdMatcher(id: number | string) {
   const { numeric_id, prefix, suffix } = parseChannelId(id);
   return function (flags: Uint8Array) {
     const prefixFlags = flags[2] & 0x7f;
     const suffixFlags = flags[1] & 0x03;
     return (
       flags[0] == numeric_id &&
-      prefixFlags == prefix &&
+      prefixFlags == (prefix || 0x7f) &&
       ((suffix == undefined && suffixFlags == 0) ||
         (suffix == 'A' && suffixFlags == 1) ||
         (suffix == 'B' && suffixFlags == 2))
@@ -58,11 +79,52 @@ export function getChannelIdMatcher(id: number | string) {
   };
 }
 
-export function setIntershipFlag(flags: Uint8Array, enabled: boolean) {
+export function gxGetChannelIdMatcher(id: number | string) {
+  const { numeric_id, prefix, suffix } = parseChannelId(id);
+  return function (flags: Uint8Array) {
+    const id = flags[0] & 0x7f;
+    let prefixFlags = 0;
+    if (flags[1] & 0x04) {
+      prefixFlags = 10;
+    } else if (flags[1] & 0x08) {
+      prefixFlags = 20;
+    }
+    const suffixFlags = flags[1] & 0x03;
+    return (
+      id == numeric_id &&
+      prefixFlags == (prefix || 0) &&
+      ((suffix == undefined && suffixFlags == 0) ||
+        (suffix == 'A' && suffixFlags == 1) ||
+        (suffix == 'B' && suffixFlags == 2))
+    );
+  };
+}
+
+export function setIntershipFlag(
+  flagType: 'HX' | 'GX',
+  flags: Uint8Array,
+  enabled: boolean
+) {
+  if (flagType == 'HX') {
+    hxSetIntershipFlag(flags, enabled);
+  } else {
+    gxSetIntershipFlag(flags, enabled);
+  }
+}
+
+export function hxSetIntershipFlag(flags: Uint8Array, enabled: boolean) {
   if (enabled) {
     flags[2] |= 0x80;
   } else {
     flags[2] &= 0xff ^ 0x80;
+  }
+}
+
+export function gxSetIntershipFlag(flags: Uint8Array, enabled: boolean) {
+  if (enabled) {
+    flags[0] |= 0x80;
+  } else {
+    flags[0] &= 0xff ^ 0x80;
   }
 }
 
@@ -87,6 +149,27 @@ export function setScramblerFlag(
 }
 
 export function decodeChannelConfig(
+  flagType: 'HX' | 'GX',
+  n: number,
+  enabledData: Uint8Array,
+  flags: Uint8Array,
+  nameData: Uint8Array | undefined,
+  scramblerSupported: boolean
+): MarineChannelConfig {
+  if (flagType == 'HX') {
+    return hxDecodeChannelConfig(
+      n,
+      enabledData,
+      flags,
+      nameData!,
+      scramblerSupported
+    );
+  } else {
+    return gxDecodeChannelConfig(n, enabledData, flags);
+  }
+}
+
+export function hxDecodeChannelConfig(
   n: number,
   enabledData: Uint8Array,
   flags: Uint8Array,
@@ -131,5 +214,42 @@ export function decodeChannelConfig(
     dsc,
     name,
     scrambler
+  };
+}
+
+export function gxDecodeChannelConfig(
+  n: number,
+  enabledData: Uint8Array,
+  flags: Uint8Array
+): MarineChannelConfig {
+  const enabledByte = Math.floor(n / 8);
+  const enabledBitMask = 1 << (7 - (n % 8));
+  const enabled = (enabledData[enabledByte] & enabledBitMask) > 0;
+
+  let id: string | undefined = undefined;
+  if (flags[0] != 0xff) {
+    const baseId = `${flags[0] & 0x7f}`.padStart(2, '0');
+    const suffixFlags = flags[1] & 0x3;
+    const suffix =
+      suffixFlags == 0
+        ? ''
+        : suffixFlags == 1
+          ? 'A'
+          : suffixFlags == 2
+            ? 'B'
+            : '?';
+    const prefix = flags[1] & 0x04 ? '10' : flags[1] & 0x08 ? '20' : '';
+    id = `${prefix}${baseId}${suffix}`;
+  }
+
+  const dsc = flags[0] & 0x80 ? 'enabled' : 'disabled';
+
+  return {
+    id,
+    enabled,
+    flags,
+    dsc,
+    name: undefined,
+    scrambler: undefined
   };
 }
