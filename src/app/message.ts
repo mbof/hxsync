@@ -14,7 +14,7 @@ export function hexarr(bytes: Uint8Array): string {
 
 export function unhex(hexString: string): Uint8Array {
   return Uint8Array.from(
-    hexString.match(/.{2}/g)!.map((byte) => parseInt(byte, 16))
+    hexString.match(/\s*[0-9a-fA-F]{2}/g)!.map((byte) => parseInt(byte, 16))
   );
 }
 

@@ -16,7 +16,6 @@ import {
 } from '../channel';
 import { fillPaddedString, readPaddedString } from '../util';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
-import { NodeBase } from 'yaml/dist/nodes/Node';
 
 export const marineChannelSections = ['group_1', 'group_2', 'group_3'] as const;
 export type MarineChannelSection = (typeof marineChannelSections)[number];
@@ -552,11 +551,13 @@ export class ChannelConfig implements ConfigModuleInterface {
     }
     // Turn off DSC unless specified.
     for (let i = 0; i < previousSectionConfig.length; i++) {
-      const flags = flagsOut.subarray(
-        i * this.flagBytes,
-        (i + 1) * this.flagBytes
-      );
-      setIntershipFlag(flagType, flags, false);
+      if (previousSectionConfig[i].enabled && previousSectionConfig[i].id) {
+        const flags = flagsOut.subarray(
+          i * this.flagBytes,
+          (i + 1) * this.flagBytes
+        );
+        setIntershipFlag(flagType, flags, false);
+      }
     }
     intershipChannelsNode.items.forEach((id) => {
       if (!(id instanceof Scalar)) {
