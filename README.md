@@ -42,7 +42,7 @@ This software would not have been possible without the help of
 | GPS log download            |  ✅   |  ✅   |   ✅    |  N/A   |
 | Set up waypoints and routes |  ✅   |  ✅   |   ✅    |  N/A   |
 | Change channel names        |  ✅   |  ✅   |   ✅    |  N/A   |
-| Set up intership channels   |  ✅   |  ✅   |   ✅    |   ❌   |
+| Set up intership channels   |  ✅   |  ✅   |   ✅    |   ✅   |
 | Set up scrambler codes      |  ✅   |  ✅   |   ✅    |  N/A   |
 | Set up channel groups       |  ✅   |  ✅   |   ✅    |   ❌   |
 | DAT file backup / restore   |  ✅   |  ✅   |   ✅    |   ✅   |
