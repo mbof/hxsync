@@ -12,6 +12,7 @@ import {
   ExtraChannelMemoryRangeId,
   ExtraChannelType
 } from './extra-channels';
+import { PreferenceConfig, PreferenceSettings } from './preferences';
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400' | 'HX891BT';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400', 'HX891BT'];
@@ -99,6 +100,7 @@ export type Config = {
   channelGroups?: ChannelGroup[];
   marineChannels?: Map<MarineChannelSection, MarineChannelConfig[]>;
   extraChannels?: Map<ExtraChannelType, ExtraChannelConfig[]>;
+  preferences?: PreferenceConfig;
 };
 
 export type MemoryRangeId =
@@ -110,4 +112,5 @@ export type MemoryRangeId =
   | 'routes'
   | 'channel_groups'
   | MarineChannelMemoryRangeId
-  | ExtraChannelMemoryRangeId;
+  | ExtraChannelMemoryRangeId
+  | PreferenceSettings;
