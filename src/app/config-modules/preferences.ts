@@ -58,7 +58,7 @@ class NumberControlBase implements ControlKnob {
   }
 
   write(configBatchWriter: ConfigBatchWriter) {
-    if (this.value) {
+    if (this.value !== undefined) {
       configBatchWriter.prepareWrite(
         getRangeId(this.id)!,
         this.address,
