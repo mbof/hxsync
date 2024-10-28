@@ -48,7 +48,11 @@ class NumberControlBase implements ControlKnob {
   }
 
   maybeAddNode(yaml: YAMLMap) {
-    if (this.value !== undefined && this.value >= this.min && this.value <= this.max) {
+    if (
+      this.value !== undefined &&
+      this.value >= this.min &&
+      this.value <= this.max
+    ) {
       yaml.add({ key: this.id, value: this.value });
     }
   }
@@ -64,7 +68,7 @@ class NumberControlBase implements ControlKnob {
   }
 }
 
-class EnumControlBase<const T> {
+class EnumControlBase<const T> implements ControlKnob {
   value?: T;
   valueIndex?: number;
 
@@ -180,13 +184,13 @@ class NoiseCancelTxControlKnob extends BooleanControlBase {
   }
 }
 
-class GpsPinningControlKnob extends BooleanControlBase implements ControlKnob {
+class GpsPinningControlKnob extends BooleanControlBase {
   constructor() {
     super('gps_pinning', 0x0057);
   }
 }
 
-class SbasEnabledControlKnob extends BooleanControlBase implements ControlKnob {
+class SbasEnabledControlKnob extends BooleanControlBase {
   constructor() {
     super('sbas_enabled', 0x0058);
   }
@@ -198,70 +202,61 @@ class BacklightDimmerControlKnob extends NumberControlBase {
   }
 }
 
-class VolumeControlKnob extends NumberControlBase implements ControlKnob {
+class VolumeControlKnob extends NumberControlBase {
   constructor() {
     super('volume', 0x000c, 0, 15);
   }
 }
 
-class SquelchControlKnob extends NumberControlBase implements ControlKnob {
+class SquelchControlKnob extends NumberControlBase {
   constructor() {
     super('squelch', 0x000d, 0, 15);
   }
 }
 
-class ContrastControlKnob extends NumberControlBase implements ControlKnob {
+class ContrastControlKnob extends NumberControlBase {
   constructor() {
     super('contrast', 0x0031, 0, 30);
   }
 }
 
-class KeyBeepControlKnob extends NumberControlBase implements ControlKnob {
+class KeyBeepControlKnob extends NumberControlBase {
   constructor() {
     super('key_beep', 0x0032, 0, 5);
   }
 }
 
-class ScanResumeControlKnob extends NumberControlBase implements ControlKnob {
+class ScanResumeControlKnob extends NumberControlBase {
   constructor() {
     super('scan_resume', 0x0037, 1, 5);
   }
 }
 
-class VoxLevelControlKnob extends NumberControlBase implements ControlKnob {
+class VoxLevelControlKnob extends NumberControlBase {
   constructor() {
     super('vox_level', 0x0041, 0, 4);
   }
 }
 
-class NavTargetWaypointControlKnob
-  extends NumberControlBase
-  implements ControlKnob
-{
+class NavTargetWaypointControlKnob extends NumberControlBase {
   constructor() {
     super('nav_target_waypoint', 0x004b, 1, 255);
   }
 }
 
-class NavTargetRouteControlKnob
-  extends NumberControlBase
-  implements ControlKnob
-{
+class NavTargetRouteControlKnob extends NumberControlBase {
   constructor() {
     super('nav_target_route', 0x004e, 1, 255);
   }
 }
 
-class NavTargetRoutePointControlKnob
-  extends NumberControlBase
-  implements ControlKnob
-{
+class NavTargetRoutePointControlKnob extends NumberControlBase {
   constructor() {
     super('nav_target_route_point', 0x004f, 1, 255);
   }
 }
 
-class NoiseCancelRxLevel extends NumberControlBase implements ControlKnob {
+class NoiseCancelRxLevel extends NumberControlBase {
   constructor() {
     super('noise_cancel_rx_level', 0x0044, 0, 4);
   }
@@ -269,10 +264,7 @@ class NoiseCancelRxLevel extends NumberControlBase implements ControlKnob {
 
 const multiWatchControlKnobEnum = ['dual', 'triple'] as const;
 type MultiWatchControlKnobEnumType = (typeof multiWatchControlKnobEnum)[number];
-class MultiWatchControlKnob
-  extends EnumControlBase<MultiWatchControlKnobEnumType>
-  implements ControlKnob
-{
+class MultiWatchControlKnob extends EnumControlBase<MultiWatchControlKnobEnumType> {
   constructor() {
     super('multi_watch', 0x0034, multiWatchControlKnobEnum);
   }
@@ -280,10 +272,7 @@ class MultiWatchControlKnob
 
 const scanTypeControlKnobEnum = ['memory', 'priority'] as const;
 type ScanTypeControlKnobEnumType = (typeof scanTypeControlKnobEnum)[number];
-class ScanTypeControlKnob
-  extends EnumControlBase<ScanTypeControlKnobEnumType>
-  implements ControlKnob
-{
+class ScanTypeControlKnob extends EnumControlBase<ScanTypeControlKnobEnumType> {
   constructor() {
     super('scan_type', 0x0036, scanTypeControlKnobEnum);
   }
@@ -298,10 +287,7 @@ const emergencyLedControlKnobEnum = [
 ] as const;
 type EmergencyLedControlKnobEnumType =
   (typeof emergencyLedControlKnobEnum)[number];
-class EmergencyLedControlKnob
-  extends EnumControlBase<EmergencyLedControlKnobEnumType>
-  implements ControlKnob
-{
+class EmergencyLedControlKnob extends EnumControlBase<EmergencyLedControlKnobEnumType> {
   constructor() {
     super('emergency_led', 0x003a, emergencyLedControlKnobEnum);
   }
@@ -310,10 +296,7 @@ class EmergencyLedControlKnob
 const waterHazardLedControlKnobEnum = ['off', 'on', 'power-on'] as const;
 type WaterHazardLedControlKnobEnumType =
   (typeof waterHazardLedControlKnobEnum)[number];
-class WaterHazardLedControlKnob
-  extends EnumControlBase<WaterHazardLedControlKnobEnumType>
-  implements ControlKnob
-{
+class WaterHazardLedControlKnob extends EnumControlBase<WaterHazardLedControlKnobEnumType> {
   constructor() {
     super('water_hazard_led', 0x003b, waterHazardLedControlKnobEnum);
   }
@@ -329,10 +312,7 @@ const lampControlKnobEnum = [
   '30s'
 ] as const;
 type LampControlKnobEnumType = (typeof lampControlKnobEnum)[number];
-class LampControlKnob
-  extends EnumControlBase<LampControlKnobEnumType>
-  implements ControlKnob
-{
+class LampControlKnob extends EnumControlBase<LampControlKnobEnumType> {
   constructor() {
     super('lamp', 0x003c, lampControlKnobEnum);
   }
@@ -346,10 +326,7 @@ const afPitchControlKnobEnum = [
   'high-boost'
 ] as const;
 type AfPitchControlKnobEnumType = (typeof afPitchControlKnobEnum)[number];
-class AfPitchControlKnob
-  extends EnumControlBase<AfPitchControlKnobEnumType>
-  implements ControlKnob
-{
+class AfPitchControlKnob extends EnumControlBase<AfPitchControlKnobEnumType> {
   constructor() {
     super('af_pitch', 0x003d, afPitchControlKnobEnum);
   }
@@ -358,10 +335,7 @@ class AfPitchControlKnob
 const batterySaveControlKnobEnum = ['off', '50%', '70%', '80%', '90%'] as const;
 type BatterySaveControlKnobEnumType =
   (typeof batterySaveControlKnobEnum)[number];
-class BatterySaveControlKnob
-  extends EnumControlBase<BatterySaveControlKnobEnumType>
-  implements ControlKnob
-{
+class BatterySaveControlKnob extends EnumControlBase<BatterySaveControlKnobEnumType> {
   constructor() {
     super('battery_save', 0x003e, batterySaveControlKnobEnum);
   }
@@ -375,10 +349,7 @@ const voxDelayControlKnobEnum = [
   '3.0s'
 ] as const;
 type VoxDelayControlKnobEnumType = (typeof voxDelayControlKnobEnum)[number];
-class VoxDelayControlKnob
-  extends EnumControlBase<VoxDelayControlKnobEnumType>
-  implements ControlKnob
-{
+class VoxDelayControlKnob extends EnumControlBase<VoxDelayControlKnobEnumType> {
   constructor() {
     super('vox_delay', 0x0042, voxDelayControlKnobEnum);
   }
@@ -393,10 +364,7 @@ const navDisplayRangeControlKnobEnum = [
 ] as const;
 type NavDisplayRangeControlKnobEnumType =
   (typeof navDisplayRangeControlKnobEnum)[number];
-class NavDisplayRangeControlKnob
-  extends EnumControlBase<NavDisplayRangeControlKnobEnumType>
-  implements ControlKnob
-{
+class NavDisplayRangeControlKnob extends EnumControlBase<NavDisplayRangeControlKnobEnumType> {
   constructor() {
     super('nav_display_range', 0x004a, navDisplayRangeControlKnobEnum);
   }
@@ -411,10 +379,7 @@ const navArrivalRangeControlKnobEnum = [
 ] as const;
 type NavArrivalRangeControlKnobEnumType =
   (typeof navArrivalRangeControlKnobEnum)[number];
-class NavArrivalRangeControlKnob
-  extends EnumControlBase<NavArrivalRangeControlKnobEnumType>
-  implements ControlKnob
-{
+class NavArrivalRangeControlKnob extends EnumControlBase<NavArrivalRangeControlKnobEnumType> {
   constructor() {
     super('nav_arrival_range', 0x004c, navArrivalRangeControlKnobEnum);
   }
@@ -423,10 +388,7 @@ class NavArrivalRangeControlKnob
 const navRoutingOperationControlKnobEnum = ['auto', 'manual'] as const;
 type NavRoutingOperationControlKnobEnumType =
   (typeof navRoutingOperationControlKnobEnum)[number];
-class NavRoutingOperationControlKnob
-  extends EnumControlBase<NavRoutingOperationControlKnobEnumType>
-  implements ControlKnob
-{
+class NavRoutingOperationControlKnob extends EnumControlBase<NavRoutingOperationControlKnobEnumType> {
   constructor() {
     super('nav_routing_operation', 0x004d, navRoutingOperationControlKnobEnum);
   }
@@ -441,10 +403,7 @@ const gpsPowerSaveControlKnobEnum = [
 ] as const;
 type GpsPowerSaveControlKnobEnumType =
   (typeof gpsPowerSaveControlKnobEnum)[number];
-class GpsPowerSaveControlKnob
-  extends EnumControlBase<GpsPowerSaveControlKnobEnumType>
-  implements ControlKnob
-{
+class GpsPowerSaveControlKnob extends EnumControlBase<GpsPowerSaveControlKnobEnumType> {
   constructor() {
     super('gps_power_save', 0x0051, gpsPowerSaveControlKnobEnum);
   }
@@ -457,10 +416,7 @@ const gpsLocationFormatControlKnobEnum = [
 ] as const;
 type GpsLocationFormatControlKnobEnumType =
   (typeof gpsLocationFormatControlKnobEnum)[number];
-class GpsLocationFormatControlKnob
-  extends EnumControlBase<GpsLocationFormatControlKnobEnumType>
-  implements ControlKnob
-{
+class GpsLocationFormatControlKnob extends EnumControlBase<GpsLocationFormatControlKnobEnumType> {
   constructor() {
     super('gps_location_format', 0x0052, gpsLocationFormatControlKnobEnum);
   }
@@ -469,10 +425,7 @@ class GpsLocationFormatControlKnob
 const gpsTimeSetupControlKnobEnum = ['UTC', 'local'] as const;
 type GpsTimeSetupControlKnobEnumType =
   (typeof gpsTimeSetupControlKnobEnum)[number];
-class GpsTimeSetupControlKnob
-  extends EnumControlBase<GpsTimeSetupControlKnobEnumType>
-  implements ControlKnob
-{
+class GpsTimeSetupControlKnob extends EnumControlBase<GpsTimeSetupControlKnobEnumType> {
   constructor() {
     super('gps_time_setup', 0x0053, gpsTimeSetupControlKnobEnum);
   }
@@ -480,10 +433,7 @@ class GpsTimeSetupControlKnob
 
 const speedUnitsControlKnobEnum = ['knots', 'mph', 'km/h'] as const;
 type SpeedUnitsControlKnobEnumType = (typeof speedUnitsControlKnobEnum)[number];
-class SpeedUnitsControlKnob
-  extends EnumControlBase<SpeedUnitsControlKnobEnumType>
-  implements ControlKnob
-{
+class SpeedUnitsControlKnob extends EnumControlBase<SpeedUnitsControlKnobEnumType> {
   constructor() {
     super('speed_units', 0x0054, speedUnitsControlKnobEnum);
   }
@@ -492,10 +442,7 @@ class SpeedUnitsControlKnob
 const distanceUnitsControlKnobEnum = ['nm', 'sm', 'km'] as const;
 type DistanceUnitsControlKnobEnumType =
   (typeof distanceUnitsControlKnobEnum)[number];
-class DistanceUnitsControlKnob
-  extends EnumControlBase<DistanceUnitsControlKnobEnumType>
-  implements ControlKnob
-{
+class DistanceUnitsControlKnob extends EnumControlBase<DistanceUnitsControlKnobEnumType> {
   constructor() {
     super('distance_units', 0x0055, distanceUnitsControlKnobEnum);
   }
@@ -504,10 +451,7 @@ class DistanceUnitsControlKnob
 const altitudeUnitsControlKnobEnum = ['ft', 'm'] as const;
 type AltitudeUnitsControlKnobEnumType =
   (typeof altitudeUnitsControlKnobEnum)[number];
-class AltitudeUnitsControlKnob
-  extends EnumControlBase<AltitudeUnitsControlKnobEnumType>
-  implements ControlKnob
-{
+class AltitudeUnitsControlKnob extends EnumControlBase<AltitudeUnitsControlKnobEnumType> {
   constructor() {
     super('altitude_units', 0x0056, altitudeUnitsControlKnobEnum);
   }
@@ -516,10 +460,7 @@ class AltitudeUnitsControlKnob
 const mapOrientationControlKnobEnum = ['north-up', 'course-up'] as const;
 type MapOrientationControlKnobEnumType =
   (typeof mapOrientationControlKnobEnum)[number];
-class MapOrientationControlKnob
-  extends EnumControlBase<MapOrientationControlKnobEnumType>
-  implements ControlKnob
-{
+class MapOrientationControlKnob extends EnumControlBase<MapOrientationControlKnobEnumType> {
   constructor() {
     super('map_orientation', 0x0059, mapOrientationControlKnobEnum);
   }
@@ -537,10 +478,7 @@ const gpsOutputSentencesControlKnobEnum = [
 ] as const;
 type GpsOutputSentencesControlKnobEnumType =
   (typeof gpsOutputSentencesControlKnobEnum)[number];
-class GpsOutputSentencesControlKnob
-  extends EnumControlBase<GpsOutputSentencesControlKnobEnumType>
-  implements ControlKnob
-{
+class GpsOutputSentencesControlKnob extends EnumControlBase<GpsOutputSentencesControlKnobEnumType> {
   constructor() {
     super('gps_output_sentences', 0x005a, gpsOutputSentencesControlKnobEnum);
   }
@@ -555,18 +493,13 @@ const gpsLoggerIntervalControlKnobEnum = [
 ] as const;
 type GpsLoggerIntervalControlKnobEnumType =
   (typeof gpsLoggerIntervalControlKnobEnum)[number];
-class GpsLoggerIntervalControlKnob
-  extends EnumControlBase<GpsLoggerIntervalControlKnobEnumType>
-  implements ControlKnob
-{
+class GpsLoggerIntervalControlKnob extends EnumControlBase<GpsLoggerIntervalControlKnobEnumType> {
   constructor() {
     super('gps_logger_interval', 0x005b, gpsLoggerIntervalControlKnobEnum);
   }
 }
 
-class GpsEnabledControlKnob
-  extends BooleanControlBase
-{
+class GpsEnabledControlKnob extends BooleanControlBase {
   constructor() {
     super('gps_enabled', 0x0050);
   }
