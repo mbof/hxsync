@@ -359,7 +359,9 @@ export const preferenceIds = makePreferenceControlKnobs().map((c) => ({
   rangeId: { preference: c.id }
 }));
 export type PreferenceConfig = ReturnType<typeof makePreferenceControlKnobs>;
-export type PreferenceSettings = { preference: string };
-export function getPreferenceRangeId(id: string) {
+export type PreferenceRangeId = { preference: string };
+export function getPreferenceRangeId(
+  id: string
+): PreferenceRangeId | undefined {
   return preferenceIds.find((c) => c.id === id)?.rangeId;
 }

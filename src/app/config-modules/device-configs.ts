@@ -12,7 +12,7 @@ import {
   ExtraChannelMemoryRangeId,
   ExtraChannelType
 } from './extra-channels';
-import { PreferenceConfig, PreferenceSettings as PreferenceRangeId } from './preferences-knobs';
+import { PreferenceConfig, PreferenceRangeId } from './preferences-knobs';
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400' | 'HX891BT';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400', 'HX891BT'];
