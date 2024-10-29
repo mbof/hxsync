@@ -2,6 +2,14 @@ import { ControlKnob, createKnob } from './preferences-base';
 
 export const controlKnobsData = [
   {
+    id: 'multi_watch',
+    address: 0x0004,
+    params: {
+      type: 'enum',
+      values: ['off', 'multi', 'scan']
+    }
+  },
+  {
     id: 'volume',
     address: 0x000c,
     params: {
@@ -47,7 +55,7 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'multi_watch',
+    id: 'multi_watch_type',
     address: 0x0034,
     params: {
       type: 'enum',
@@ -161,7 +169,7 @@ export const controlKnobsData = [
     params: {
       type: 'number',
       min: 0,
-      max: 4
+      max: 3
     }
   },
   {
@@ -177,15 +185,6 @@ export const controlKnobsData = [
     params: {
       type: 'enum',
       values: ['auto', '2M', '5M', '10M', '25M']
-    }
-  },
-  {
-    id: 'nav_target_waypoint',
-    address: 0x004b,
-    params: {
-      type: 'number',
-      min: 1,
-      max: 255
     }
   },
   {
@@ -205,28 +204,11 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'nav_target_route',
-    address: 0x004e,
-    params: {
-      type: 'number',
-      min: 1,
-      max: 255
-    }
-  },
-  {
-    id: 'nav_target_route_point',
-    address: 0x004f,
-    params: {
-      type: 'number',
-      min: 1,
-      max: 255
-    }
-  },
-  {
     id: 'gps_enabled',
     address: 0x0050,
     params: {
-      type: 'boolean'
+      type: 'enum',
+      values: ['off', 'yes', 'always']
     }
   },
   {
@@ -243,14 +225,6 @@ export const controlKnobsData = [
     params: {
       type: 'enum',
       values: ['DDDMMSS', 'DDDMM.MM', 'DDDMM.MMMM']
-    }
-  },
-  {
-    id: 'gps_time_setup',
-    address: 0x0053,
-    params: {
-      type: 'enum',
-      values: ['UTC', 'local']
     }
   },
   {
@@ -300,19 +274,43 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'gps_output_sentences',
-    address: 0x005a,
-    params: {
-      type: 'enum',
-      values: ['GGA', 'GLL', 'RMC', 'VTG', 'GSA', 'GSV', 'ZDA', 'MSK']
-    }
-  },
-  {
     id: 'gps_logger_interval',
     address: 0x005b,
     params: {
       type: 'enum',
       values: ['5s', '15s', '30s', '1min', '5min']
+    }
+  },
+  {
+    id: 'dsc_individual_ring',
+    address: 0x00c7,
+    params: {
+      type: 'enum',
+      values: ['5s', '10s', '15s', '20s', '120s']
+    }
+  },
+  {
+    id: 'dsc_no_action_timer',
+    address: 0x00c8,
+    params: {
+      type: 'enum',
+      values: ['1min', '3min', '5min', '10min', '15min']
+    }
+  },
+  {
+    id: 'dsc_channel_switch_timer',
+    address: 0x00c9,
+    params: {
+      type: 'enum',
+      values: ['off', '10s', '30s', '60s', '120s']
+    }
+  },
+  {
+    id: 'dsc_pos_fix_wait',
+    address: 0x00ca,
+    params: {
+      type: 'enum',
+      values: ['15s', '30s', '60s', '90s', '120s']
     }
   }
 ] as const;
