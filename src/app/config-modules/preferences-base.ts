@@ -1,24 +1,43 @@
 import { Scalar, YAMLMap } from 'yaml';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
-import { getPreferenceRangeId } from './preferences-knobs';
+import { PreferenceId } from './preferences-knobs';
 
-interface ControlKnob {
-  id: string;
+export type ControlKnobData = {
+  readonly id: PreferenceId;
+  readonly address: number;
+  readonly params:
+    | {
+        readonly type: 'number';
+        readonly min: number;
+        readonly max: number;
+      }
+    | {
+        readonly type: 'enum';
+        readonly values: readonly string[];
+      }
+    | {
+        readonly type: 'boolean';
+      };
+};
+
+export interface ControlKnob {
+  id: PreferenceId;
   address: number;
   parse(nodeIn: Scalar): void;
   read(data: Uint8Array): void;
   maybeAddNode(yaml: YAMLMap): void;
   write(configBatchWriter: ConfigBatchWriter): void;
 }
+
 export class NumberControlBase implements ControlKnob {
-  readonly id: string;
+  readonly id: PreferenceId;
   readonly address: number;
   readonly min: number;
   readonly max: number;
   value?: number;
 
-  constructor(id: string, address: number, min: number, max: number) {
+  constructor(id: PreferenceId, address: number, min: number, max: number) {
     this.id = id;
     this.address = address;
     this.min = min;
@@ -57,21 +76,21 @@ export class NumberControlBase implements ControlKnob {
   write(configBatchWriter: ConfigBatchWriter) {
     if (this.value !== undefined) {
       configBatchWriter.prepareWrite(
-        getPreferenceRangeId(this.id)!,
+        this.id,
         this.address,
         new Uint8Array([this.value])
       );
     }
   }
 }
-export class EnumControlBase<const T> implements ControlKnob {
-  value?: T;
+export class EnumControlBase implements ControlKnob {
+  value?: string;
   valueIndex?: number;
 
   constructor(
-    readonly id: string,
+    readonly id: PreferenceId,
     readonly address: number,
-    readonly values: readonly T[]
+    readonly values: readonly string[]
   ) {}
 
   parse(nodeIn: Scalar): void {
@@ -110,7 +129,7 @@ export class EnumControlBase<const T> implements ControlKnob {
   write(configBatchWriter: ConfigBatchWriter) {
     if (this.valueIndex !== undefined) {
       configBatchWriter.prepareWrite(
-        getPreferenceRangeId(this.id)!,
+        this.id,
         this.address,
         new Uint8Array([this.valueIndex])
       );
@@ -120,7 +139,7 @@ export class EnumControlBase<const T> implements ControlKnob {
 export class BooleanControlBase implements ControlKnob {
   value?: boolean;
   constructor(
-    readonly id: string,
+    readonly id: PreferenceId,
     readonly address: number
   ) {}
 
@@ -147,10 +166,26 @@ export class BooleanControlBase implements ControlKnob {
   write(configBatchWriter: ConfigBatchWriter) {
     if (this.value !== undefined) {
       configBatchWriter.prepareWrite(
-        getPreferenceRangeId(this.id)!,
+        this.id,
         this.address,
         new Uint8Array([this.value ? 1 : 0])
       );
     }
+  }
+}
+
+export function createKnob(kd: ControlKnobData): ControlKnob {
+  switch (kd.params.type) {
+    case 'number':
+      return new NumberControlBase(
+        kd.id,
+        kd.address,
+        kd.params.min,
+        kd.params.max
+      );
+    case 'boolean':
+      return new BooleanControlBase(kd.id, kd.address);
+    case 'enum':
+      return new EnumControlBase(kd.id, kd.address, kd.params.values);
   }
 }

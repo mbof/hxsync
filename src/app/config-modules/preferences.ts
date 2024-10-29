@@ -3,11 +3,7 @@ import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { Config, DeviceModel } from './device-configs';
 import { Document, Node, Scalar, YAMLMap } from 'yaml';
-import {
-  makePreferenceControlKnobs,
-  preferenceIds,
-  getPreferenceRangeId
-} from './preferences-knobs';
+import { controlKnobsData, makePreferenceControlKnobs, preferenceIds } from './preferences-knobs';
 
 export class PreferencesConfig implements ConfigModuleInterface {
   private readonly deviceModel: DeviceModel;
@@ -55,9 +51,9 @@ export class PreferencesConfig implements ConfigModuleInterface {
     return true;
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {
-    for (const preference of preferenceIds) {
+    for (const preference of controlKnobsData) {
       configBatchReader.addRange(
-        preference.rangeId,
+        preference.id,
         preference.address,
         preference.address + 1
       );
@@ -68,10 +64,17 @@ export class PreferencesConfig implements ConfigModuleInterface {
     config: Config,
     yaml: Document<Node, true>
   ): void {
+    if (
+      this.deviceModel !== 'HX870' &&
+      this.deviceModel !== 'HX890' &&
+      this.deviceModel !== 'HX891BT'
+    ) {
+      return;
+    }
     config.preferences = makePreferenceControlKnobs();
     const preferencesMap = yaml.createNode({});
     for (const knob of config.preferences) {
-      const valueData = results.get(getPreferenceRangeId(knob.id)!);
+      const valueData = results.get(knob.id);
       if (valueData) {
         knob.read(valueData);
         knob.maybeAddNode(preferencesMap);
