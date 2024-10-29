@@ -153,8 +153,9 @@ export class BooleanControlBase implements ControlKnob {
   read(data: Uint8Array) {
     if (data.length == 0) {
       this.value = undefined;
+    } else {
+      this.value = !!data[0];
     }
-    this.value = !!data[0];
   }
 
   maybeAddNode(yaml: YAMLMap) {

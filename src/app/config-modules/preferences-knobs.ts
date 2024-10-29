@@ -1,4 +1,4 @@
-import { ControlKnob, createKnob } from './preferences-base.js';
+import { ControlKnob, createKnob } from './preferences-base';
 
 export const controlKnobsData = [
   {
