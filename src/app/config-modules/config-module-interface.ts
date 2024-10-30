@@ -1,3 +1,4 @@
+import { NodeBase } from 'yaml/dist/nodes/Node';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
@@ -25,6 +26,10 @@ export type YamlDiagnostics = {
     used: number;
     remaining: number;
   };
+  warnings?: Array<{
+    message: string;
+    range: NodeBase['range'];
+  }>;
 };
 
 export type YamlContext = {

@@ -1,9 +1,23 @@
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
-import { ConfigModuleInterface, YamlContext } from './config-module-interface';
+import {
+  ConfigModuleInterface,
+  YamlContext,
+  YamlDiagnostics
+} from './config-module-interface';
 import { Config, DeviceModel } from './device-configs';
 import { Document, Node, Scalar, YAMLMap } from 'yaml';
-import { controlKnobsData, makePreferenceControlKnobs, preferenceIds } from './preferences-knobs';
+import {
+  controlKnobsData,
+  makePreferenceControlKnobs,
+  preferenceIds
+} from './preferences-knobs';
+import {
+  ControlKnob,
+  EnumControlBase,
+  NumberControlBase
+} from './preferences-base';
+import { NodeBase } from 'yaml/dist/nodes/Node';
 
 export class PreferencesConfig implements ConfigModuleInterface {
   private readonly deviceModel: DeviceModel;
@@ -38,6 +52,7 @@ export class PreferencesConfig implements ConfigModuleInterface {
         if (controlKnob) {
           controlKnob.parse(value);
           controlKnob.write(ctx.configBatchWriter);
+          maybeAddDiagnostics(ctx, controlKnob, value);
         } else {
           throw new YamlError(`Unknown preference ${item.key.value}`, item.key);
         }
@@ -85,5 +100,61 @@ export class PreferencesConfig implements ConfigModuleInterface {
     });
     preferencesNode.spaceBefore = true;
     yaml.add(preferencesNode);
+  }
+}
+
+function maybeAddDiagnostics(
+  ctx: YamlContext,
+  controlKnob: ControlKnob,
+  node: NodeBase
+) {
+  if (!ctx.diagnosticsLog) {
+    ctx.diagnosticsLog = {};
+  }
+  const diagnosticsLog = ctx.diagnosticsLog;
+  if (!diagnosticsLog.warnings) {
+    diagnosticsLog.warnings = [];
+  }
+  const warnings = diagnosticsLog.warnings;
+  if (
+    controlKnob instanceof NumberControlBase &&
+    controlKnob.id === 'volume' &&
+    controlKnob.value == 0
+  ) {
+    warnings.push({
+      message: 'Volume is 0; increase to hear transmissions',
+      range: node.range
+    });
+  } else if (
+    controlKnob instanceof NumberControlBase &&
+    controlKnob.id === 'squelch' &&
+    controlKnob.value !== undefined &&
+    controlKnob.value >= 14
+  ) {
+    warnings.push({
+      message:
+        'Squelch is high; consider decreasing to avoid missing transmissions',
+      range: node.range
+    });
+  } else if (
+    controlKnob instanceof EnumControlBase &&
+    controlKnob.id === 'gps_enabled'
+  ) {
+    switch (controlKnob.value) {
+      case 'off':
+        warnings.push({
+          message:
+            'GPS is disabled; consider enabling to make location easier in an emergency',
+          range: node.range
+        });
+        break;
+      case 'always':
+        warnings.push({
+          message:
+            'GPS is always on, which will drain battery even when the device is off',
+          range: node.range
+        });
+        break;
+    }
   }
 }
