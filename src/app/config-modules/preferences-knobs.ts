@@ -2,14 +2,6 @@ import { ControlKnob, createKnob } from './preferences-base';
 
 export const controlKnobsData = [
   {
-    id: 'multi_watch',
-    address: 0x0004,
-    params: {
-      type: 'enum',
-      values: ['off', 'multi', 'scan']
-    }
-  },
-  {
     id: 'volume',
     address: 0x000c,
     params: {
@@ -37,6 +29,14 @@ export const controlKnobsData = [
     }
   },
   {
+    id: 'backlight_timer',
+    address: 0x003c,
+    params: {
+      type: 'enum',
+      values: ['off', '3 sec', '5 sec', '10 sec', 'continuous', '20 sec', '30 sec']
+    }
+  },
+  {
     id: 'contrast',
     address: 0x0031,
     params: {
@@ -52,6 +52,14 @@ export const controlKnobsData = [
       type: 'number',
       min: 0,
       max: 5
+    }
+  },
+  {
+    id: 'multi_watch',
+    address: 0x0004,
+    params: {
+      type: 'enum',
+      values: ['off', 'multi', 'scan']
     }
   },
   {
@@ -91,7 +99,7 @@ export const controlKnobsData = [
     address: 0x003a,
     params: {
       type: 'enum',
-      values: ['continuous', 'SOS', 'Blink1', 'Blink2', 'Blink3']
+      values: ['continuous', 'SOS', 'blink1', 'blink2', 'blink3']
     }
   },
   {
@@ -103,15 +111,7 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'lamp',
-    address: 0x003c,
-    params: {
-      type: 'enum',
-      values: ['off', '3s', '5s', '10s', 'continuous', '20s', '30s']
-    }
-  },
-  {
-    id: 'af_pitch',
+    id: 'audio_filter',
     address: 0x003d,
     params: {
       type: 'enum',
@@ -153,7 +153,7 @@ export const controlKnobsData = [
     address: 0x0042,
     params: {
       type: 'enum',
-      values: ['0.5s', '1.0s', '1.5s', '2.0s', '3.0s']
+      values: ['0.5 sec', '1.0 sec', '1.5 sec', '2.0 sec', '3.0 sec']
     }
   },
   {
@@ -184,7 +184,7 @@ export const controlKnobsData = [
     address: 0x004a,
     params: {
       type: 'enum',
-      values: ['auto', '2M', '5M', '10M', '25M']
+      values: ['auto', '2 nm', '5 nm', '10 nm', '25 nm']
     }
   },
   {
@@ -192,7 +192,7 @@ export const controlKnobsData = [
     address: 0x004c,
     params: {
       type: 'enum',
-      values: ['0.05M', '0.1M', '0.2M', '0.5M', '1.0M']
+      values: ['0.05 nm', '0.1 nm', '0.2 nm', '0.5 nm', '1 nm']
     }
   },
   {
@@ -232,7 +232,7 @@ export const controlKnobsData = [
     address: 0x0054,
     params: {
       type: 'enum',
-      values: ['knots', 'mph', 'km/h']
+      values: ['kn', 'mph', 'km/h']
     }
   },
   {
@@ -240,7 +240,7 @@ export const controlKnobsData = [
     address: 0x0055,
     params: {
       type: 'enum',
-      values: ['nm', 'sm', 'km']
+      values: ['nm', 'mi', 'km']
     }
   },
   {
@@ -278,7 +278,7 @@ export const controlKnobsData = [
     address: 0x005b,
     params: {
       type: 'enum',
-      values: ['5s', '15s', '30s', '1min', '5min']
+      values: ['5 sec', '15 sec', '30 sec', '1 min', '5 min']
     }
   },
   {
@@ -286,7 +286,7 @@ export const controlKnobsData = [
     address: 0x00c7,
     params: {
       type: 'enum',
-      values: ['5s', '10s', '15s', '20s', '120s']
+      values: ['5 sec', '10 sec', '15 sec', '20 sec', '120 sec']
     }
   },
   {
@@ -294,7 +294,7 @@ export const controlKnobsData = [
     address: 0x00c8,
     params: {
       type: 'enum',
-      values: ['1min', '3min', '5min', '10min', '15min']
+      values: ['1 min', '3 min', '5 min', '10 min', '15 min']
     }
   },
   {
@@ -302,7 +302,7 @@ export const controlKnobsData = [
     address: 0x00c9,
     params: {
       type: 'enum',
-      values: ['off', '10s', '30s', '60s', '120s']
+      values: ['off', '10 sec', '30 sec', '60 sec', '120 sec']
     }
   },
   {
@@ -310,7 +310,7 @@ export const controlKnobsData = [
     address: 0x00ca,
     params: {
       type: 'enum',
-      values: ['15s', '30s', '60s', '90s', '120s']
+      values: ['15 sec', '30 sec', '60 sec', '90 sec', '120 sec']
     }
   }
 ] as const;
