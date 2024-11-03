@@ -175,9 +175,8 @@ export const controlKnobsData = [
     id: 'noise_cancel_rx_level',
     address: 0x0044,
     params: {
-      type: 'number',
-      min: 0,
-      max: 3
+      type: 'enum',
+      values: ['1', '2', '3', '4']
     }
   },
   {
