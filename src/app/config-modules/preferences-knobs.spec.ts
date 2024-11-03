@@ -1,4 +1,4 @@
-import { controlKnobsData } from "./preferences-knobs";
+import { controlKnobsData } from './preferences-knobs';
 
 describe('controlKnobsData', () => {
   it('should be defined', () => {

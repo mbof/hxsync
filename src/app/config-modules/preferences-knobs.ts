@@ -33,7 +33,15 @@ export const controlKnobsData = [
     address: 0x003c,
     params: {
       type: 'enum',
-      values: ['off', '3 sec', '5 sec', '10 sec', 'continuous', '20 sec', '30 sec']
+      values: [
+        'off',
+        '3 sec',
+        '5 sec',
+        '10 sec',
+        'continuous',
+        '20 sec',
+        '30 sec'
+      ]
     }
   },
   {

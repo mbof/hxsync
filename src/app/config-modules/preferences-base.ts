@@ -84,7 +84,7 @@ export class NumberControlBase implements ControlKnob {
   }
 }
 export class EnumControlBase implements ControlKnob {
-  value?: (string | number);
+  value?: string | number;
   valueIndex?: number;
 
   constructor(

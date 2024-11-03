@@ -144,7 +144,8 @@ function squelchDiagnostics(
       });
     } else if (squelchLevel == 0) {
       warnings.push({
-        message: 'Squelch is 0; consider increasing to avoid RX being always on',
+        message:
+          'Squelch is 0; consider increasing to avoid RX being always on',
         range: range
       });
     }
