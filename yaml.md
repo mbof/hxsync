@@ -139,3 +139,89 @@ Example:
 The configuration does not have to be provided for all channel groups. If a
 channel group is omitted, the channel configuration for that group will be left
 unmodified.
+
+## `settings`
+
+This section lets you control various settings for the device.
+
+Example:
+
+```
+- settings:
+    volume: 10
+    squelch: 5
+    backlight_timer: 30 sec
+    ...
+```
+
+When a setting is not provided, it is left unchanged. The defaults below are only provided as an indication of the typical default factory settings for a device and may vary from device to device.
+
+Available settings:
+
+* `volume`: Set the volume between 0 (silent) and 15.
+
+* `squelch`: Set the squelch between 0 (off) and 15.
+
+* `backlight_dimmer`: Set the backlighting level between 0 (off) and 5
+
+* `backlight_timer`: Set the backlighting timer to `off`, `3 sec` (default), `5 sec`, `10 sec`, `20 sec`, `30 sec` or `continuous` (no timer).
+
+* `contrast`: Set the contrast between 0 and 30.
+
+* `key_beep`: Set the key beep volume between 0 (silent) and 5.
+
+* `multi_watch`: Set the multi watch mode between `off` (default), `multi`, and `scan`.
+
+* `multi_watch_type`: Set the multi watch type between `dual` (default) and `triple`.
+
+* `scan_type`: Set the receiver scan mode to either `priority` (default) or `memory`.
+
+* `scan_resume`: Set the number of seconds (from 1 to 5) to wait before scanning again, after a received signal ends. The default is 2.
+
+* `weather_alert`: Set whether the NOAA Weather Alert function is enabled (`true`) or disabled (`false`, default).
+
+* `emergency_led`: Switch and set the function of the emergency LED, between `continuous` (default), `SOS`, `blink1`, `blink2`, and `blink3`.
+
+* `water_hazard_led`: Switch and set the function of the water hazard LED, between `off`, `on` (default), and `power-on`.
+
+* `audio_filter`: Set the audio filter between `normal` (default), `high-low-cut`, `high-low-boost`, `low-boost`, and `high-boost`.
+
+* `battery_save`: Set the battery save mode between `off`, `50%`, `70%` (default), `80%`, and `90%`.
+
+* `vox`: Enable (`true`) or disable (`false`) voice-activated transmission (VOX). The default is `false`.
+
+* `vox_level`: Set the VOX sensitivity level between 0 and 4. The default is 2.
+
+* `vox_delay`: Set the VOX delay between `0.5 sec`, `1.0 sec`, `1.5 sec` (default), `2.0 sec`, and `3.0 sec`.
+
+* `noise_cancel_rx`: Enable (`true`) or disable (`false`) noise cancellation for reception. The default is `false`.
+
+* `noise_cancel_rx_level`: Set the noise cancellation level for reception between 0 and 3.
+
+* `noise_cancel_tx`: Enable (`true`) or disable (`false`) noise cancellation for transmission. The default is `false`.
+
+* `gps_enabled`: Set the GPS to `off`, `yes` (default), or `always`.
+
+* `gps_power_save`: Set the GPS power save mode to `off` (GPS signals are always received), `auto` (default), `50%` (GPS is activated for 3 seconds every 6 seconds), `75%` (GPS is activated for 3 seconds every 12 seconds), or `90%` (GPS is activated for 3 seconds every 30 seconds).
+
+* `distance_unit`: Set the distance units to `nm` (nautical miles, default), `sm` (statute miles), or `km` (kilometers).
+
+* `speed_unit`: Set the speed units to `kn` (knots, default), `mph` (miles per hour), or `km/h` (kilometers per hour).
+
+* `altitude_units`: Set the altitude units to `ft` (feet) or `m` (meters).
+
+* `nav_display_range`: Set the navigation display range to `auto` (default), 2, 5, 10, or 25 nautical miles (or whichever unit selected in `distance_unit`, if different from nautical miles).
+
+* `nav_arrival_range`: Set the range within which the device determines to have reached the destination, when navigating to a waypoint. Available values are 0.05, 0.1 (default), 0.2, 0.5, or 1 nautical miles (or whichever unit selected in `distance_unit`, if different from nautical miles).
+
+* `nav_routing_operation`: Set the navigation routing operation to `auto` (default) or `manual`. In `auto` mode, navigation to the next target in the route starts automatically.
+
+* `gps_location_format`: Set the GPS location format to `DDDMMSS` (degrees, minutes, and seconds), `DDDMM.MM` (degrees and decimal minutes up to 2 decimal places), or `DDDMM.MMMM` (degrees and decimal minutes up to 4 decimal places). The default is `DDDMM.MMMM`.
+
+* `gps_pinning`: Enable (`true`) or disable (`false`) GPS pinning, which allows position updates when the vessel is not underway. The default is `true`.
+
+* `sbas_enabled`: Enable (`true`) or disable (`false`) SBAS. SBAS generally improves GPS quality, but some regions may have problems with GPS reception with SBAS enabled.
+
+* `map_orientation`: Set the map orientation to `north-up` or `course-up` (default).
+
+* `gps_logger_interval`: Set the GPS logger interval to `5 sec`, `15 sec`, `30 sec`, `1 min` (default), or `5 min`.

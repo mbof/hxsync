@@ -180,6 +180,46 @@ export const controlKnobsData = [
     }
   },
   {
+    id: 'gps_enabled',
+    address: 0x0050,
+    params: {
+      type: 'enum',
+      values: ['off', 'yes', 'always']
+    }
+  },
+  {
+    id: 'gps_power_save',
+    address: 0x0051,
+    params: {
+      type: 'enum',
+      values: ['off', 'auto', '50%', '75%', '90%']
+    }
+  },
+  {
+    id: 'distance_unit',
+    address: 0x0055,
+    params: {
+      type: 'enum',
+      values: ['nm', 'sm', 'km']
+    }
+  },
+  {
+    id: 'speed_unit',
+    address: 0x0054,
+    params: {
+      type: 'enum',
+      values: ['kn', 'mph', 'km/h']
+    }
+  },
+  {
+    id: 'altitude_units',
+    address: 0x0056,
+    params: {
+      type: 'enum',
+      values: ['ft', 'm']
+    }
+  },
+  {
     id: 'nav_display_range',
     address: 0x004a,
     params: {
@@ -204,22 +244,6 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'gps_enabled',
-    address: 0x0050,
-    params: {
-      type: 'enum',
-      values: ['off', 'yes', 'always']
-    }
-  },
-  {
-    id: 'gps_power_save',
-    address: 0x0051,
-    params: {
-      type: 'enum',
-      values: ['off', 'auto', '50%', '75%', '90%']
-    }
-  },
-  {
     id: 'gps_location_format',
     address: 0x0052,
     params: {
@@ -228,27 +252,11 @@ export const controlKnobsData = [
     }
   },
   {
-    id: 'speed_units',
-    address: 0x0054,
+    id: 'map_orientation',
+    address: 0x0059,
     params: {
       type: 'enum',
-      values: ['kn', 'mph', 'km/h']
-    }
-  },
-  {
-    id: 'distance_units',
-    address: 0x0055,
-    params: {
-      type: 'enum',
-      values: ['nm', 'sm', 'km']
-    }
-  },
-  {
-    id: 'altitude_units',
-    address: 0x0056,
-    params: {
-      type: 'enum',
-      values: ['ft', 'm']
+      values: ['north-up', 'course-up']
     }
   },
   {
@@ -263,14 +271,6 @@ export const controlKnobsData = [
     address: 0x0058,
     params: {
       type: 'boolean'
-    }
-  },
-  {
-    id: 'map_orientation',
-    address: 0x0059,
-    params: {
-      type: 'enum',
-      values: ['north-up', 'course-up']
     }
   },
   {
