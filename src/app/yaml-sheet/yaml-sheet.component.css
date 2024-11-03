@@ -75,6 +75,11 @@ h2 {
   margin-right: 0.5em;
 }
 
+.warning {
+  display: inline;
+  margin-right: 0.5em;
+}
+
 .copy-confirm {
   font-size: 10px;
 }

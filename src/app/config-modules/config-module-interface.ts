@@ -1,3 +1,4 @@
+import { NodeBase } from 'yaml/dist/nodes/Node';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
@@ -7,6 +8,11 @@ import { Document, Node, YAMLMap } from 'yaml';
 export interface ConfigModuleConstructor {
   new (deviceModel: DeviceModel): ConfigModuleInterface;
 }
+
+export type Warnings = Array<{
+  message: string;
+  range: NodeBase['range'];
+}>;
 
 export type YamlDiagnostics = {
   dsc_individual?: {
@@ -25,6 +31,7 @@ export type YamlDiagnostics = {
     used: number;
     remaining: number;
   };
+  warnings?: Warnings;
 };
 
 export type YamlContext = {

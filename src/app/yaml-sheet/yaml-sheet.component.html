@@ -53,6 +53,14 @@
               {{ yamlDiagnostics.routes.remaining }} left.
             </span>
           }
+          @for (warning of yamlDiagnostics.warnings; track warning) {
+            <span class="warning">
+              {{ warning.message }}
+              @if (warning.range) {
+                (<a (click)="selectRange(warning.range)" href="#">show me</a>).
+              }
+            </span>
+          }
         </div>
       }
       @if (clipboardConfirmation) {

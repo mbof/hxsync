@@ -23,4 +23,7 @@ try {
 } catch (e) {
   console.log(`Could not read .analytics file: ${e.toString()}`);
 }
-fs.writeFileSync('./src/index.prod.html', indexContent.replace('<!-- ANALYTICS_TAG -->', analyticsTag));
+fs.writeFileSync(
+  './src/index.prod.html',
+  indexContent.replace('<!-- ANALYTICS_TAG -->', analyticsTag)
+);
