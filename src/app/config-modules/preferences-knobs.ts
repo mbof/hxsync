@@ -294,7 +294,7 @@ export const controlKnobsData = [
     address: 0x00c9,
     params: {
       type: 'enum',
-      values: ['off', '10 sec', '30 sec', '60 sec', '120 sec']
+      values: ['off', '10 sec', '30 sec', '1 min', '2 min']
     }
   },
   {
@@ -302,7 +302,7 @@ export const controlKnobsData = [
     address: 0x00ca,
     params: {
       type: 'enum',
-      values: ['15 sec', '30 sec', '60 sec', '90 sec', '120 sec']
+      values: ['15 sec', '30 sec', '1 min', '1.5 min', '2 min']
     }
   }
 ] as const;

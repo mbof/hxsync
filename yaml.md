@@ -225,3 +225,10 @@ Available settings:
 * `map_orientation`: Set the map orientation to `north-up` or `course-up` (default).
 
 * `gps_logger_interval`: Set the GPS logger interval to `5 sec`, `15 sec`, `30 sec`, `1 min` (default), or `5 min`.
+
+* `dsc_no_action_timer`: Set the time after which the device will automatically return to radio operation if no action on the "menu" or "DSC call" screen is taken. The value can be `1 min`, `3 min`, `5 min`, `10 min` (default), or `15 min`.
+
+* `dsc_channel_switch_timer`: Set the time after which the device automatically switches to channel 16 when a DSC distress or all ships call is received. The value can be `off`, `10 sec`, `30 sec` (default), `1 min`, or `2 min`.
+
+* `dsc_pos_fix_wait`: Set the maximum time to wait for position information when receiving a distress, POS report, or POS request acknowledgement call. The value can be `15 sec` (default), `30 sec`, `1 min`, `1.5 min`, or `2 min`.
+
