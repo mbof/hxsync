@@ -184,7 +184,7 @@ export const controlKnobsData = [
     address: 0x004a,
     params: {
       type: 'enum',
-      values: ['auto', '2 nm', '5 nm', '10 nm', '25 nm']
+      values: ['auto', 2, 5, 10, 25]
     }
   },
   {
@@ -192,7 +192,7 @@ export const controlKnobsData = [
     address: 0x004c,
     params: {
       type: 'enum',
-      values: ['0.05 nm', '0.1 nm', '0.2 nm', '0.5 nm', '1 nm']
+      values: [0.05, 0.1, 0.2, 0.5, 1]
     }
   },
   {
@@ -240,7 +240,7 @@ export const controlKnobsData = [
     address: 0x0055,
     params: {
       type: 'enum',
-      values: ['nm', 'mi', 'km']
+      values: ['nm', 'sm', 'km']
     }
   },
   {

@@ -14,7 +14,7 @@ export type ControlKnobData = {
       }
     | {
         readonly type: 'enum';
-        readonly values: readonly string[];
+        readonly values: readonly (string | number)[];
       }
     | {
         readonly type: 'boolean';
@@ -84,19 +84,19 @@ export class NumberControlBase implements ControlKnob {
   }
 }
 export class EnumControlBase implements ControlKnob {
-  value?: string;
+  value?: (string | number);
   valueIndex?: number;
 
   constructor(
     readonly id: PreferenceId,
     readonly address: number,
-    readonly values: readonly string[]
+    readonly values: readonly (string | number)[]
   ) {}
 
   parse(nodeIn: Scalar): void {
     let valueIndex;
     if (
-      typeof nodeIn.value != 'string' ||
+      !['string', 'number'].includes(typeof nodeIn.value) ||
       (valueIndex = this.values.findIndex((v) => v === nodeIn.value)) == -1
     ) {
       throw new YamlError(
