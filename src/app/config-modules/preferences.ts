@@ -128,14 +128,48 @@ function maybeAddDiagnostics(
   } else if (
     controlKnob instanceof NumberControlBase &&
     controlKnob.id === 'squelch' &&
-    controlKnob.value !== undefined &&
-    controlKnob.value >= 14
+    controlKnob.value !== undefined
   ) {
-    warnings.push({
-      message:
-        'Squelch is high; consider decreasing to avoid missing transmissions',
-      range: node.range
-    });
+    const squelchLevel = controlKnob.value;
+    if (squelchLevel >= 14) {
+      warnings.push({
+        message:
+          'Squelch is high; consider decreasing to avoid missing transmissions',
+        range: node.range
+      });
+    } else if (squelchLevel == 0) {
+      warnings.push({
+        message:
+          'Squelch is 0; consider increase to avoid RX being always on',
+        range: node.range
+      });
+    }
+  } else if (
+    controlKnob instanceof NumberControlBase &&
+    controlKnob.id === 'contrast' &&
+    controlKnob.value !== undefined
+  ) {
+    const contrastLevel = controlKnob.value;
+    if (contrastLevel <= 3 || contrastLevel >= 25) {
+      warnings.push({
+        message:
+          'Contrast lower than 3 or higher than 25 may not be readable',
+        range: node.range
+      });
+    }
+  } else if (
+    controlKnob instanceof NumberControlBase &&
+    controlKnob.id === 'backlight_dimmer' &&
+    controlKnob.value !== undefined
+  ) {
+    const backlightLevel = controlKnob.value;
+    if (backlightLevel == 0) {
+      warnings.push({
+        message:
+          'Backlight is off. Consider increasing so that the screen can be read in low light',
+        range: node.range
+      });
+    }
   } else if (
     controlKnob instanceof EnumControlBase &&
     controlKnob.id === 'gps_enabled'
@@ -144,7 +178,7 @@ function maybeAddDiagnostics(
       case 'off':
         warnings.push({
           message:
-            'GPS is disabled; consider enabling to make location easier in an emergency',
+            'GPS is disabled; device will alarm on startup. Consider enabling.',
           range: node.range
         });
         break;
