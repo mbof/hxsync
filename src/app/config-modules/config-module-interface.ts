@@ -9,6 +9,11 @@ export interface ConfigModuleConstructor {
   new (deviceModel: DeviceModel): ConfigModuleInterface;
 }
 
+export type Warnings = Array<{
+  message: string;
+  range: NodeBase['range'];
+}>;
+
 export type YamlDiagnostics = {
   dsc_individual?: {
     used: number;
@@ -26,10 +31,7 @@ export type YamlDiagnostics = {
     used: number;
     remaining: number;
   };
-  warnings?: Array<{
-    message: string;
-    range: NodeBase['range'];
-  }>;
+  warnings?: Warnings;
 };
 
 export type YamlContext = {
