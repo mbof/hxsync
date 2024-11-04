@@ -140,20 +140,10 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
       channelGroups.push(channelGroup);
     }
     config.channelGroups = channelGroups;
-    const channelGroupObjects = channelGroups.map((cg) => ({
-      [cg.cg.name]: {
-        enable: cg.cg.enable,
-        enable_dsc: cg.cg.enable_dsc,
-        enable_atis: cg.cg.enable_atis,
-        model_name: cg.cg.model_name
-      }
-    }));
-    const channelGroupsNode = yaml.createNode({
-      channel_groups: channelGroupObjects
-    });
-    channelGroupsNode.spaceBefore = true;
-    channelGroupsNode;
-    yaml.add(channelGroupsNode);
+    /*
+      Don't populate the channel group data in YAML anymore, as it's not
+      very useful.
+      */
   }
 }
 

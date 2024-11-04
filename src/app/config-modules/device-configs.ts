@@ -98,6 +98,7 @@ export type Config = {
   gpslog?: Uint8Array;
   mmsiDirectory?: MmsiDirectory;
   channelGroups?: ChannelGroup[];
+  currentChannelGroup?: MarineChannelSection;
   marineChannels?: Map<MarineChannelSection, MarineChannelConfig[]>;
   extraChannels?: Map<ExtraChannelType, ExtraChannelConfig[]>;
   preferences?: PreferenceConfig;
@@ -111,6 +112,7 @@ export type MemoryRangeId =
   | 'waypoints'
   | 'routes'
   | 'channel_groups'
+  | 'current_channel_group'
   | MarineChannelMemoryRangeId
   | ExtraChannelMemoryRangeId
   | PreferenceRangeId;

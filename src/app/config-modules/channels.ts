@@ -31,6 +31,7 @@ export type ChannelDeviceConfig = {
   flagType: 'HX' | 'GX';
   marineChannels: Map<MarineChannelSection, MarineChannelDeviceConfig>;
   hasScrambler: boolean;
+  currentGroupAddress: number;
 };
 
 export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
@@ -40,6 +41,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
       {
         flagType: 'HX',
         hasScrambler: false,
+        currentGroupAddress: 0x08,
         marineChannels: new Map([
           [
             'group_1',
@@ -76,6 +78,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
       {
         flagType: 'HX',
         hasScrambler: true,
+        currentGroupAddress: 0x08,
         marineChannels: new Map([
           [
             'group_1',
@@ -112,6 +115,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
       {
         flagType: 'HX',
         hasScrambler: true,
+        currentGroupAddress: 0x08,
         marineChannels: new Map([
           [
             'group_1',
@@ -148,6 +152,7 @@ export const CHANNEL_DEVICE_CONFIGS: Map<DeviceModel, ChannelDeviceConfig> =
       {
         flagType: 'GX',
         hasScrambler: false,
+        currentGroupAddress: 0x07,
         marineChannels: new Map([
           [
             'group_1',
@@ -258,7 +263,7 @@ export class ChannelConfig implements ConfigModuleInterface {
     const deviceConfig = this.deviceConfig!;
     if (
       !(sectionNode.key instanceof Scalar) ||
-      !marineChannelSections.includes(sectionNode.key.value)
+      !(marineChannelSections.includes(sectionNode.key.value) || sectionNode.key.value === 'current_group')
     ) {
       throw new YamlError(
         `Unexpected channel section ${sectionNode.key}`,
@@ -271,7 +276,7 @@ export class ChannelConfig implements ConfigModuleInterface {
         sectionNode.value
       );
     }
-    const section = sectionNode.key.value;
+    const section: MarineChannelSection = sectionNode.key.value === 'current_group' ? previousConfig.currentChannelGroup : sectionNode.key.value;
     const previousSectionConfig = previousConfig.marineChannels?.get(section);
     const sectionDeviceConfig = deviceConfig.marineChannels.get(section)!;
     if (!previousSectionConfig) {
@@ -366,6 +371,11 @@ export class ChannelConfig implements ConfigModuleInterface {
     if (!config) {
       return;
     }
+    configBatchReader.addRange(
+      'current_channel_group',
+      config.currentGroupAddress,
+      config.currentGroupAddress + 1
+    );
     for (const [section, deviceConfig] of config.marineChannels.entries()) {
       configBatchReader.addRange(
         this.getMemoryRangeId(section, 'enabled_bitfield'),
@@ -396,8 +406,20 @@ export class ChannelConfig implements ConfigModuleInterface {
     if (!deviceConfig) {
       return;
     }
+    const currentChannelGroupData = results.get('current_channel_group');
+    if (!currentChannelGroupData) {
+      throw new Error('Missing current channel group index');
+    }
+    if (currentChannelGroupData[0] > marineChannelSections.length) {
+      throw new Error(
+        `Unexpected current channel group index ${currentChannelGroupData}`
+      )
+    }
+    const currentChannelGroupIndex = currentChannelGroupData[0];
+    const currentChannelGroup = marineChannelSections[currentChannelGroupIndex];
+    config.currentChannelGroup = currentChannelGroup;
     const marine = new Map<MarineChannelSection, MarineChannelConfig[]>();
-    const channelGroupNodes = new Map<MarineChannelSection, YAMLMap>();
+    const channelGroupNodes = new Map<MarineChannelSection | 'current_group', YAMLMap>();
     for (const [
       section,
       channelDeviceConfig
@@ -491,7 +513,9 @@ export class ChannelConfig implements ConfigModuleInterface {
         nodeContents = { ...nodeContents, scrambler: scramblerNode };
       }
       const groupNode = yaml.createNode(nodeContents);
-      channelGroupNodes.set(section, groupNode);
+      if (section === currentChannelGroup) {
+        channelGroupNodes.set('current_group', groupNode);
+      }
     }
     config.marineChannels = marine;
     const channelsNode = yaml.createNode({

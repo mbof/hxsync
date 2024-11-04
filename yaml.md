@@ -66,46 +66,9 @@ Example:
         - Alpha
 ```
 
-## `channel_groups`
-
-Set the channel group configuration. Exaclty 3 channel groups must be provided.
-Each channel group can be enabled or disabled; additionally, DSC and ATIS can be
-enabled or disabled for each channel group.
-
-Default values are as follows:
-
-- `enable` defaults to `true`
-- `enable_dsc` defaults to `true`
-- `enable_atis` defaults to `false`
-- `model_name` defaults to the value already stored in the device for this
-  channel group
-
-Example:
-
-```
-- channel_groups:
-    - USA:
-        enable: true
-        enable_dsc: true
-        enable_atis: false
-        model_name: HX890
-    - INTL:
-        enable: true
-        enable_dsc: true
-        enable_atis: false
-        model_name: HX890E
-    - CAN:
-        enable: true
-        enable_dsc: true
-        enable_atis: false
-        model_name: HX890
-
-```
-
 ## `channels`
 
-Set channel configuration for each channel group (`group_1`, `group_2`, or
-`group_3`), including
+Set channel configuration for the current channel group, including:
 
 - `intership`: list of channels enabled for inter-ship calling (DSC). If this
   section is omitted, the list of channels enabled for inter-ship calling is
@@ -126,7 +89,7 @@ Example:
 
 ```
 - channels:
-    group_1:
+    current_group:
         intership: [ 6, 13, 68, 69, 71, 72, 1078 ]
         names:
             - 9: Foo-CALLING
@@ -137,9 +100,8 @@ Example:
             - 88: { type: 4, code: 3 }
 ```
 
-The configuration does not have to be provided for all channel groups. If a
-channel group is omitted, the channel configuration for that group will be left
-unmodified.
+The configuration can also be provided explicitly for channel groups `group_1`,
+`group_2` and `group_3`.
 
 ## `settings`
 
@@ -263,6 +225,10 @@ Available settings:
 
 - `gps_logger_interval`: Set the GPS logger interval to `5 sec`, `15 sec`,
   `30 sec`, `1 min` (default), or `5 min`.
+
+- `dsc_individual_ring`: Set how long the device will ring when receiving an
+  individual DSC call. The value can be `5 sec`, `10 sec`, `15 sec`, `20 sec`,
+  or `2 min` (default).
 
 - `dsc_no_action_timer`: Set the time after which the device will automatically
   return to radio operation if no action on the "menu" or "DSC call" screen is

@@ -289,6 +289,14 @@ export const controlKnobsData = [
     }
   },
   {
+    id: 'dsc_individual_ring',
+    address: 0x00c6,
+    params: {
+      type: 'enum',
+      values: ['5 sec', '10 sec', '15 sec', '20 sec', '2 min']
+    }
+  },
+  {
     id: 'dsc_no_action_timer',
     address: 0x00c8,
     params: {
