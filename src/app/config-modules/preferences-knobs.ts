@@ -176,7 +176,7 @@ export const controlKnobsData = [
     address: 0x0044,
     params: {
       type: 'enum',
-      values: ['1', '2', '3', '4']
+      values: [1, 2, 3, 4]
     }
   },
   {
