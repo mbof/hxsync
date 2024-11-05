@@ -19,7 +19,12 @@
           @if (yamlError.range) {
             (at
             {{ getLocationText(yamlError.range[0]) }}) -
-            <a (click)="selectRange(yamlError.range)" href="#">show me ↗</a>
+            <a
+              (click)="selectRange(yamlError.range)"
+              href="#"
+              data-umami-event="Error link"
+              >show me ↗</a
+            >
           }
         </div>
       }
@@ -57,7 +62,12 @@
             <span class="warning">
               {{ warning.message }}
               @if (warning.range) {
-                (<a (click)="selectRange(warning.range)" href="#">show me</a>).
+                (<a
+                  (click)="selectRange(warning.range)"
+                  href="#"
+                  data-umami-event="Warning link"
+                  >show me</a
+                >).
               }
             </span>
           }
@@ -67,9 +77,13 @@
         <div class="copy-confirm">{{ clipboardConfirmation }}</div>
       }
       <div class="controls">
-        <button (click)="cancel()">Cancel</button>
-        <button (click)="save()">Save</button>
-        <button (click)="share()">Share as link</button>
+        <button (click)="cancel()" data-umami-event="Cancel YAML">
+          Cancel
+        </button>
+        <button (click)="save()" data-umami-event="Save YAML">Save</button>
+        <button (click)="share()" data-umami-event="Share YAML">
+          Share as link
+        </button>
       </div>
     </div>
   </div>

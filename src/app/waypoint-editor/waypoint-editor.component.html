@@ -40,13 +40,23 @@
       </div>
       <div class="desc">
         Supported formats for latitude / longitude:
-        <li>Degrees and decimal minutes (DMM), e.g. 12 N 34.5678, 12° 34.5678' N</li>
+        <li>
+          Degrees and decimal minutes (DMM), e.g. 12 N 34.5678, 12° 34.5678' N
+        </li>
         <li>Degrees, minutes, seconds (DMS), e.g. 12° 34' 34.1" N</li>
-        <li>Decimal degrees (DD), e.g. 12.57613 (number sign indicates direction)</li>
+        <li>
+          Decimal degrees (DD), e.g. 12.57613 (number sign indicates direction)
+        </li>
       </div>
       <div class="buttons">
-        <button type="button" (click)="onCancel(f)">Cancel</button>
-        <button type="submit">Done</button>
+        <button
+          type="button"
+          (click)="onCancel(f)"
+          data-umami-event="Waypoint cancel"
+        >
+          Cancel
+        </button>
+        <button type="submit" data-umami-event="Waypoint save">Done</button>
       </div>
     </form>
   </div>

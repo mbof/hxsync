@@ -13,8 +13,10 @@
         <textarea [formControl]="csvControl"></textarea>
       </div>
       <div class="controls">
-        <button (click)="cancel()">Cancel</button>
-        <button (click)="save()">Save</button>
+        <button (click)="cancel()" data-umami-event="MMSI cancel">
+          Cancel
+        </button>
+        <button (click)="save()" data-umami-event="MMSI save">Save</button>
       </div>
     </div>
   </div>

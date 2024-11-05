@@ -16,26 +16,52 @@
                 @for (wp of getDraftWaypoints()!.waypoints; track wp) {
                   <tr>
                     <td>
-                      <a href="{{ wp.getMapLink() }}" target="_blank"
+                      <a
+                        href="{{ wp.getMapLink() }}"
+                        target="_blank"
+                        data-umami-event="Waypoint map link"
                         >{{ wp.wp.name }} ↗</a
                       >
                     </td>
                     <td>{{ wp.getLat() }}</td>
                     <td>{{ wp.getLon() }}</td>
-                    <td class="action" (click)="draftEditWaypoint(wp)">✎</td>
-                    <td class="action" (click)="draftDeleteWaypoint(wp)">✖</td>
+                    <td
+                      class="action"
+                      (click)="draftEditWaypoint(wp)"
+                      data-umami-event="Edit waypoint"
+                    >
+                      ✎
+                    </td>
+                    <td
+                      class="action"
+                      (click)="draftDeleteWaypoint(wp)"
+                      data-umami-event="Delete waypoint"
+                    >
+                      ✖
+                    </td>
                   </tr>
                 }
               </table>
             }
-            <button (click)="draftAddWaypoint()">Add waypoint</button>
+            <button
+              (click)="draftAddWaypoint()"
+              data-umami-event="Add waypoint"
+            >
+              Add waypoint
+            </button>
           </div>
         </div>
         <waypoint-editor />
       </div>
       <div class="controls">
-        <button (click)="draftCancel()">Cancel</button>
-        <button [disabled]="!isPendingDraft()" (click)="saveDraft()">
+        <button (click)="draftCancel()" data-umami-event="Waypoints cancel">
+          Cancel
+        </button>
+        <button
+          [disabled]="!isPendingDraft()"
+          (click)="saveDraft()"
+          data-umami-event="Waypoints save"
+        >
           Save
         </button>
       </div>

@@ -25,41 +25,63 @@
         </div>
         <div class="desc-para">
           Alternatively,
-          <a href="#" (click)="showDatPicker()">load a DAT file</a> for your
-          device to edit it.
+          <a href="#" (click)="showDatPicker()" data-umami-event="Load DAT"
+            >load a DAT file</a
+          >
+          for your device to edit it.
         </div>
       </div>
       <button
         [disabled]="connectionState === 'usb-connecting'"
         (click)="connectUsb($event)"
+        data-umami-event="connect"
       >
         Connect
       </button>
     } @else {
       <div class="connected-buttons">
         @if (deviceMgr.configSession._deviceConfig?.waypoints) {
-          <button (click)="readWaypoints()">Waypoints</button>
+          <button (click)="readWaypoints()" data-umami-event="Waypoints edit">
+            Waypoints
+          </button>
         }
         @if (deviceMgr.configSession._deviceConfig?.dsc) {
-          <button (click)="readMmsi()">MMSI Directory</button>
+          <button (click)="readMmsi()" data-umami-event="MMSI edit">
+            MMSI Directory
+          </button>
         }
-        <button (click)="readYaml()">Edit as Yaml</button>
+        <button (click)="readYaml()" data-umami-event="YAML edit">
+          Edit as Yaml
+        </button>
         @if (
           connectionState == 'usb-connected' &&
           deviceMgr.configSession._deviceConfig?.hasGps
         ) {
-          <button (click)="readGpslog()">Download GPS log</button>
+          <button (click)="readGpslog()" data-umami-event="GPS log download">
+            Download GPS log
+          </button>
         }
         @if (deviceMgr.configSession._deviceConfig?.dat) {
-          <button (click)="saveDat()">Save DAT</button>
+          <button (click)="saveDat()" data-umami-event="Save DAT">
+            Save DAT
+          </button>
         }
         @if (connectionState == 'usb-connected') {
           @if (deviceMgr.configSession._deviceConfig?.dat) {
-            <button (click)="restoreDat()">Restore from DAT</button>
+            <button (click)="restoreDat()" data-umami-event="Restore DAT">
+              Restore from DAT
+            </button>
           }
-          <button (click)="deviceMgr.disconnect()">Disconnect</button>
+          <button
+            (click)="deviceMgr.disconnect()"
+            data-umami-event="Disconnect"
+          >
+            Disconnect
+          </button>
         } @else if (connectionState == 'dat-connected') {
-          <button (click)="deviceMgr.disconnect()">Close</button>
+          <button (click)="deviceMgr.disconnect()" data-umami-event="Close">
+            Close
+          </button>
         }
       </div>
     }

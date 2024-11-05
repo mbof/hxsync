@@ -20,7 +20,9 @@
       </ol>
     </div>
     <div class="buttons">
-      <button (click)="apply($event)">Apply</button>
+      <button (click)="apply($event)" data-umami-event="Apply shared YAML">
+        Apply
+      </button>
       <div class="status">{{ getStatus() }}</div>
     </div>
   </div>
