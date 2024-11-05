@@ -43,8 +43,8 @@ This software would not have been possible without the help of
 | Set up waypoints and routes |  ✅   |  ✅   |   ✅    |  N/A   |
 | Change channel names        |  ✅   |  ✅   |   ✅    |  N/A   |
 | Set up intership channels   |  ✅   |  ✅   |   ✅    |   ✅   |
-| Set up scrambler codes      |  ✅   |  ✅   |   ✅    |  N/A   |
-| Set up channel groups       |  ✅   |  ✅   |   ✅    |   ❌   |
+| Set up scrambler codes      |  N/A  |  ✅   |   ✅    |  N/A   |
+| Change device settings      |  ✅   |  ✅   |   ✅    |   ❌   |
 | DAT file backup / restore   |  ✅   |  ✅   |   ✅    |   ✅   |
 
 ## Developer setup
