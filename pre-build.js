@@ -27,3 +27,10 @@ fs.writeFileSync(
   './src/index.prod.html',
   indexContent.replace('<!-- ANALYTICS_TAG -->', analyticsTag)
 );
+
+// Set up the analytics tag for sharing app
+const shareIndexContent = fs.readFileSync('./projects/share/src/index.html', { encoding: 'utf8' });
+fs.writeFileSync(
+  './projects/share/src/index.prod.html',
+  indexContent.replace('<!-- ANALYTICS_TAG -->', analyticsTag)
+);

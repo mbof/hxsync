@@ -122,6 +122,10 @@
           },
           "configurations": {
             "production": {
+              "index": {
+                "input": "projects/share/src/index.prod.html",
+                "output": "index.html"
+              },
               "budgets": [
                 {
                   "type": "initial",
