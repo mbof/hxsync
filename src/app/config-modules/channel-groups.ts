@@ -120,7 +120,7 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
   updateConfig(
     results: BatchReaderResults,
     config: Config,
-    yaml: Document<Node, true>
+    _yaml: Document<Node, true>
   ): void {
     if (!this.deviceConfig) {
       return;

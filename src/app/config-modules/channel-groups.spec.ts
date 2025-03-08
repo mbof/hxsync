@@ -155,7 +155,7 @@ describe('ChannelGroupsConfig', () => {
     expect(offset).toEqual(0x70);
     expect(hexarr(data)).toEqual(CHANNEL_GROUPS_HEX_NO_OPTIONS);
   });
-  it('should convert from binary to YAML', () => {
+  it('should not convert from binary to YAML', () => {
     const results: BatchReaderResults = new Map();
     results.set('channel_groups', unhex(CHANNEL_GROUPS_HEX));
     const config: Config = {};
@@ -165,6 +165,6 @@ describe('ChannelGroupsConfig', () => {
     expect(config.channelGroups![0].cg).toEqual(CHANNEL_GROUP_DATAS[0]);
     expect(config.channelGroups![1].cg).toEqual(CHANNEL_GROUP_DATAS[1]);
     expect(config.channelGroups![2].cg).toEqual(CHANNEL_GROUP_DATAS[2]);
-    expect(yaml.toString()).toEqual(CHANNEL_GROUPS_YAML);
+    expect(yaml.contents.items.length).toEqual(0);
   });
 });

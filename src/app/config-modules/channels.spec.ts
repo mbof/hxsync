@@ -10,29 +10,7 @@ import { channel } from 'process';
 
 const CHANNELS_SECTION_YAML = `
 - channels:
-    group_1:
-      intership: [ 6, 8 ]
-      names:
-        - 1001: VTS
-        - 2003: ""
-        - 05B: VTS
-        - 6: SAFETY
-        - 07A: VTS
-        - 8: ""
-      scrambler:
-        - 05B: { type: 32, code: 8 }
-    group_2:
-      intership: [ 6, 8 ]
-      names:
-        - 1001: VTS
-        - 2003: ""
-        - 05B: VTS
-        - 6: SAFETY
-        - 07A: VTS
-        - 8: ""
-      scrambler:
-        - 05B: { type: 32, code: 8 }
-    group_3:
+    current_group:
       intership: [ 6, 8 ]
       names:
         - 1001: VTS
@@ -56,11 +34,7 @@ const CHANNELS_SECTION_YAML_2 = `
 
 const CHANNELS_SECTION_YAML_GX = `
 - channels:
-    group_1:
-      intership: [ 6, 8 ]
-    group_2:
-      intership: [ 6, 8 ]
-    group_3:
+    current_group:
       intership: [ 6, 8 ]
 `;
 
@@ -128,6 +102,8 @@ describe('ChannelConfig (HX)', () => {
   beforeEach(() => {
     channelConfigModule = new ChannelConfig('HX890');
     datFile = createMockDat('HX890');
+    // Current channel group 1
+    datFile.set([0x00], 0x08);
     // Group 1
     datFile.set(CHANNELS_ENABLED_BYTES, 0x120);
     datFile.set(CHANNELS_FLAGS_BYTES_HX, 0x700);
@@ -146,7 +122,13 @@ describe('ChannelConfig (HX)', () => {
 
   it('should request the correct ranges to read', () => {
     channelConfigModule.addRangesToRead(configBatchReader);
-    expect(configBatchReader.ranges.size).toBe(9);
+    expect(configBatchReader.ranges.size).toBe(10);
+    expect(
+      configBatchReader.ranges.get('current_channel_group')
+    ).toEqual({
+      start: 0x08,
+      end: 0x09
+    });
     expect(
       configBatchReader.ranges.get(
         channelConfigModule.getMemoryRangeId('group_1', 'enabled_bitfield')
@@ -250,14 +232,13 @@ describe('ChannelConfig (HX)', () => {
       }
     );
     expect(result).toBeTrue();
-    for (const section of marineChannelSections) {
-      const flags_id = channelConfigModule.getMemoryRangeId(section, 'flags');
-      const flags = configBatchWriter.data.get(flags_id);
-      expect(flags![1]).toEqual(CHANNELS_FLAGS_BYTES_HX);
-      const names_id = channelConfigModule.getMemoryRangeId(section, 'names');
-      const names = configBatchWriter.data.get(names_id);
-      expect(names![1]).toEqual(CHANNELS_NAMES_BYTES_HX);
-    }
+    const section = marineChannelSections[0];
+    const flags_id = channelConfigModule.getMemoryRangeId(section, 'flags');
+    const flags = configBatchWriter.data.get(flags_id);
+    expect(flags![1]).toEqual(CHANNELS_FLAGS_BYTES_HX);
+    const names_id = channelConfigModule.getMemoryRangeId(section, 'names');
+    const names = configBatchWriter.data.get(names_id);
+    expect(names![1]).toEqual(CHANNELS_NAMES_BYTES_HX);
   });
 
   it('should write expected changes', async () => {
@@ -303,6 +284,8 @@ describe('ChannelConfig (GX)', () => {
   beforeEach(() => {
     channelConfigModule = new ChannelConfig('GX1400');
     datFile = createMockDat('GX1400');
+    // Current channel group 1
+    datFile.set([0x00], 0x07)
     // Group 1
     datFile.set(CHANNELS_ENABLED_BYTES, 0x120);
     datFile.set(CHANNELS_FLAGS_BYTES_GX, 0x180);
@@ -318,7 +301,13 @@ describe('ChannelConfig (GX)', () => {
 
   it('should request the correct ranges to read', () => {
     channelConfigModule.addRangesToRead(configBatchReader);
-    expect(configBatchReader.ranges.size).toBe(6);
+    expect(configBatchReader.ranges.size).toBe(7);
+    expect(
+      configBatchReader.ranges.get('current_channel_group')
+    ).toEqual({
+      start: 0x07,
+      end: 0x08
+    });
     expect(
       configBatchReader.ranges.get(
         channelConfigModule.getMemoryRangeId('group_1', 'enabled_bitfield')
@@ -398,11 +387,10 @@ describe('ChannelConfig (GX)', () => {
       }
     );
     expect(result).toBeTrue();
-    for (const section of marineChannelSections) {
-      const flags_id = channelConfigModule.getMemoryRangeId(section, 'flags');
-      const flags = configBatchWriter.data.get(flags_id);
-      expect(flags![1]).toEqual(CHANNELS_FLAGS_BYTES_GX);
-    }
+    const section = marineChannelSections[0];
+    const flags_id = channelConfigModule.getMemoryRangeId(section, 'flags');
+    const flags = configBatchWriter.data.get(flags_id);
+    expect(flags![1]).toEqual(CHANNELS_FLAGS_BYTES_GX);
   });
 
   it('should write expected changes', async () => {
