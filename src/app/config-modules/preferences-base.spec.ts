@@ -98,7 +98,7 @@ describe('EnumControlBase', () => {
   let configBatchWriter: ConfigBatchWriter;
 
   beforeEach(() => {
-    knob = new EnumControlBase('multi_watch', 0x0034, ['dual', 'triple']);
+    knob = new EnumControlBase('multi_watch', 0x0034, ['dual', 'triple'], 0);
     configBatchWriter = jasmine.createSpyObj<ConfigBatchWriter>(
       'ConfigBatchWriter',
       ['prepareWrite']

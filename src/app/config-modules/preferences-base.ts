@@ -90,16 +90,13 @@ export class NumberControlBase implements ControlKnob {
 export class EnumControlBase implements ControlKnob {
   value?: string | number;
   valueIndex?: number;
-  baseOrZero: number;
 
   constructor(
     readonly id: PreferenceId,
     readonly address: number,
     readonly values: readonly (string | number)[],
-    readonly base?: number
-  ) {
-    this.baseOrZero = base || 0;
-  }
+    readonly base: number
+  ) {}
 
   parse(nodeIn: Scalar | YAMLSeq): void {
     if (!(nodeIn instanceof Scalar)) {
@@ -128,7 +125,7 @@ export class EnumControlBase implements ControlKnob {
       this.value = undefined;
       return;
     }
-    this.valueIndex = data[0] - this.baseOrZero;
+    this.valueIndex = data[0] - this.base;
     if (this.valueIndex >= 0 && this.valueIndex < this.values.length) {
       this.value = this.values[this.valueIndex];
     }
@@ -145,7 +142,7 @@ export class EnumControlBase implements ControlKnob {
       configBatchWriter.prepareWrite(
         this.id,
         this.address,
-        new Uint8Array([this.valueIndex + this.baseOrZero])
+        new Uint8Array([this.valueIndex + this.base])
       );
     }
   }
@@ -190,23 +187,23 @@ export class BooleanControlBase implements ControlKnob {
 }
 
 const softKeys = [
-  'none',           // 00
-  'tx_power',       // 01
-  'wx_ch',          // 02
-  'scan',           // 03
-  'dual_watch',     // 04
-  'mark_waypoint',  // 05
-  'compass',        // 06
-  'waypoint',       // 07
-  'mob',            // 08
-  'scan_memory',    // 09
-  'preset',         // 0a
-  'strobe',         // 0b
-  'ch_name',        // 0c
-  'logger',         // 0d
-  'noise_cancel',   // 0e
-  'fm_radio',       // 0f
-  'night_mode',     // 10
+  'none', // 00
+  'tx_power', // 01
+  'wx_ch', // 02
+  'scan', // 03
+  'dual_watch', // 04
+  'mark_waypoint', // 05
+  'compass', // 06
+  'waypoint', // 07
+  'mob', // 08
+  'scan_memory', // 09
+  'preset', // 0a
+  'strobe', // 0b
+  'ch_name', // 0c
+  'logger', // 0d
+  'noise_cancel', // 0e
+  'fm_radio', // 0f
+  'night_mode', // 10
   'unknown'
 ] as const;
 
@@ -288,11 +285,16 @@ export function createKnob(kd: ControlKnobData): ControlKnob {
         kd.params.min,
         kd.params.max
       );
-    case 'soft_key_page':
-      return new SoftKeyPageControlBase(kd.id, kd.address);
     case 'boolean':
       return new BooleanControlBase(kd.id, kd.address);
     case 'enum':
-      return new EnumControlBase(kd.id, kd.address, kd.params.values, kd.params.base);
-  }
+      return new EnumControlBase(
+        kd.id,
+        kd.address,
+        kd.params.values,
+        kd.params.base || 0
+      );
+    case 'soft_key_page':
+        return new SoftKeyPageControlBase(kd.id, kd.address);
+    }
 }
