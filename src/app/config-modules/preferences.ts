@@ -41,7 +41,7 @@ export class PreferencesConfig implements ConfigModuleInterface {
     if (!preferencesNode || !(preferencesNode instanceof YAMLMap)) {
       throw new YamlError('Unexpected preferences node type', node);
     }
-    ctx.configOut.preferences = makePreferenceControlKnobs();
+    ctx.configOut.preferences = makePreferenceControlKnobs(this.deviceModel);
     const items = preferencesNode.items;
     for (const item of items) {
       if (item.key instanceof Scalar) {
@@ -87,7 +87,7 @@ export class PreferencesConfig implements ConfigModuleInterface {
     ) {
       return;
     }
-    config.preferences = makePreferenceControlKnobs();
+    config.preferences = makePreferenceControlKnobs(this.deviceModel);
     const preferencesMap = yaml.createNode({});
     for (const knob of config.preferences) {
       const valueData = results.get(knob.id);

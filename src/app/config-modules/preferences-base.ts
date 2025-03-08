@@ -2,6 +2,7 @@ import { Scalar, YAMLMap, YAMLSeq, Document, Node } from 'yaml';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { PreferenceId } from './preferences-knobs';
+import { DeviceModel } from './device-configs';
 
 export type ControlKnobData = {
   readonly id: PreferenceId;
@@ -217,7 +218,8 @@ export class SoftKeyPageControlBase implements ControlKnob {
 
   constructor(
     readonly id: PreferenceId,
-    readonly address: number
+    readonly address: number,
+    readonly deviceModel: DeviceModel
   ) {}
 
   parse(nodeIn: Scalar | YAMLSeq): void {
@@ -269,14 +271,21 @@ export class SoftKeyPageControlBase implements ControlKnob {
     if (this.value !== undefined) {
       const data = new Uint8Array(3);
       for (let i = 0; i < 3; i++) {
-        data[i] = getSoftKeyIndex(this.value[i]);
+        let softKeyIndex = getSoftKeyIndex(this.value[i]);
+        if (this.deviceModel === 'HX870' && softKeyIndex > 0x0e) {
+          softKeyIndex = 0; // None
+        }
+        data[i] = softKeyIndex;
       }
       configBatchWriter.prepareWrite(this.id, this.address, data);
     }
   }
 }
 
-export function createKnob(kd: ControlKnobData): ControlKnob {
+export function createKnob(
+  kd: ControlKnobData,
+  deviceModel: DeviceModel
+): ControlKnob {
   switch (kd.params.type) {
     case 'number':
       return new NumberControlBase(
@@ -295,6 +304,6 @@ export function createKnob(kd: ControlKnobData): ControlKnob {
         kd.params.base || 0
       );
     case 'soft_key_page':
-        return new SoftKeyPageControlBase(kd.id, kd.address);
-    }
+      return new SoftKeyPageControlBase(kd.id, kd.address, deviceModel);
+  }
 }

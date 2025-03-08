@@ -303,7 +303,7 @@ describe('SoftKeyPageControlBase', () => {
       address: 0x0038,
       params: { type: 'soft_key_page' }
     };
-    knob = new SoftKeyPageControlBase(knobData.id, knobData.address);
+    knob = new SoftKeyPageControlBase(knobData.id, knobData.address, 'HX890');
   });
 
   it('should read a value from a Uint8Array', () => {
@@ -318,7 +318,7 @@ describe('SoftKeyPageControlBase', () => {
     expect(knob.value).toEqual(['tx_power', 'wx_ch', 'unknown']);
   });
 
-  it('should write a value to the config batch writer', () => {
+  it('should write a value correctly', () => {
     knob.value = ['tx_power', 'wx_ch', 'scan'];
     knob.write(configBatchWriter);
     expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
@@ -328,10 +328,21 @@ describe('SoftKeyPageControlBase', () => {
     );
   });
 
-  it('should not write a value to the config batch writer when the value is undefined', () => {
+  it('should not write a value when undefined', () => {
     knob.value = undefined;
     knob.write(configBatchWriter);
     expect(configBatchWriter.prepareWrite).not.toHaveBeenCalled();
+  });
+
+  it('should replace unsupported soft keys on HX870 with none when writing', () => {
+    knob = new SoftKeyPageControlBase('soft_key_page_1', 0x1234, 'HX870');
+    knob.value = ['tx_power', 'wx_ch', 'fm_radio'];
+    knob.write(configBatchWriter);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'soft_key_page_1',
+      0x1234,
+      new Uint8Array([1, 2, 0])
+    );
   });
 
   it('should add a node to YAMLMap when value is defined', () => {
@@ -356,15 +367,18 @@ describe('SoftKeyPageControlBase', () => {
 
 describe('createKnob', () => {
   it('should create a knob', () => {
-    const knob = createKnob({
-      id: 'volume',
-      address: 0x000c,
-      params: {
-        type: 'number',
-        min: 0,
-        max: 15
-      }
-    });
+    const knob = createKnob(
+      {
+        id: 'volume',
+        address: 0x000c,
+        params: {
+          type: 'number',
+          min: 0,
+          max: 15
+        }
+      },
+      'HX890'
+    );
     expect(knob).toBeTruthy();
   });
 });
