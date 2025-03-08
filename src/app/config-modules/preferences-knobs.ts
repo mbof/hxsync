@@ -1,3 +1,4 @@
+import { DeviceModel } from './device-configs';
 import { ControlKnob, createKnob } from './preferences-base';
 
 export const controlKnobsData = [
@@ -363,6 +364,8 @@ export type PreferenceId = (typeof controlKnobsData)[number]['id'];
 export const preferenceIds: PreferenceId[] = controlKnobsData.map((c) => c.id);
 export type PreferenceConfig = ControlKnob[];
 export type PreferenceRangeId = PreferenceId;
-export function makePreferenceControlKnobs(): PreferenceConfig {
-  return controlKnobsData.map((kd) => createKnob(kd));
+export function makePreferenceControlKnobs(
+  deviceModel: DeviceModel
+): PreferenceConfig {
+  return controlKnobsData.map((kd) => createKnob(kd, deviceModel));
 }
