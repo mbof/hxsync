@@ -63,6 +63,43 @@ export const controlKnobsData = [
     }
   },
   {
+    id: 'soft_key_timer',
+    address: 0x0061,
+    params: {
+      type: 'enum',
+      values: ['3 sec', '5 sec', '7 sec', '10 sec', '15 sec'],
+      base: 1
+    }
+  },
+  {
+    id: 'soft_key_page_1',
+    address: 0x0062,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_2',
+    address: 0x0065,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_3',
+    address: 0x0068,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_4',
+    address: 0x006b,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
     id: 'multi_watch',
     address: 0x0004,
     params: {
