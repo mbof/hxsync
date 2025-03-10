@@ -136,6 +136,32 @@ Available settings:
 
 - `key_beep`: Set the key beep volume between 0 (silent) and 5.
 
+- `soft_key_timer`: Set the time that soft keys remain on screen. Valid values
+  are `3 sec`, `5 sec`, `7 sec`, `10 sec`, and `15 sec`.
+
+- `soft_key_page_1`, ... `soft_key_page_4`: Program soft keys. There are 4 soft
+  key pages, and each page is a list of three soft keys, for example:
+  `soft_key_page_1: [ 'txpwr', 'wx_or_ch', 'fm' ]`. Soft keys can be chosen in
+  the following list:
+
+  - `none`: No soft key in this position
+  - `txpwr`: Change the transmission power between low, medium, and high
+  - `wx_or_ch`: Switch channel between weather and marine
+  - `scan`: Turn scanning function on or off
+  - `dual_watch`: Turn dual watch function (or triple watch) on or off
+  - `mark`: Mark the current position for a waypoint
+  - `compass`: Show compass display
+  - `waypoint`: Select a waypoint or route for navigation
+  - `mob`: Mark the current position where a person fell overboard
+  - `mem`: Add or remove channels from memory channel scan
+  - `preset`: Program or delete the preset memory channel
+  - `strobe`: Toggle the strobe light LED
+  - `ch_name`: Edit channel name
+  - `logger`: Toggle the logging of GPS data
+  - `ncr`: Show noise canceling settings
+  - `fm`: Turn on the FM radio receiver
+  - `night_or_day`: Toggle between night mode and day mode
+
 - `multi_watch`: Set the multi watch mode between `off` (default), `multi`, and
   `scan`.
 
