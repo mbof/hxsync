@@ -309,22 +309,22 @@ describe('SoftKeyPageControlBase', () => {
   it('should read a value from a Uint8Array', () => {
     const data = new Uint8Array([1, 2, 3]);
     knob.read(data);
-    expect(knob.value).toEqual(['tx_power', 'wx_ch', 'scan']);
+    expect(knob.value).toEqual(['txpwr', 'wx_or_ch', 'scan']);
   });
 
   it('should handle unknown soft keys', () => {
     const data = new Uint8Array([1, 2, 100]);
     knob.read(data);
-    expect(knob.value).toEqual(['tx_power', 'wx_ch', 'unknown']);
+    expect(knob.value).toEqual(['txpwr', 'wx_or_ch', 'none']);
   });
 
   it('should write a value correctly', () => {
-    knob.value = ['tx_power', 'wx_ch', 'scan'];
+    knob.value = ['txpwr', 'wx_or_ch', 'fm'];
     knob.write(configBatchWriter);
     expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
       'soft_key_page_1',
       0x0038,
-      new Uint8Array([1, 2, 3])
+      new Uint8Array([1, 2, 15])
     );
   });
 
@@ -336,7 +336,7 @@ describe('SoftKeyPageControlBase', () => {
 
   it('should replace unsupported soft keys on HX870 with none when writing', () => {
     knob = new SoftKeyPageControlBase('soft_key_page_1', 0x1234, 'HX870');
-    knob.value = ['tx_power', 'wx_ch', 'fm_radio'];
+    knob.value = ['txpwr', 'wx_or_ch', 'fm'];
     knob.write(configBatchWriter);
     expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
       'soft_key_page_1',
@@ -350,10 +350,10 @@ describe('SoftKeyPageControlBase', () => {
     const yamlMap = yaml.createNode({});
     yaml.contents = yamlMap;
 
-    knob.value = ['tx_power', 'wx_ch', 'scan'];
+    knob.value = ['txpwr', 'wx_or_ch', 'scan'];
     knob.maybeAddNode(yamlMap, yaml);
     expect(yaml.toString()).toEqual(
-      'soft_key_page_1: [ tx_power, wx_ch, scan ]\n'
+      'soft_key_page_1: [ txpwr, wx_or_ch, scan ]\n'
     );
   });
 
