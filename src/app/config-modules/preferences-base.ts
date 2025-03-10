@@ -189,23 +189,22 @@ export class BooleanControlBase implements ControlKnob {
 
 const softKeys = [
   'none', // 00
-  'tx_power', // 01
-  'wx_ch', // 02
+  'txpwr', // 01
+  'wx_or_ch', // 02
   'scan', // 03
   'dual_watch', // 04
-  'mark_waypoint', // 05
+  'mark', // 05
   'compass', // 06
   'waypoint', // 07
   'mob', // 08
-  'scan_memory', // 09
+  'mem', // 09
   'preset', // 0a
   'strobe', // 0b
   'ch_name', // 0c
   'logger', // 0d
-  'noise_cancel', // 0e
-  'fm_radio', // 0f
-  'night_mode', // 10
-  'unknown'
+  'ncr', // 0e
+  'fm', // 0f
+  'night_or_day' // 10
 ] as const;
 
 type softKey = (typeof softKeys)[number];
@@ -252,7 +251,7 @@ export class SoftKeyPageControlBase implements ControlKnob {
   read(data: Uint8Array) {
     this.value = [];
     for (const byte of data) {
-      let newValue: softKey = 'unknown';
+      let newValue: softKey = 'none';
       if (byte < softKeys.length) {
         newValue = softKeys[byte];
       }
