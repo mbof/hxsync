@@ -1,43 +1,48 @@
 <div class="device-panel">
-  <img class="device-picture" src="assets/radio.jpeg" />
+  <img class="device-picture" src="assets/radio.png" />
   <div class="controls">
     @if (
       connectionState != 'usb-connected' && connectionState != 'dat-connected'
     ) {
-      <div class="desc">
-        To edit device configuration (waypoints, routes, DSC directory...), or
-        download a GPS log in GPX format, connect your HX870, HX890, or HX891BT
-        radio with a USB cable, and place it in "CP Mode":
-        <ol>
-          <li>Power the device off</li>
-          <li>Press and hold the Menu key</li>
-          <li>While holding the Menu key, press the power button</li>
-          <li>Release both keys when the screen lights up</li>
-          <li>Click Connect</li>
-        </ol>
+      <div class="connection-info">
+        <h2>Connect your device</h2>
         <div class="desc-para">
-          To edit device configuration for a GX1400 fixed-mount ratio, connect
-          it to your computer with a USB-to-serial adapter (<a
-            href="https://github.com/mbof/hxsync/blob/main/gx.md"
-            >see wiring instructions</a
-          >), place it in CP Mode, then hold the Shift key while clicking
-          Connect.
-        </div>
-        <div class="desc-para">
-          Alternatively,
-          <a href="#" (click)="showDatPicker()" data-umami-event="Load DAT"
-            >load a DAT file</a
+          To edit device configuration (waypoints, routes, DSC directory...), or
+          download a GPS log in GPX format, connect your HX870, HX890, or
+          HX891BT radio with a USB cable, and place it in "<b>CP Mode</b>":
+          <ol>
+            <li>Power the device off</li>
+            <li>Press and hold the Menu key</li>
+            <li>While holding the Menu key, press the power button</li>
+            <li>Release both keys when the screen lights up</li>
+            <li>Click Connect</li>
+          </ol>
+          <button
+            [disabled]="connectionState === 'usb-connecting'"
+            (click)="connectUsb($event)"
+            data-umami-event="connect"
+            class="primary"
           >
-          for your device to edit it.
+            Connect
+          </button>
+
+          <div class="desc-para">
+            Alternatively,
+            <a href="#" (click)="showDatPicker()" data-umami-event="Load DAT"
+              >load a DAT file</a
+            >
+            for your device to edit it.
+          </div>
+          <div class="desc-para">
+            To edit device configuration for a GX1400 fixed-mount ratio, connect
+            it to your computer with a USB-to-serial adapter (<a
+              href="https://github.com/mbof/hxsync/blob/main/gx.md"
+              >see wiring instructions</a
+            >), place it in CP Mode, then hold the Shift key while clicking
+            Connect.
+          </div>
         </div>
       </div>
-      <button
-        [disabled]="connectionState === 'usb-connecting'"
-        (click)="connectUsb($event)"
-        data-umami-event="connect"
-      >
-        Connect
-      </button>
     } @else {
       <div class="connected-buttons">
         @if (deviceMgr.configSession._deviceConfig?.waypoints) {

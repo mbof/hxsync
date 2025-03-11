@@ -1,39 +1,44 @@
-<main class="main">
-  <div class="content">
-    <div class="header">
-      <h1>SHsync</h1>
-    </div>
+<div class="container">
+  <div class="header">
+    <h1>SHsync</h1>
     <div class="desc">
+      Program Standard Horizon VHF marine radios from your browser
+    </div>
+    <div class="warning">
       This experimental utility is not provided by Standard Horizon. Use at your
       own risk!
     </div>
-    <router-outlet />
   </div>
-</main>
-<div class="footer">
-  <span class="footer-link">
-    <a target="_blank" href="https://github.com/mbof/hxsync/blob/main/README.md"
-      >Documentation</a
-    >
-  </span>
-  <span class="footer-link">
-    <a target="_blank" href="https://github.com/mbof/hxsync/blob/main/yaml.md"
-      >YAML Format Documentation</a
-    >
-  </span>
-  <span class="footer-link">
-    <a target="_blank" href="https://github.com/mbof/hxsync">Source Code</a>
-  </span>
-  <span class="footer-link">
-    <a target="_blank" href="https://github.com/mbof/hxsync/issues/new"
-      >Report an Issue</a
-    >
-  </span>
-  <span class="footer-link">
-    <a target="_blank" href="https://github.com/mbof/hxsync/discussions"
-      >Discuss</a
-    >
-  </span>
-  <br />
-  <div class="version">{{ version }} ({{ commitHash }}) {{ buildDate }}</div>
+  <main class="main">
+    <router-outlet />
+  </main>
+  <div class="footer">
+    <span class="footer-link">
+      <a
+        target="_blank"
+        href="https://github.com/mbof/hxsync/blob/main/README.md"
+        >Documentation</a
+      >
+    </span>
+    <span class="footer-link">
+      <a target="_blank" href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+        >YAML Format Documentation</a
+      >
+    </span>
+    <span class="footer-link">
+      <a target="_blank" href="https://github.com/mbof/hxsync">Source Code</a>
+    </span>
+    <span class="footer-link">
+      <a target="_blank" href="https://github.com/mbof/hxsync/issues/new"
+        >Report an Issue</a
+      >
+    </span>
+    <span class="footer-link">
+      <a target="_blank" href="https://github.com/mbof/hxsync/discussions"
+        >Discuss</a
+      >
+    </span>
+    <br />
+    <div class="version">{{ version }} ({{ commitHash }}) {{ buildDate }}</div>
+  </div>
 </div>

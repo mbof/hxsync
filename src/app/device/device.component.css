@@ -1,11 +1,20 @@
 .device-panel {
   display: flex;
+  gap: 30px;
 }
 
 .device-picture {
-  width: 150px;
-  height: 150px;
-  margin-right: 1em;
+  width: 180px;
+  aspect-ratio: 0.4453;
+}
+
+@media (max-width: 600px) {
+  .device-panel {
+    flex-direction: column;
+  }
+  .device-picture {
+    display: none;
+  }
 }
 
 .status-lights {
@@ -60,6 +69,11 @@
   flex-flow: wrap;
 }
 
+.connected-buttons button {
+  margin: 0.5em;
+}
+
 .desc-para {
   margin-top: 1em;
+  line-height: 1.3;
 }
