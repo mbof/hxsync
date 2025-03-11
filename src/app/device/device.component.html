@@ -23,6 +23,11 @@
             data-umami-event="connect"
             class="primary"
           >
+            <lucide-icon
+              [img]="ChevronsLeftRightEllipsis"
+              class="chevrons-left-right-ellipsis"
+              [size]="20"
+            ></lucide-icon>
             Connect
           </button>
 
@@ -47,15 +52,26 @@
       <div class="connected-buttons">
         @if (deviceMgr.configSession._deviceConfig?.waypoints) {
           <button (click)="readWaypoints()" data-umami-event="Waypoints edit">
+            <lucide-icon
+              [img]="MapPin"
+              class="map-pin"
+              [size]="20"
+            ></lucide-icon>
             Waypoints
           </button>
         }
         @if (deviceMgr.configSession._deviceConfig?.dsc) {
           <button (click)="readMmsi()" data-umami-event="MMSI edit">
+            <lucide-icon
+              [img]="NotebookTabs"
+              class="notebook-tabs"
+              [size]="20"
+            ></lucide-icon>
             MMSI Directory
           </button>
         }
         <button (click)="readYaml()" data-umami-event="YAML edit">
+          <lucide-icon [img]="Code" class="code" [size]="20"></lucide-icon>
           Edit as Yaml
         </button>
         @if (
@@ -63,17 +79,28 @@
           deviceMgr.configSession._deviceConfig?.hasGps
         ) {
           <button (click)="readGpslog()" data-umami-event="GPS log download">
+            <lucide-icon [img]="Route" class="route" [size]="20"></lucide-icon>
             Download GPS log
           </button>
         }
         @if (deviceMgr.configSession._deviceConfig?.dat) {
           <button (click)="saveDat()" data-umami-event="Save DAT">
+            <lucide-icon
+              [img]="ArrowDownToLine"
+              class="arrow-down-to-line"
+              [size]="20"
+            ></lucide-icon>
             Save DAT
           </button>
         }
         @if (connectionState == 'usb-connected') {
           @if (deviceMgr.configSession._deviceConfig?.dat) {
             <button (click)="restoreDat()" data-umami-event="Restore DAT">
+              <lucide-icon
+                [img]="ArrowUpFromLine"
+                class="arrow-up-from-line"
+                [size]="20"
+              ></lucide-icon>
               Restore from DAT
             </button>
           }
@@ -81,10 +108,12 @@
             (click)="deviceMgr.disconnect()"
             data-umami-event="Disconnect"
           >
+            <lucide-icon [img]="X" class="x" [size]="20"></lucide-icon>
             Disconnect
           </button>
         } @else if (connectionState == 'dat-connected') {
           <button (click)="deviceMgr.disconnect()" data-umami-event="Close">
+            <lucide-icon [img]="X" class="x" [size]="20"></lucide-icon>
             Close
           </button>
         }

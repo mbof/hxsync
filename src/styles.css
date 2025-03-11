@@ -2,12 +2,16 @@ button {
   background-color: #dcedff;
   color: #0076f4;
   border: none;
-  padding: 12px 25px;
+  padding: 5px 25px;
   border-radius: 5px;
   cursor: pointer;
   font-size: 1em;
   transition: background-color 0.3s ease;
   margin: 0.5em;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-height: 38px;
 }
 
 button:hover {
@@ -17,13 +21,6 @@ button:hover {
 button.primary {
   background-color: #007bff;
   color: white;
-  border: none;
-  padding: 12px 25px;
-  border-radius: 5px;
-  cursor: pointer;
-  font-size: 1em;
-  transition: background-color 0.3s ease;
-  margin: 0.5em;
 }
 
 button:hover.primary {
@@ -34,14 +31,17 @@ button:disabled {
   background-color: rgb(151, 151, 151);
   color: rgb(48, 48, 48);
   border: none;
-  padding: 12px 25px;
-  border-radius: 5px;
-  font-size: 1em;
-  transition: background-color 0.3s ease;
 }
 
 button:disabled:hover {
   background-color: rgb(151, 151, 151);
+}
+
+button lucide-icon {
+  display: inline-block;
+  margin-left: -5px;
+  margin-right: 5px;
+  transform: translateY(2px);
 }
 
 body {
