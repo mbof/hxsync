@@ -5,11 +5,10 @@ import { DevicemgrService } from '../devicemgr.service';
 import { DeviceTaskState } from '../config-session';
 
 @Component({
-  selector: 'app-share',
-  standalone: true,
-  imports: [],
-  templateUrl: './share.component.html',
-  styleUrl: './share.component.css'
+    selector: 'app-share',
+    imports: [],
+    templateUrl: './share.component.html',
+    styleUrl: './share.component.css'
 })
 export class ShareComponent {
   yaml: string = '';

@@ -9,11 +9,10 @@ import {
 } from '@angular/forms';
 
 @Component({
-  selector: 'mmsi-sheet',
-  standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
-  templateUrl: './mmsi-sheet.component.html',
-  styleUrl: './mmsi-sheet.component.css'
+    selector: 'mmsi-sheet',
+    imports: [FormsModule, ReactiveFormsModule],
+    templateUrl: './mmsi-sheet.component.html',
+    styleUrl: './mmsi-sheet.component.css'
 })
 export class MmsiSheetComponent {
   shown = false;

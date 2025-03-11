@@ -5,11 +5,10 @@ import { DevicemgrService } from '../devicemgr.service';
 import { BehaviorSubject } from 'rxjs';
 
 @Component({
-  selector: 'busy-state-modal',
-  standalone: true,
-  imports: [],
-  templateUrl: './busy-state-modal.component.html',
-  styleUrl: './busy-state-modal.component.css'
+    selector: 'busy-state-modal',
+    imports: [],
+    templateUrl: './busy-state-modal.component.html',
+    styleUrl: './busy-state-modal.component.css'
 })
 export class BusyStateModalComponent {
   state: DeviceTaskState = 'idle';

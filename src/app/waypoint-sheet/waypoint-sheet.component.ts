@@ -6,11 +6,10 @@ import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
 
 @Component({
-  selector: 'waypoint-sheet',
-  standalone: true,
-  templateUrl: './waypoint-sheet.component.html',
-  styleUrl: './waypoint-sheet.component.css',
-  imports: [WaypointEditorComponent]
+    selector: 'waypoint-sheet',
+    templateUrl: './waypoint-sheet.component.html',
+    styleUrl: './waypoint-sheet.component.css',
+    imports: [WaypointEditorComponent]
 })
 export class WaypointSheetComponent {
   shown = false;

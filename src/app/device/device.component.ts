@@ -16,16 +16,15 @@ import { YamlSheetComponent } from '../yaml-sheet/yaml-sheet.component';
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
 @Component({
-  selector: 'app-device',
-  standalone: true,
-  templateUrl: './device.component.html',
-  styleUrl: './device.component.css',
-  imports: [
-    BusyStateModalComponent,
-    WaypointSheetComponent,
-    MmsiSheetComponent,
-    YamlSheetComponent
-  ]
+    selector: 'app-device',
+    templateUrl: './device.component.html',
+    styleUrl: './device.component.css',
+    imports: [
+        BusyStateModalComponent,
+        WaypointSheetComponent,
+        MmsiSheetComponent,
+        YamlSheetComponent
+    ]
 })
 export class DeviceComponent {
   connectionStateSubscription?: Subscription;
