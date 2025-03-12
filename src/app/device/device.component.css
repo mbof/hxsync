@@ -5,7 +5,7 @@
 
 .device-picture {
   width: 180px;
-  aspect-ratio: 0.4453;
+  height: 404px;
 }
 
 @media (max-width: 600px) {

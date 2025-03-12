@@ -7,11 +7,10 @@ import { debounceTime } from 'rxjs/operators';
 import { YamlDiagnostics } from '../config-modules/config-module-interface';
 
 @Component({
-  selector: 'yaml-sheet',
-  standalone: true,
-  imports: [FormsModule, ReactiveFormsModule],
-  templateUrl: './yaml-sheet.component.html',
-  styleUrl: './yaml-sheet.component.css'
+    selector: 'yaml-sheet',
+    imports: [FormsModule, ReactiveFormsModule],
+    templateUrl: './yaml-sheet.component.html',
+    styleUrl: './yaml-sheet.component.css'
 })
 export class YamlSheetComponent {
   shown = false;

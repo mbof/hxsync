@@ -4,11 +4,10 @@ import { NgForm, FormsModule } from '@angular/forms';
 import { WpFormData } from '../waypoint';
 
 @Component({
-  selector: 'waypoint-editor',
-  standalone: true,
-  imports: [FormsModule],
-  templateUrl: './waypoint-editor.component.html',
-  styleUrl: './waypoint-editor.component.css'
+    selector: 'waypoint-editor',
+    imports: [FormsModule],
+    templateUrl: './waypoint-editor.component.html',
+    styleUrl: './waypoint-editor.component.css'
 })
 export class WaypointEditorComponent {
   editing = false;

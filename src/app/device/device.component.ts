@@ -12,19 +12,30 @@ import { BusyStateModalComponent } from '../busy-state-modal/busy-state-modal.co
 import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.component';
 import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
 import { YamlSheetComponent } from '../yaml-sheet/yaml-sheet.component';
+import {
+  LucideAngularModule,
+  ChevronsLeftRightEllipsis,
+  MapPin,
+  NotebookTabs,
+  Code,
+  Route,
+  ArrowDownToLine,
+  ArrowUpFromLine,
+  X
+} from 'lucide-angular';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
 @Component({
   selector: 'app-device',
-  standalone: true,
   templateUrl: './device.component.html',
   styleUrl: './device.component.css',
   imports: [
     BusyStateModalComponent,
     WaypointSheetComponent,
     MmsiSheetComponent,
-    YamlSheetComponent
+    YamlSheetComponent,
+    LucideAngularModule
   ]
 })
 export class DeviceComponent {
@@ -33,6 +44,14 @@ export class DeviceComponent {
   configSubscription?: Subscription;
   config: BehaviorSubject<Config>;
   deviceTaskState: DeviceTaskState;
+  readonly ChevronsLeftRightEllipsis = ChevronsLeftRightEllipsis;
+  readonly MapPin = MapPin;
+  readonly NotebookTabs = NotebookTabs;
+  readonly Code = Code;
+  readonly Route = Route;
+  readonly ArrowDownToLine = ArrowDownToLine;
+  readonly ArrowUpFromLine = ArrowUpFromLine;
+  readonly X = X;
 
   @ViewChild(WaypointSheetComponent) waypointSheet!: WaypointSheetComponent;
   @ViewChild(MmsiSheetComponent) mmsiSheet!: MmsiSheetComponent;
