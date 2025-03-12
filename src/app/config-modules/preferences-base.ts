@@ -1,7 +1,8 @@
-import { Scalar, YAMLMap } from 'yaml';
+import { Scalar, YAMLMap, YAMLSeq, Document, Node } from 'yaml';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
 import { PreferenceId } from './preferences-knobs';
+import { DeviceModel } from './device-configs';
 
 export type ControlKnobData = {
   readonly id: PreferenceId;
@@ -15,18 +16,22 @@ export type ControlKnobData = {
     | {
         readonly type: 'enum';
         readonly values: readonly (string | number)[];
+        readonly base?: number;
       }
     | {
         readonly type: 'boolean';
+      }
+    | {
+        readonly type: 'soft_key_page';
       };
 };
 
 export interface ControlKnob {
   id: PreferenceId;
   address: number;
-  parse(nodeIn: Scalar): void;
+  parse(nodeIn: Scalar | YAMLSeq): void;
   read(data: Uint8Array): void;
-  maybeAddNode(yaml: YAMLMap): void;
+  maybeAddNode(yaml: YAMLMap, yamlDoc: Document<Node, true>): void;
   write(configBatchWriter: ConfigBatchWriter): void;
 }
 
@@ -44,8 +49,8 @@ export class NumberControlBase implements ControlKnob {
     this.max = max;
   }
 
-  parse(nodeIn: Scalar) {
-    if (typeof nodeIn.value != 'number') {
+  parse(nodeIn: Scalar | YAMLSeq) {
+    if (!(nodeIn instanceof Scalar) || typeof nodeIn.value != 'number') {
       throw new YamlError(`${this.id} must be a number`, nodeIn);
     }
     if (nodeIn.value < this.min || nodeIn.value > this.max) {
@@ -63,7 +68,7 @@ export class NumberControlBase implements ControlKnob {
     }
   }
 
-  maybeAddNode(yaml: YAMLMap) {
+  maybeAddNode(yaml: YAMLMap, _yamlDoc: Document<Node, true>) {
     if (
       this.value !== undefined &&
       this.value >= this.min &&
@@ -90,10 +95,17 @@ export class EnumControlBase implements ControlKnob {
   constructor(
     readonly id: PreferenceId,
     readonly address: number,
-    readonly values: readonly (string | number)[]
+    readonly values: readonly (string | number)[],
+    readonly base: number
   ) {}
 
-  parse(nodeIn: Scalar): void {
+  parse(nodeIn: Scalar | YAMLSeq): void {
+    if (!(nodeIn instanceof Scalar)) {
+      throw new YamlError(
+        `${this.id} must be in [${this.values.join(', ')}]`,
+        nodeIn
+      );
+    }
     let valueIndex;
     if (
       !['string', 'number'].includes(typeof nodeIn.value) ||
@@ -114,13 +126,13 @@ export class EnumControlBase implements ControlKnob {
       this.value = undefined;
       return;
     }
-    this.valueIndex = data[0];
-    if (this.valueIndex < this.values.length) {
+    this.valueIndex = data[0] - this.base;
+    if (this.valueIndex >= 0 && this.valueIndex < this.values.length) {
       this.value = this.values[this.valueIndex];
     }
   }
 
-  maybeAddNode(yaml: YAMLMap) {
+  maybeAddNode(yaml: YAMLMap, _yamlDoc: Document<Node, true>) {
     if (this.value !== undefined) {
       yaml.add({ key: this.id, value: this.value });
     }
@@ -131,7 +143,7 @@ export class EnumControlBase implements ControlKnob {
       configBatchWriter.prepareWrite(
         this.id,
         this.address,
-        new Uint8Array([this.valueIndex])
+        new Uint8Array([this.valueIndex + this.base])
       );
     }
   }
@@ -158,7 +170,7 @@ export class BooleanControlBase implements ControlKnob {
     }
   }
 
-  maybeAddNode(yaml: YAMLMap) {
+  maybeAddNode(yaml: YAMLMap, _yamlDoc: Document<Node, true>) {
     if (this.value !== undefined) {
       yaml.add({ key: this.id, value: this.value });
     }
@@ -175,7 +187,104 @@ export class BooleanControlBase implements ControlKnob {
   }
 }
 
-export function createKnob(kd: ControlKnobData): ControlKnob {
+const softKeys = [
+  'none', // 00
+  'tx_power', // 01
+  'wx_or_ch', // 02
+  'scan', // 03
+  'dual_watch', // 04
+  'mark', // 05
+  'compass', // 06
+  'waypoint', // 07
+  'mob', // 08
+  'scan_mem', // 09
+  'preset', // 0a
+  'strobe', // 0b
+  'ch_name', // 0c
+  'logger', // 0d
+  'noise_canceling', // 0e
+  'fm', // 0f
+  'night_or_day' // 10
+] as const;
+
+type softKey = (typeof softKeys)[number];
+
+const getSoftKeyIndex = (softKeyName: string) =>
+  softKeys.findIndex((v) => v === softKeyName);
+
+export class SoftKeyPageControlBase implements ControlKnob {
+  value?: softKey[];
+
+  constructor(
+    readonly id: PreferenceId,
+    readonly address: number,
+    readonly deviceModel: DeviceModel
+  ) {}
+
+  parse(nodeIn: Scalar | YAMLSeq): void {
+    if (!(nodeIn instanceof YAMLSeq) || nodeIn.items.length != 3) {
+      throw new YamlError(
+        `${this.id} must be a list of three items in [${softKeys.join(', ')}]`,
+        nodeIn
+      );
+    }
+    this.value = [];
+
+    for (const item of nodeIn.items) {
+      if (!(item instanceof Scalar) || typeof item.value !== 'string') {
+        throw new YamlError(
+          `${this.id} must be a list of three items in [${softKeys.join(', ')}]`,
+          nodeIn
+        );
+      }
+      let valueIndex = getSoftKeyIndex(item.value);
+      if (valueIndex === -1) {
+        throw new YamlError(
+          `Unknown ${this.id} item '${item.value}'. Values must be in [${softKeys.join(', ')}]`,
+          item
+        );
+      }
+      this.value.push(softKeys[valueIndex]);
+    }
+  }
+
+  read(data: Uint8Array) {
+    this.value = [];
+    for (const byte of data) {
+      let newValue: softKey = 'none';
+      if (byte < softKeys.length) {
+        newValue = softKeys[byte];
+      }
+      this.value.push(newValue);
+    }
+  }
+
+  maybeAddNode(yaml: YAMLMap, yamlDoc: Document<Node, true>) {
+    if (this.value !== undefined) {
+      const softKeyListNode = yamlDoc.createNode(this.value);
+      softKeyListNode.flow = true;
+      yaml.add({ key: this.id, value: softKeyListNode });
+    }
+  }
+  write(configBatchWriter: ConfigBatchWriter) {
+    if (this.value !== undefined) {
+      const data = new Uint8Array(3);
+      for (let i = 0; i < 3; i++) {
+        let softKeyIndex = getSoftKeyIndex(this.value[i]);
+        if (this.deviceModel === 'HX870' && softKeyIndex > 0x0e) {
+          softKeyIndex = 0; // None
+        }
+        data[i] = softKeyIndex;
+      }
+      configBatchWriter.prepareWrite(this.id, this.address, data);
+    }
+  }
+}
+
+export function createKnob(
+  kd: ControlKnobData,
+  deviceModel: DeviceModel
+): ControlKnob {
   switch (kd.params.type) {
     case 'number':
       return new NumberControlBase(
@@ -187,6 +296,13 @@ export function createKnob(kd: ControlKnobData): ControlKnob {
     case 'boolean':
       return new BooleanControlBase(kd.id, kd.address);
     case 'enum':
-      return new EnumControlBase(kd.id, kd.address, kd.params.values);
+      return new EnumControlBase(
+        kd.id,
+        kd.address,
+        kd.params.values,
+        kd.params.base || 0
+      );
+    case 'soft_key_page':
+      return new SoftKeyPageControlBase(kd.id, kd.address, deviceModel);
   }
 }

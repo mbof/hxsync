@@ -1,3 +1,4 @@
+import { DeviceModel } from './device-configs';
 import { ControlKnob, createKnob } from './preferences-base';
 
 export const controlKnobsData = [
@@ -60,6 +61,43 @@ export const controlKnobsData = [
       type: 'number',
       min: 0,
       max: 5
+    }
+  },
+  {
+    id: 'soft_key_timer',
+    address: 0x0061,
+    params: {
+      type: 'enum',
+      values: ['3 sec', '5 sec', '7 sec', '10 sec', '15 sec'],
+      base: 1
+    }
+  },
+  {
+    id: 'soft_key_page_1',
+    address: 0x0062,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_2',
+    address: 0x0065,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_3',
+    address: 0x0068,
+    params: {
+      type: 'soft_key_page'
+    }
+  },
+  {
+    id: 'soft_key_page_4',
+    address: 0x006b,
+    params: {
+      type: 'soft_key_page'
     }
   },
   {
@@ -326,6 +364,8 @@ export type PreferenceId = (typeof controlKnobsData)[number]['id'];
 export const preferenceIds: PreferenceId[] = controlKnobsData.map((c) => c.id);
 export type PreferenceConfig = ControlKnob[];
 export type PreferenceRangeId = PreferenceId;
-export function makePreferenceControlKnobs(): PreferenceConfig {
-  return controlKnobsData.map((kd) => createKnob(kd));
+export function makePreferenceControlKnobs(
+  deviceModel: DeviceModel
+): PreferenceConfig {
+  return controlKnobsData.map((kd) => createKnob(kd, deviceModel));
 }

@@ -41,7 +41,7 @@ export class PreferencesConfig implements ConfigModuleInterface {
     if (!preferencesNode || !(preferencesNode instanceof YAMLMap)) {
       throw new YamlError('Unexpected preferences node type', node);
     }
-    ctx.configOut.preferences = makePreferenceControlKnobs();
+    ctx.configOut.preferences = makePreferenceControlKnobs(this.deviceModel);
     const items = preferencesNode.items;
     for (const item of items) {
       if (item.key instanceof Scalar) {
@@ -66,10 +66,12 @@ export class PreferencesConfig implements ConfigModuleInterface {
   }
   addRangesToRead(configBatchReader: ConfigBatchReader): void {
     for (const preference of controlKnobsData) {
+      const preferenceLength =
+        preference.params.type === 'soft_key_page' ? 3 : 1;
       configBatchReader.addRange(
         preference.id,
         preference.address,
-        preference.address + 1
+        preference.address + preferenceLength
       );
     }
   }
@@ -85,13 +87,13 @@ export class PreferencesConfig implements ConfigModuleInterface {
     ) {
       return;
     }
-    config.preferences = makePreferenceControlKnobs();
+    config.preferences = makePreferenceControlKnobs(this.deviceModel);
     const preferencesMap = yaml.createNode({});
     for (const knob of config.preferences) {
       const valueData = results.get(knob.id);
       if (valueData) {
         knob.read(valueData);
-        knob.maybeAddNode(preferencesMap);
+        knob.maybeAddNode(preferencesMap, yaml);
       }
     }
     const preferencesNode = yaml.createNode({

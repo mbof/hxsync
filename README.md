@@ -52,7 +52,8 @@ This software would not have been possible without the help of
 ### Run locally
 
 First-time installation: after cloning this repository, run `npm install` from
-the project directory to fetch the required modules.
+the project directory to fetch the required modules, and run `npm run prebuild`
+to generate required version files.
 
 Run `ng serve --serve-path /hx` for a dev server. Navigate to
 `http://localhost:4200/hx`. The application will automatically reload if you
