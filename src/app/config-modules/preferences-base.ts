@@ -189,7 +189,7 @@ export class BooleanControlBase implements ControlKnob {
 
 const softKeys = [
   'none', // 00
-  'txpwr', // 01
+  'tx_power', // 01
   'wx_or_ch', // 02
   'scan', // 03
   'dual_watch', // 04
@@ -197,12 +197,12 @@ const softKeys = [
   'compass', // 06
   'waypoint', // 07
   'mob', // 08
-  'mem', // 09
+  'scan_mem', // 09
   'preset', // 0a
   'strobe', // 0b
   'ch_name', // 0c
   'logger', // 0d
-  'ncr', // 0e
+  'noise_canceling', // 0e
   'fm', // 0f
   'night_or_day' // 10
 ] as const;

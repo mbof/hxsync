@@ -141,11 +141,11 @@ Available settings:
 
 - `soft_key_page_1`, ... `soft_key_page_4`: Program soft keys. There are 4 soft
   key pages, and each page is a list of three soft keys, for example:
-  `soft_key_page_1: [ 'txpwr', 'wx_or_ch', 'fm' ]`. Soft keys can be chosen in
+  `soft_key_page_1: [ 'tx_pwr', 'wx_or_ch', 'fm' ]`. Soft keys can be chosen in
   the following list:
 
   - `none`: No soft key in this position
-  - `txpwr`: Change the transmission power between low, medium, and high
+  - `tx_pwr`: Change the transmission power between low, medium, and high
   - `wx_or_ch`: Switch channel between weather and marine
   - `scan`: Turn scanning function on or off
   - `dual_watch`: Turn dual watch function (or triple watch) on or off
@@ -153,12 +153,12 @@ Available settings:
   - `compass`: Show compass display
   - `waypoint`: Select a waypoint or route for navigation
   - `mob`: Mark the current position where a person fell overboard
-  - `mem`: Add or remove channels from memory channel scan
+  - `scan_mem`: Add or remove channels from memory channel scan
   - `preset`: Program or delete the preset memory channel
   - `strobe`: Toggle the strobe light LED
   - `ch_name`: Edit channel name
   - `logger`: Toggle the logging of GPS data
-  - `ncr`: Show noise canceling settings
+  - `noise_canceling`: Show noise canceling settings
   - `fm`: Turn on the FM radio receiver
   - `night_or_day`: Toggle between night mode and day mode
 
