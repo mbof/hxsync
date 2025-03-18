@@ -13,6 +13,7 @@ import {
   ExtraChannelType
 } from './extra-channels';
 import { PreferenceConfig, PreferenceRangeId } from './preferences-knobs';
+import { FmPresetConfig } from './fm';
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400' | 'HX891BT';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400', 'HX891BT'];
@@ -102,6 +103,7 @@ export type Config = {
   marineChannels?: Map<MarineChannelSection, MarineChannelConfig[]>;
   extraChannels?: Map<ExtraChannelType, ExtraChannelConfig[]>;
   preferences?: PreferenceConfig;
+  fmPresets?: Array<FmPresetConfig>;
 };
 
 export type MemoryRangeId =
@@ -115,4 +117,5 @@ export type MemoryRangeId =
   | 'current_channel_group'
   | MarineChannelMemoryRangeId
   | ExtraChannelMemoryRangeId
-  | PreferenceRangeId;
+  | PreferenceRangeId
+  | 'fm_presets';
