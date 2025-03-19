@@ -67,9 +67,6 @@ export class FmConfig implements ConfigModuleInterface {
     presets.sort((a, b) => stringCompare(a.name, b.name));
     config.fmPresets = presets;
 
-    if (presets.length === 0) {
-      return;
-    }
     const fmPresetsNode = yaml.createNode({
       fm_presets: presets.map((p) => {
         const paddedkHz = p.khz.toString().padStart(3, '0');
