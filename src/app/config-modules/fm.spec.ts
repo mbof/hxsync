@@ -10,8 +10,8 @@ import { unhex } from '../message';
 
 const FM_PRESET_YAML = `
 - fm_presets:
-    - bar: 107.800 MHz
-    - foo: 104.400 MHz
+    - bar: 107.8
+    - foo: 104.4
 `;
 
 const FM_PRESET_BYTES = unhex(
@@ -64,11 +64,9 @@ describe('FmConfig', () => {
     expect(config.fmPresets).toBeDefined();
     expect(config.fmPresets?.length).toBe(2);
     expect(config.fmPresets?.[0].name).toBe('bar');
-    expect(config.fmPresets?.[0].mhz).toBe(107);
-    expect(config.fmPresets?.[0].khz).toBe(800);
+    expect(config.fmPresets?.[0].mhz).toBe(107.8);
     expect(config.fmPresets?.[1].name).toBe('foo');
-    expect(config.fmPresets?.[1].mhz).toBe(104);
-    expect(config.fmPresets?.[1].khz).toBe(400);
+    expect(config.fmPresets?.[1].mhz).toBe(104.4);
     expect(yaml.toString()).toEqual(FM_PRESET_YAML);
   });
   it('should parse YAML', () => {
@@ -88,10 +86,8 @@ describe('FmConfig', () => {
     expect(config.fmPresets).toBeDefined();
     expect(config.fmPresets?.length).toBe(2);
     expect(config.fmPresets?.[0].name).toBe('bar');
-    expect(config.fmPresets?.[0].mhz).toBe(107);
-    expect(config.fmPresets?.[0].khz).toBe(800);
+    expect(config.fmPresets?.[0].mhz).toBe(107.8);
     expect(config.fmPresets?.[1].name).toBe('foo');
-    expect(config.fmPresets?.[1].mhz).toBe(104);
-    expect(config.fmPresets?.[1].khz).toBe(400);
+    expect(config.fmPresets?.[1].mhz).toBe(104.4);
   });
 });

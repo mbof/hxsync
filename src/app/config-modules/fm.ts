@@ -17,8 +17,7 @@ const FM_SUPPORTED_MODELS: DeviceModel[] = ['HX890', 'HX891BT'];
 
 export type FmPresetConfig = {
   name: string;
-  mhz: number;
-  khz: number;
+  mhz: number; // up to 1 decimal place
 };
 
 export class FmConfig implements ConfigModuleInterface {
@@ -61,7 +60,7 @@ export class FmConfig implements ConfigModuleInterface {
         const khz =
           (preset[2] & 0xf) * 100 + (preset[3] >> 4) * 10 + (preset[3] & 0xf);
         const name = readPaddedString(preset.subarray(4, 16));
-        presets.push({ name, mhz, khz });
+        presets.push({ name, mhz: mhz + khz * 0.001 });
       }
     }
     presets.sort((a, b) => stringCompare(a.name, b.name));
@@ -69,8 +68,7 @@ export class FmConfig implements ConfigModuleInterface {
 
     const fmPresetsNode = yaml.createNode({
       fm_presets: presets.map((p) => {
-        const paddedkHz = p.khz.toString().padStart(3, '0');
-        return { [p.name]: `${p.mhz}.${paddedkHz} MHz` };
+        return { [p.name]: p.mhz };
       })
     });
     fmPresetsNode.spaceBefore = true;
@@ -124,21 +122,14 @@ export class FmConfig implements ConfigModuleInterface {
         throw new YamlError('FM preset name should be a string', preset);
       }
       const value = keys[0].value;
-      if (!(value instanceof Scalar) || typeof value.value !== 'string') {
+      if (!(value instanceof Scalar) || typeof value.value !== 'number') {
         throw new YamlError(
-          'FM preset value should be like "123.4 MHz"',
+          'FM preset value should be a number of MHz like "103.4"',
           preset
         );
       }
-      const parsedFrequency = value.value.match(/^(\d{1,3})\.(\d{1,3})\s*MHz$/);
-      if (!parsedFrequency) {
-        throw new YamlError(
-          'FM preset value should be like "123.4 MHz"',
-          preset
-        );
-      }
-      const mhz = parseInt(parsedFrequency[1]);
-      const khz = parseInt(parsedFrequency[2].padEnd(3, '0'));
+      const mhz = Math.floor(value.value);
+      const khz = Math.round((value.value * 1000) % 1000);
       if (mhz < 65 || mhz > 108) {
         throw new YamlError(
           'FM frequency should be between 65 and 108.9 MHz',
@@ -164,11 +155,12 @@ export class FmConfig implements ConfigModuleInterface {
           name
         );
       }
-      fmPresets.push({ name: name.value, mhz, khz });
+      fmPresets.push({ name: name.value, mhz: mhz + khz * 0.001 });
     }
     fmPresets.sort((a, b) => stringCompare(a.name, b.name));
     for (let i = 0; i < fmPresets.length; i++) {
-      const { name, mhz, khz } = fmPresets[i];
+      const { name, mhz } = fmPresets[i];
+      const khz = Math.round((mhz * 1000) % 1000);
       const offset = i * FM_PRESETS_SIZE;
       fmPresetData[offset] = 1;
       fmPresetData[offset + 1] =
