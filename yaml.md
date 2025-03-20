@@ -268,3 +268,18 @@ Available settings:
 - `dsc_pos_fix_wait`: Set the maximum time to wait for position information when
   receiving a distress, POS report, or POS request acknowledgement call. The
   value can be `15 sec` (default), `30 sec`, `1 min`, `1.5 min`, or `2 min`.
+
+## `fm_presets`
+
+This section (only supported on HX890 and HX891BT) lets you program FM radio
+presets. Enter the station's frequency in MHz, up to 1 decimal place, between 65
+and 108.9.
+
+Example:
+
+```
+- fm_presets:
+    - Station 1: 88.1
+    - Station 2: 89.9
+    - Station 3: 103.2
+```
