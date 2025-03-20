@@ -1,13 +1,103 @@
 # YAML configuration file format
 
-You can edit device configuration using a YAML file, using the directives
-described below. Here's a demo:
+You can edit device configuration using a YAML file. This makes it easier to share configuration across devices, and provides access to more device settings.
 
-https://github.com/mbof/hxsync/assets/1308709/df649b4c-65ca-42f7-bace-c769260a9384
+## Example
+
+```
+# Template of parameters used for Standard Horizon HX890/HX891BT radios
+# Note: sections omitted are not written to the device; but if a section
+#  is provided, previous entries are erased from the device.
+
+# Directory of MMSIs for individual calls
+- individual_directory:		     # Up to 100 entries can be provided
+    - BoatName1: "338000001"   # Boat names can be up to 15 characters
+    - BoatName2: "338000002"   # Expects 9-digit numbers wrapped in quotes
+
+# Directory of MMSIs for group calling
+- group_directory:		         # Up to 20 entries can be provided
+    - GroupName1: "012345678"  # Expects 9-digit numbers wrapped in quotes
+
+# Waypoints for navigation
+#  Coordinates are entered in degrees and decimal minutes.
+#  Waypoint names can be up to 15 characters long.
+#  Example South California waypoints centered around Marina del Rey:
+- waypoints:					# Up to 250 waypoints can be provided
+    - CatAvalonHarbo: 33N20.846 118W19.288   # Between Casino & Ferry
+    - CatOffWhaleRock: 33N25.783 118W33.822  # 1500' SW Whale Rock
+    - CatRibbonRock: 33N26.114 118W34.534    # 1325' SW Of Ribbon Rock
+    - CatWestEnd: 33N28.566 118W36.78        # 1700' South West Of Point
+    - MdRSouthEntra: 33N57.481 118W27.582    # 250' SE MdR Detach Breakwater
+    - PV10PVBuoy: 33N46.363 118W26.397       # 1750' East Of R10 Buoy
+
+# Routes for navigation
+#  A route is a series of waypoints.
+#  Route names can be up to 15 characters long.
+#  Example South California routes centered around Marina del Rey:
+- routes:
+    - Avalon<MdR:
+        - MdRSouthEntra
+        - PV10PVBuoy
+        - CatAvalonHarbo
+
+    - CatHarbor<MdR:
+        - MdRSouthEntra
+        - CatWestEnd
+        - CatRibbonRock
+
+# Channel configuration
+#  You can change channel names, select which channels show up in the
+#  intership calling menu, and set up scrambler codes.
+- channels:
+    group_1:  # Default channel configuration
+      # List of DSC channel numbers for the intership calling menu
+      intership: [ 13, 68, 69, 71, 72, 1078, 78A ]
+      names:
+        # Change names for channels
+        - 9: TwoHar-CALLING
+        - 12: Avalon-VTS
+        - 68: PLEASURE
+        - 69: PLEASURE
+        - 71: PLEASURE
+        - 72: PLEASURE
+        - 1078: PLEASURE
+        - 78A: PLEASURE       # 78A is the name of the 1078 channel on the HX870
+        - 1081: FogHorn-CCG   # Transmission on this channel triggers
+                              # the Marina del Rey fog horn.
+        - 81A: FogHorn-CCG    # 81A is the name of the 1081 channel on the HX870
+
+      scrambler:
+        # Scrambler type is either 4 (CVS2500) or 32 (FVP-42)
+        # Code is between 0 and 3 or 0 and 31, correspondingly
+        # Scrambler is not supported on HX870 and would be ignored
+        - 88: { type: 4, code: 3 }
+
+- preferences:
+    squelch: 1
+    backlight_timer: 20 sec  # Keep backlight longer than default
+    key_beep: 0              # Silence keys
+    gps_power_save: off
+
+    # Configure soft key menus
+    # Toggle weather/channel, transmit power 1/2/6 watts, FM radio
+    soft_key_page_1: [ wx_or_ch, tx_power, fm ]
+    # Toggle memory channels for scan, toggle scan, toggle dual watch
+    soft_key_page_2: [ scan_mem, scan, dual_watch ]
+    # Toggle strobe, save man overboard info, save waypoint
+    soft_key_page_3: [ strobe, mob, waypoint]
+    # Show compass, darken screen, log gps positions
+    soft_key_page_4: [ compass, night_or_day, logger]
+ 
+    # Also available: ch_name (change name of channel),
+    # noise_canceling, preset (define preset channels),
+    # mark (save a waypoint), and none (no soft key).
+```
+
+## Reference documentation
 
 Only the directives provided will be written.
 
-## `individual_directory`
+### `individual_directory`
 
 Provide the directory of MMSI numbers to be used for DSC individual calls. MMSIs
 must be wrapped in quotes.
@@ -21,7 +111,7 @@ Example:
     - USCG: "003669999"
 ```
 
-## `group_directory`
+### `group_directory`
 
 Provide the directory of MMSIs to be used for DSC group calls. MMSIs must be
 wrapped in quotes.
@@ -34,7 +124,7 @@ Example:
     - Work: "087654321"
 ```
 
-## `waypoints`
+### `waypoints`
 
 Provide the directory of waypoints used for routing. Coordinates can be provided
 in "DMM" (degrees and decimal minutes, the device's native format) or in decimal
@@ -48,7 +138,7 @@ Example:
     - Bravo: 33N58.818 118W27.102  # Degrees and decimal minutes
 ```
 
-## `routes`
+### `routes`
 
 Provide routes as a series of waypoints, referred to by their names. The first
 waypoint in the route is first in the list. A `waypoints` section must define
@@ -66,7 +156,7 @@ Example:
         - Alpha
 ```
 
-## `channels`
+### `channels`
 
 Set channel configuration for the current channel group, including:
 
@@ -103,7 +193,7 @@ Example:
 The configuration can also be provided explicitly for channel groups `group_1`,
 `group_2` and `group_3`.
 
-## `settings`
+### `settings`
 
 This section lets you control various settings for the device.
 
@@ -269,7 +359,7 @@ Available settings:
   receiving a distress, POS report, or POS request acknowledgement call. The
   value can be `15 sec` (default), `30 sec`, `1 min`, `1.5 min`, or `2 min`.
 
-## `fm_presets`
+### `fm_presets`
 
 This section (only supported on HX890 and HX891BT) lets you program FM radio
 presets. Enter the station's frequency in MHz, up to 1 decimal place, between 65

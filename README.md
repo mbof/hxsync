@@ -1,8 +1,9 @@
 # SHsync
 
-This project is an Angular web application that connects to the Standard Horizon
-HX870, HX890, HX891BT, and GX1400 VHF radios. It is not provided by Standard
-Horizon. Use at your own risk!
+This project lets users program Standard Horizon VHF marine radios from their
+browser. It is an Angular web application that works with the Standard Horizon
+HX870, HX890, HX891BT, and GX1400 VHF radios. While it has been tested by many
+users, it is not provided by Standard Horizon. Use is at your own risk!
 
 **[Try it now](https://mbof.github.io/hx)**
 
@@ -10,6 +11,7 @@ Features:
 
 - Edit waypoints, routes, MMSI directories for DSC, and channel configuration
 - Edit with a UI or as a [YAML file](yaml.md)
+- Edit device settings and FM presets
 - Share a configuration as a link for others to apply to their device
 - Backup and restore DAT files
 - Available offline via a progressive web app
@@ -45,6 +47,7 @@ This software would not have been possible without the help of
 | Set up intership channels   |  ✅   |  ✅   |   ✅    |   ✅   |
 | Set up scrambler codes      |  N/A  |  ✅   |   ✅    |  N/A   |
 | Change device settings      |  ✅   |  ✅   |   ✅    |   ❌   |
+| Set up FM presets           |  N/A  |  ✅   |   ✅    |  N/A   |
 | DAT file backup / restore   |  ✅   |  ✅   |   ✅    |   ✅   |
 
 ## Developer setup
