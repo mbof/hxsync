@@ -1,6 +1,12 @@
 # YAML configuration file format
 
-You can edit device configuration using a YAML file. This makes it easier to share configuration across devices, and provides access to more device settings.
+You can edit device configuration using a YAML file. This makes it easier to
+share configuration across devices, and provides access to more device settings.
+
+The HX890 and HX891BT radios have the most supported features. Most of these
+features also work on HX870. A smaller set of features is supported by the
+fixed-mount GX1400. For a list of features supported by device, see
+[this table](README.md#feature-support-matrix).
 
 ## Example
 
@@ -8,6 +14,7 @@ You can edit device configuration using a YAML file. This makes it easier to sha
 # Template of parameters used for Standard Horizon HX890/HX891BT radios
 # Note: sections omitted are not written to the device; but if a section
 #  is provided, previous entries are erased from the device.
+# Norm Perron 3/19/2025
 
 # Directory of MMSIs for individual calls
 - individual_directory:		     # Up to 100 entries can be provided
@@ -17,6 +24,7 @@ You can edit device configuration using a YAML file. This makes it easier to sha
 # Directory of MMSIs for group calling
 - group_directory:		         # Up to 20 entries can be provided
     - GroupName1: "012345678"  # Expects 9-digit numbers wrapped in quotes
+                               # Group numbers normally start with 0
 
 # Waypoints for navigation
 #  Coordinates are entered in degrees and decimal minutes.
@@ -49,7 +57,7 @@ You can edit device configuration using a YAML file. This makes it easier to sha
 #  You can change channel names, select which channels show up in the
 #  intership calling menu, and set up scrambler codes.
 - channels:
-    group_1:  # Default channel configuration
+    current_group:  # Changes the current channel configuration
       # List of DSC channel numbers for the intership calling menu
       intership: [ 13, 68, 69, 71, 72, 1078, 78A ]
       names:
@@ -62,8 +70,8 @@ You can edit device configuration using a YAML file. This makes it easier to sha
         - 72: PLEASURE
         - 1078: PLEASURE
         - 78A: PLEASURE       # 78A is the name of the 1078 channel on the HX870
-        - 1081: FogHorn-CCG   # Transmission on this channel triggers
-                              # the Marina del Rey fog horn.
+        - 1081: FogHorn-CCG   # Transmitting five times on this channel triggers
+                              # fog horn via the MRASS system where supported
         - 81A: FogHorn-CCG    # 81A is the name of the 1081 channel on the HX870
 
       scrambler:
@@ -76,7 +84,8 @@ You can edit device configuration using a YAML file. This makes it easier to sha
     squelch: 1
     backlight_timer: 20 sec  # Keep backlight longer than default
     key_beep: 0              # Silence keys
-    gps_power_save: off
+    gps_power_save: auto
+    weather_alert: true      # sends alerts to radio if bad weather is coming
 
     # Configure soft key menus
     # Toggle weather/channel, transmit power 1/2/6 watts, FM radio
@@ -87,7 +96,7 @@ You can edit device configuration using a YAML file. This makes it easier to sha
     soft_key_page_3: [ strobe, mob, waypoint]
     # Show compass, darken screen, log gps positions
     soft_key_page_4: [ compass, night_or_day, logger]
- 
+
     # Also available: ch_name (change name of channel),
     # noise_canceling, preset (define preset channels),
     # mark (save a waypoint), and none (no soft key).
@@ -108,7 +117,7 @@ Example:
 - individual_directory:
     - Boat 1: "123456789"
     - Boat 2: "987654321"
-    - USCG: "003669999"
+    - USCG DSC test: "003669999"
 ```
 
 ### `group_directory`
@@ -134,7 +143,7 @@ Example:
 
 ```
 - waypoints:
-    - Alpha: 33.9803 -118.4517  # Decimal degrees
+    - Alpha: 33.9803 -118.4517     # Decimal degrees
     - Bravo: 33N58.818 118W27.102  # Degrees and decimal minutes
 ```
 
@@ -184,8 +193,6 @@ Example:
         names:
             - 9: Foo-CALLING
             - 12: Bar-VTS
-            - 1081: Baz-CCG
-            - 88: Bat-COMMER
         scrambler:
             - 88: { type: 4, code: 3 }
 ```
@@ -202,7 +209,7 @@ Example:
 ```
 - settings:
     volume: 10
-    squelch: 5
+    squelch: 1
     backlight_timer: 30 sec
     ...
 ```
@@ -298,10 +305,10 @@ Available settings:
 
 - `gps_enabled`: Set the GPS to `off`, `yes` (default), or `always`.
 
-- `gps_power_save`: Set the GPS power save mode to `off` (GPS signals are always
-  received), `auto` (default), `50%` (GPS is activated for 3 seconds every 6
-  seconds), `75%` (GPS is activated for 3 seconds every 12 seconds), or `90%`
-  (GPS is activated for 3 seconds every 30 seconds).
+- `gps_power_save`: Set the GPS power save mode to `off` (don't save power,
+  always receive GPS signals), `auto` (default), `50%` (GPS is activated for 3
+  seconds every 6 seconds), `75%` (GPS is activated for 3 seconds every 12
+  seconds), or `90%` (GPS is activated for 3 seconds every 30 seconds).
 
 - `distance_unit`: Set the distance units to `nm` (nautical miles, default),
   `sm` (statute miles), or `km` (kilometers).
