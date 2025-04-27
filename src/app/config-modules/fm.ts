@@ -87,10 +87,20 @@ export class FmConfig implements ConfigModuleInterface {
       );
     }
     if (!FM_SUPPORTED_MODELS.includes(this.deviceModel)) {
-      throw new YamlError(
-        `FM presets are not supported on ${this.deviceModel}`,
-        fmPresetsNode
-      );
+      // FM presets are not supported on this device model, skip
+      if (!context.diagnosticsLog) {
+        context.diagnosticsLog = {};
+      }
+      const diagnosticsLog = context.diagnosticsLog;
+      if (!diagnosticsLog.warnings) {
+        diagnosticsLog.warnings = [];
+      }
+      const warnings = diagnosticsLog.warnings;
+      warnings.push({
+        message: `FM presets are not supported on ${this.deviceModel} and will be ignored.`,
+        range: node.range
+      });
+      return true;
     }
     if (fmPresetsNode.items.length > FM_PRESETS_NUM_PRESETS) {
       throw new YamlError(
