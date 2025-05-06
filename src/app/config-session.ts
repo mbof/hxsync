@@ -519,6 +519,9 @@ export class ConfigSession {
         range: error.pos
       });
       this._yamlDiagnostics.next({});
+      if (!dryRun) {
+        this._deviceTaskState.next('yaml-edit');
+      }
       return;
     }
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
