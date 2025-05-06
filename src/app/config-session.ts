@@ -63,7 +63,7 @@ export class ConfigSession {
   config: BehaviorSubject<Config> = new BehaviorSubject({});
   yamlText: BehaviorSubject<string> = new BehaviorSubject('');
 
-  private _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
+  _deviceTaskState = new BehaviorSubject<DeviceTaskState>('idle');
   deviceTaskState$ = this._deviceTaskState.asObservable();
 
   private _progress = new BehaviorSubject<number>(0);
@@ -511,6 +511,16 @@ export class ConfigSession {
       this._progress.next(0);
     }
     const yaml = parseDocument(yamlText);
+    if (yaml.errors.length > 0) {
+      const error = yaml.errors[0];
+      this._yamlError.next({
+        msg: `YAML parse error: ${error.code} ${error.message}`,
+        validation: dryRun,
+        range: error.pos
+      });
+      this._yamlDiagnostics.next({});
+      return;
+    }
     const configModules = CONFIG_MODULE_CONSTRUCTORS.map(
       (moduleClass) => new moduleClass(this._deviceConfig!.name)
     );
