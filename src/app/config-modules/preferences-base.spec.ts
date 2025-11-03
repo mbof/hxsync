@@ -6,7 +6,8 @@ import {
   BooleanControlBase,
   createKnob,
   SoftKeyPageControlBase,
-  ControlKnobData
+  ControlKnobData,
+  AutoIndividualReplyControlBase
 } from './preferences-base';
 
 describe('NumberControlBase', () => {
@@ -362,6 +363,128 @@ describe('SoftKeyPageControlBase', () => {
     knob.value = undefined;
     knob.maybeAddNode(yaml as YAMLMap, new Document());
     expect(yaml.add).not.toHaveBeenCalled();
+  });
+});
+
+describe('AutoIndividualReplyControlBase', () => {
+  let knob: AutoIndividualReplyControlBase;
+  let configBatchWriter: ConfigBatchWriter;
+
+  const createTestKnob = () => {
+    return new AutoIndividualReplyControlBase(
+      'auto_individual_reply',
+      0x1234,
+      'HX890'
+    );
+  };
+
+  beforeEach(() => {
+    configBatchWriter = jasmine.createSpyObj('ConfigBatchWriter', [
+      'prepareWrite'
+    ]);
+    const knobData: ControlKnobData = {
+      id: 'auto_individual_reply',
+      address: 0x1234,
+      params: { type: 'auto_individual_reply' }
+    };
+    knob = new AutoIndividualReplyControlBase(
+      knobData.id,
+      knobData.address,
+      'HX890'
+    );
+  });
+
+  it('should read "off"', () => {
+    const data = new Uint8Array([0x3f]);
+    knob.read(data);
+    expect(knob.value).toBe('off');
+    expect(knob.rawValue).toBe(0x3f);
+  });
+
+  it('should read "able"', () => {
+    const data = new Uint8Array([0xff]);
+    knob.read(data);
+    expect(knob.value).toBe('able');
+    expect(knob.rawValue).toBe(0xff);
+  });
+
+  it('should read "unable"', () => {
+    const data = new Uint8Array([0xbf]);
+    knob.read(data);
+    expect(knob.value).toBe('unable');
+    expect(knob.rawValue).toBe(0xbf);
+  });
+
+  it('changing to off should only modify top bit', () => {
+    knob.read(new Uint8Array([0xff]));
+    let newKnob = createTestKnob();
+    newKnob.value = 'off';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0x7f])
+    );
+  });
+
+  it('changing to able should set bits correctly', () => {
+    knob.read(new Uint8Array([0x00]));
+    const newKnob = createTestKnob();
+    newKnob.value = 'able';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0xc0])
+    );
+  });
+
+  it('changing to unable should set bits correctly', () => {
+    knob.read(new Uint8Array([0x00]));
+    const newKnob = createTestKnob();
+    newKnob.value = 'unable';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0x80])
+    );
+  });
+
+  it('the bottom 6 bits should not be modified when setting to able', () => {
+    knob.read(new Uint8Array([0x3f]));
+    const newKnob = createTestKnob();
+    newKnob.value = 'able';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0xff])
+    );
+  });
+
+  it('the bottom 6 bits should not be modified when setting to unable', () => {
+    knob.read(new Uint8Array([0x3f]));
+    const newKnob = createTestKnob();
+    newKnob.value = 'unable';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0xbf])
+    );
+  });
+
+  it('the bottom 6 bits should not be modified when setting to off', () => {
+    knob.read(new Uint8Array([0xff]));
+    const newKnob = createTestKnob();
+    newKnob.value = 'off';
+    newKnob.write(configBatchWriter, knob);
+    expect(configBatchWriter.prepareWrite).toHaveBeenCalledWith(
+      'auto_individual_reply',
+      0x1234,
+      new Uint8Array([0x7f])
+    );
   });
 });
 

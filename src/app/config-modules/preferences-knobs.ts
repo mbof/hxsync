@@ -327,6 +327,13 @@ export const controlKnobsData = [
     }
   },
   {
+    id: 'auto_individual_reply',
+    address: 0x00c4,
+    params: {
+      type: 'auto_individual_reply'
+    }
+  },
+  {
     id: 'dsc_individual_ring',
     address: 0x00c6,
     params: {

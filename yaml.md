@@ -353,6 +353,9 @@ Available settings:
   individual DSC call. The value can be `5 sec`, `10 sec`, `15 sec`, `20 sec`,
   or `2 min` (default).
 
+- `auto_individual_reply`: Set whether to automatic reply to individual DSC
+  calls. Can be `off` (default), `able`, or `unable`.
+
 - `dsc_no_action_timer`: Set the time after which the device will automatically
   return to radio operation if no action on the "menu" or "DSC call" screen is
   taken. The value can be `1 min`, `3 min`, `5 min`, `10 min` (default), or

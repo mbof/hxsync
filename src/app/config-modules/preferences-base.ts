@@ -23,6 +23,9 @@ export type ControlKnobData = {
       }
     | {
         readonly type: 'soft_key_page';
+      }
+    | {
+        readonly type: 'auto_individual_reply';
       };
 };
 
@@ -32,7 +35,10 @@ export interface ControlKnob {
   parse(nodeIn: Scalar | YAMLSeq): void;
   read(data: Uint8Array): void;
   maybeAddNode(yaml: YAMLMap, yamlDoc: Document<Node, true>): void;
-  write(configBatchWriter: ConfigBatchWriter): void;
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    previousControlKnob?: ControlKnob
+  ): void;
 }
 
 export class NumberControlBase implements ControlKnob {
@@ -78,7 +84,10 @@ export class NumberControlBase implements ControlKnob {
     }
   }
 
-  write(configBatchWriter: ConfigBatchWriter) {
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    _previousControlKnob?: ControlKnob
+  ) {
     if (this.value !== undefined) {
       configBatchWriter.prepareWrite(
         this.id,
@@ -138,7 +147,10 @@ export class EnumControlBase implements ControlKnob {
     }
   }
 
-  write(configBatchWriter: ConfigBatchWriter) {
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    _previousControlKnob?: ControlKnob
+  ) {
     if (this.valueIndex !== undefined) {
       configBatchWriter.prepareWrite(
         this.id,
@@ -176,7 +188,10 @@ export class BooleanControlBase implements ControlKnob {
     }
   }
 
-  write(configBatchWriter: ConfigBatchWriter) {
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    _previousControlKnob?: ControlKnob
+  ) {
     if (this.value !== undefined) {
       configBatchWriter.prepareWrite(
         this.id,
@@ -266,7 +281,10 @@ export class SoftKeyPageControlBase implements ControlKnob {
       yaml.add({ key: this.id, value: softKeyListNode });
     }
   }
-  write(configBatchWriter: ConfigBatchWriter) {
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    _previousControlKnob?: ControlKnob
+  ) {
     if (this.value !== undefined) {
       const data = new Uint8Array(3);
       for (let i = 0; i < 3; i++) {
@@ -277,6 +295,90 @@ export class SoftKeyPageControlBase implements ControlKnob {
         data[i] = softKeyIndex;
       }
       configBatchWriter.prepareWrite(this.id, this.address, data);
+    }
+  }
+}
+
+const autoIndividualReplyValues = ['off', 'able', 'unable'] as const;
+type AutoIndividualReplyValue = (typeof autoIndividualReplyValues)[number];
+
+export class AutoIndividualReplyControlBase implements ControlKnob {
+  value?: AutoIndividualReplyValue;
+  rawValue?: number;
+
+  constructor(
+    readonly id: PreferenceId,
+    readonly address: number,
+    readonly deviceModel: DeviceModel
+  ) {}
+
+  parse(nodeIn: Scalar | YAMLSeq): void {
+    if (
+      !(nodeIn instanceof Scalar) ||
+      !autoIndividualReplyValues.includes(
+        nodeIn.value as AutoIndividualReplyValue
+      )
+    ) {
+      throw new YamlError(
+        `${this.id} must be in [${autoIndividualReplyValues.join(', ')}]`,
+        nodeIn
+      );
+    }
+    this.value = nodeIn.value as AutoIndividualReplyValue;
+  }
+
+  read(data: Uint8Array) {
+    if (data.length > 0) {
+      const byte = data[0];
+      this.rawValue = byte;
+      if (byte & 0x80) {
+        if (byte & 0x40) {
+          this.value = 'able';
+        } else {
+          this.value = 'unable';
+        }
+      } else {
+        this.value = 'off';
+      }
+    } else {
+      this.value = undefined;
+    }
+  }
+
+  maybeAddNode(yaml: YAMLMap, _yamlDoc: Document<Node, true>) {
+    if (this.value !== undefined) {
+      yaml.add({ key: this.id, value: this.value });
+    }
+  }
+
+  write(
+    configBatchWriter: ConfigBatchWriter,
+    previousControlKnob?: ControlKnob
+  ) {
+    if (this.value !== undefined) {
+      if (
+        !previousControlKnob ||
+        !(previousControlKnob instanceof AutoIndividualReplyControlBase) ||
+        previousControlKnob.rawValue === undefined
+      ) {
+        throw new Error(
+          'Unexpected missing previous value of auto_individual_reply'
+        );
+      }
+      let data = previousControlKnob.rawValue;
+      if (this.value === 'off') {
+        data = data & ~0x80; // Clear top bit
+      } else {
+        data = data | 0x80; // Set top bit
+        if (this.value === 'able') {
+          data = data | 0x40; // Set second top bit
+        } else if (this.value === 'unable') {
+          data = data & ~0x40; // Clear second top bit
+        }
+      }
+      const byteArray = new Uint8Array(1);
+      byteArray[0] = data;
+      configBatchWriter.prepareWrite(this.id, this.address, byteArray);
     }
   }
 }
@@ -304,5 +406,7 @@ export function createKnob(
       );
     case 'soft_key_page':
       return new SoftKeyPageControlBase(kd.id, kd.address, deviceModel);
+    case 'auto_individual_reply':
+      return new AutoIndividualReplyControlBase(kd.id, kd.address, deviceModel);
   }
 }

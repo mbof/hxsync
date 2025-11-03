@@ -48,9 +48,12 @@ export class PreferencesConfig implements ConfigModuleInterface {
         const key = item.key.value;
         const value = item.value as Scalar;
         const controlKnob = ctx.configOut.preferences.find((c) => c.id === key);
+        const previousControlKnob = ctx.previousConfig?.preferences?.find(
+          (c) => c.id === key
+        );
         if (controlKnob) {
           controlKnob.parse(value);
-          controlKnob.write(ctx.configBatchWriter);
+          controlKnob.write(ctx.configBatchWriter, previousControlKnob);
           maybeAddDiagnostics(ctx, controlKnob, value);
         } else {
           throw new YamlError(`Unknown preference ${item.key.value}`, item.key);
