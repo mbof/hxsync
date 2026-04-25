@@ -67,7 +67,7 @@ export class WaypointSheetComponent {
     }).addTo(this.map);
 
     // NOAA WMS Layer
-    L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/WMTS', {
+    L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer', {
       layers: '0',
       format: 'image/png',
       transparent: true,
