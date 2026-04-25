@@ -46,12 +46,16 @@ export class Waypoint {
     return `${this.wp.lon_deg}° ${lon_min_int}.${lon_min_flt}’ ${this.wp.lon_dir}`;
   }
   getLatDecimal() {
-    return (this.wp.lat_dir == 'N' ? 1 : -1) *
-      (this.wp.lat_deg + this.wp.lat_min / 10000 / 60);
+    return (
+      (this.wp.lat_dir == 'N' ? 1 : -1) *
+      (this.wp.lat_deg + this.wp.lat_min / 10000 / 60)
+    );
   }
   getLonDecimal() {
-    return (this.wp.lon_dir == 'E' ? 1 : -1) *
-      (this.wp.lon_deg + this.wp.lon_min / 10000 / 60);
+    return (
+      (this.wp.lon_dir == 'E' ? 1 : -1) *
+      (this.wp.lon_deg + this.wp.lon_min / 10000 / 60)
+    );
   }
   fillConfig(dest: Uint8Array, destAddressBase: number): void {
     if (!this.wp.address) {

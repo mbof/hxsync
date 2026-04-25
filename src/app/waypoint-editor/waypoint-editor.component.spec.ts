@@ -9,9 +9,8 @@ describe('WaypointEditorComponent', () => {
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [WaypointEditorComponent]
-    })
-    .compileComponents();
-    
+    }).compileComponents();
+
     fixture = TestBed.createComponent(WaypointEditorComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();

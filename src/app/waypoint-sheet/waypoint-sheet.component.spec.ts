@@ -29,7 +29,9 @@ describe('WaypointSheetComponent', () => {
   });
 
   it('should pass coordinates to waypoint editor when adding waypoint from map', () => {
-    component.waypointEditor = jasmine.createSpyObj('WaypointEditorComponent', ['createWaypoint']);
+    component.waypointEditor = jasmine.createSpyObj('WaypointEditorComponent', [
+      'createWaypoint'
+    ]);
     spyOn(component, 'getDraftWaypoints').and.returnValue(undefined);
     component.draftAddWaypointWithCoords('33.123', '-118.456');
     expect(component.waypointEditor.createWaypoint).toHaveBeenCalledWith(
@@ -46,9 +48,14 @@ describe('WaypointSheetComponent', () => {
       draftWaypoints = new NavInfoDraft(
         [
           new Waypoint({
-            id: 1, name: 'TEST',
-            lat_deg: 33, lat_min: 12300, lat_dir: 'N',
-            lon_deg: 118, lon_min: 45600, lon_dir: 'W'
+            id: 1,
+            name: 'TEST',
+            lat_deg: 33,
+            lat_min: 12300,
+            lat_dir: 'N',
+            lon_deg: 118,
+            lon_min: 45600,
+            lon_dir: 'W'
           })
         ],
         [],
@@ -88,7 +95,7 @@ describe('WaypointSheetComponent', () => {
 
       expect(draftWaypoints.waypoints.length).toBe(2);
       expect(component['markers'].size).toBe(2);
-      
+
       const newBounds = component['map']!.getBounds();
       expect(newBounds.equals(originalBounds)).toBeTrue();
     });
@@ -107,7 +114,7 @@ describe('WaypointSheetComponent', () => {
 
       expect(draftWaypoints.waypoints.length).toBe(2);
       expect(component['markers'].size).toBe(2);
-      
+
       const newBounds = component['map']!.getBounds();
       expect(newBounds.equals(originalBounds)).toBeFalse();
     });

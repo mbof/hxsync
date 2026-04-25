@@ -7,10 +7,10 @@ import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
 
 @Component({
-    selector: 'waypoint-sheet',
-    templateUrl: './waypoint-sheet.component.html',
-    styleUrl: './waypoint-sheet.component.css',
-    imports: [WaypointEditorComponent]
+  selector: 'waypoint-sheet',
+  templateUrl: './waypoint-sheet.component.html',
+  styleUrl: './waypoint-sheet.component.css',
+  imports: [WaypointEditorComponent]
 })
 export class WaypointSheetComponent {
   shown = false;
@@ -63,33 +63,37 @@ export class WaypointSheetComponent {
 
     // OpenSeaMap Overlay
     L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+      attribution:
+        'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
     }).addTo(this.map);
 
     // NOAA WMS Layer
-    L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer', {
-      layers: '0',
-      format: 'image/png',
-      transparent: true,
-      attribution: 'NOAA Office of Coast Survey'
-    }).addTo(this.map);
+    L.tileLayer
+      .wms(
+        'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
+        {
+          layers: '0',
+          format: 'image/png',
+          transparent: true,
+          attribution: 'NOAA Office of Coast Survey'
+        }
+      )
+      .addTo(this.map);
 
     this.map.on('contextmenu', (e: L.LeafletMouseEvent) => {
       const latStr = e.latlng.lat.toFixed(5);
       const lonStr = e.latlng.lng.toFixed(5);
-      
+
       const popupContent = document.createElement('div');
-      popupContent.innerHTML = '<button style="padding: 5px 10px; cursor: pointer; border: none; background: #007bff; color: white; border-radius: 4px; font-weight: bold;">Add waypoint here</button>';
-      
+      popupContent.innerHTML =
+        '<button style="padding: 5px 10px; cursor: pointer; border: none; background: #007bff; color: white; border-radius: 4px; font-weight: bold;">Add waypoint here</button>';
+
       popupContent.querySelector('button')?.addEventListener('click', () => {
         this.map?.closePopup();
         this.draftAddWaypointWithCoords(latStr, lonStr);
       });
 
-      L.popup()
-        .setLatLng(e.latlng)
-        .setContent(popupContent)
-        .openOn(this.map!);
+      L.popup().setLatLng(e.latlng).setContent(popupContent).openOn(this.map!);
     });
 
     this.updateMapMarkersAndFitBounds();
@@ -103,7 +107,7 @@ export class WaypointSheetComponent {
     if (!this.map) return;
 
     const waypoints = this.getDraftWaypoints()?.waypoints || [];
-    
+
     // Remove old markers
     this.markers.forEach((marker) => marker.remove());
     this.markers.clear();
@@ -122,9 +126,11 @@ export class WaypointSheetComponent {
           popupAnchor: [0, -9]
         });
 
-        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map!);
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(
+          this.map!
+        );
         marker.bindPopup(`<b>${wp.wp.name}</b>`);
-        
+
         marker.on('click', () => {
           this.selectWaypoint(wp);
         });
@@ -151,7 +157,7 @@ export class WaypointSheetComponent {
 
   selectWaypoint(wp: Waypoint) {
     this.selectedWaypoint = wp;
-    
+
     // Highlight table row (managed via template binding)
     const row = document.getElementById('wp-row-' + wp.wp.name);
     if (row) {
@@ -199,10 +205,13 @@ export class WaypointSheetComponent {
   }
   draftAddWaypointWithCoords(lat: string, lon: string) {
     const draftWaypoints = this.getDraftWaypoints();
-    this.waypointEditor.createWaypoint((wpFormData) => {
-      draftWaypoints?.addWaypoint(wpFormData);
-      this.updateMapMarkers();
-    }, { lat, lon });
+    this.waypointEditor.createWaypoint(
+      (wpFormData) => {
+        draftWaypoints?.addWaypoint(wpFormData);
+        this.updateMapMarkers();
+      },
+      { lat, lon }
+    );
   }
   draftCancel() {
     this.deviceMgr.configSession.cancelNavInfoDraft();

@@ -15,7 +15,7 @@ export class WaypointEditorComponent {
   wpFormData?: WpFormData;
   callbackFn?: (wpData: WpFormData) => void;
   errorMsg?: string;
-  ngOnInit() { }
+  ngOnInit() {}
   onSubmit(f: NgForm) {
     if (!this.wpFormData) {
       this.shown = false;
@@ -54,7 +54,10 @@ export class WaypointEditorComponent {
     };
     this.callbackFn = callbackFn;
   }
-  createWaypoint(callbackFn?: (wpData: WpFormData) => void, initialData?: Partial<WpFormData>) {
+  createWaypoint(
+    callbackFn?: (wpData: WpFormData) => void,
+    initialData?: Partial<WpFormData>
+  ) {
     this.editing = false;
 
     let initialLon = initialData?.lon || '';

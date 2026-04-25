@@ -5,56 +5,58 @@
         <div class="left-pane">
           <div class="waypoints">
             <div class="list">
-            @if (!getDraftWaypoints()?.waypoints?.length) {
-              No waypoints!
-            } @else {
-              <table>
-                <tr>
-                  <th>Name</th>
-                  <th>Latitude</th>
-                  <th>Longitude</th>
-                </tr>
-                @for (wp of getDraftWaypoints()!.waypoints; track wp) {
-                  <tr [id]="'wp-row-' + wp.wp.name" [class.selected]="wp === selectedWaypoint" (click)="selectWaypoint(wp)">
-                    <td>
-                      {{ wp.wp.name }}
-                    </td>
-                    <td>{{ wp.getLat() }}</td>
-                    <td>{{ wp.getLon() }}</td>
-                    <td
-                      class="action"
-                      (click)="draftEditWaypoint(wp)"
-                      data-umami-event="Edit waypoint"
-                    >
-                      ✎
-                    </td>
-                    <td
-                      class="action"
-                      (click)="draftDeleteWaypoint(wp)"
-                      data-umami-event="Delete waypoint"
-                    >
-                      ✖
-                    </td>
+              @if (!getDraftWaypoints()?.waypoints?.length) {
+                No waypoints!
+              } @else {
+                <table>
+                  <tr>
+                    <th>Name</th>
+                    <th>Latitude</th>
+                    <th>Longitude</th>
                   </tr>
-                }
-              </table>
-            }
-            <button
-              (click)="draftAddWaypoint()"
-              data-umami-event="Add waypoint"
-            >
-              Add waypoint
-            </button>
+                  @for (wp of getDraftWaypoints()!.waypoints; track wp) {
+                    <tr
+                      [id]="'wp-row-' + wp.wp.name"
+                      [class.selected]="wp === selectedWaypoint"
+                      (click)="selectWaypoint(wp)"
+                    >
+                      <td>
+                        {{ wp.wp.name }}
+                      </td>
+                      <td>{{ wp.getLat() }}</td>
+                      <td>{{ wp.getLon() }}</td>
+                      <td
+                        class="action"
+                        (click)="draftEditWaypoint(wp)"
+                        data-umami-event="Edit waypoint"
+                      >
+                        ✎
+                      </td>
+                      <td
+                        class="action"
+                        (click)="draftDeleteWaypoint(wp)"
+                        data-umami-event="Delete waypoint"
+                      >
+                        ✖
+                      </td>
+                    </tr>
+                  }
+                </table>
+              }
+              <button
+                (click)="draftAddWaypoint()"
+                data-umami-event="Add waypoint"
+              >
+                Add waypoint
+              </button>
+            </div>
           </div>
-        </div>
         </div>
         <div class="right-pane">
           <div class="map-hint">Right-click the map to add a waypoint</div>
           <div id="waypoint-map"></div>
           @if (!getDraftWaypoints()?.waypoints?.length) {
-            <div class="map-zero-state">
-              Add waypoints to get started
-            </div>
+            <div class="map-zero-state">Add waypoints to get started</div>
           }
         </div>
       </div>
