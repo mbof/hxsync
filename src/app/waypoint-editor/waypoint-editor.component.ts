@@ -4,10 +4,10 @@ import { NgForm, FormsModule } from '@angular/forms';
 import { WpFormData } from '../waypoint';
 
 @Component({
-    selector: 'waypoint-editor',
-    imports: [FormsModule],
-    templateUrl: './waypoint-editor.component.html',
-    styleUrl: './waypoint-editor.component.css'
+  selector: 'waypoint-editor',
+  imports: [FormsModule],
+  templateUrl: './waypoint-editor.component.html',
+  styleUrl: './waypoint-editor.component.css'
 })
 export class WaypointEditorComponent {
   editing = false;
@@ -54,12 +54,26 @@ export class WaypointEditorComponent {
     };
     this.callbackFn = callbackFn;
   }
-  createWaypoint(callbackFn?: (wpData: WpFormData) => void) {
+  createWaypoint(
+    callbackFn?: (wpData: WpFormData) => void,
+    initialData?: Partial<WpFormData>
+  ) {
     this.editing = false;
+
+    let initialLon = initialData?.lon || '';
+    if (initialLon && !isNaN(Number(initialLon))) {
+      let lon = Number(initialLon);
+      lon = ((lon % 360) + 360) % 360;
+      if (lon > 180) {
+        lon -= 360;
+      }
+      initialLon = lon.toFixed(5);
+    }
+
     this.wpFormData = {
-      name: '',
-      lat: '',
-      lon: ''
+      name: initialData?.name || '',
+      lat: initialData?.lat || '',
+      lon: initialLon as string
     };
     this.shown = true;
     this.callbackFn = callbackFn;
