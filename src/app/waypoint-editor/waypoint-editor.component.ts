@@ -54,12 +54,12 @@ export class WaypointEditorComponent {
     };
     this.callbackFn = callbackFn;
   }
-  createWaypoint(callbackFn?: (wpData: WpFormData) => void) {
+  createWaypoint(callbackFn?: (wpData: WpFormData) => void, initialData?: Partial<WpFormData>) {
     this.editing = false;
     this.wpFormData = {
-      name: '',
-      lat: '',
-      lon: ''
+      name: initialData?.name || '',
+      lat: initialData?.lat || '',
+      lon: initialData?.lon || ''
     };
     this.shown = true;
     this.callbackFn = callbackFn;

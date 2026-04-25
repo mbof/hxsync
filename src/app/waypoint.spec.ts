@@ -75,9 +75,6 @@ describe('Waypoint', () => {
     const wp = new Waypoint(testWpData);
     expect(wp.getLat()).toEqual('45° 06.7890’ N');
     expect(wp.getLon()).toEqual('123° 03.5670’ W');
-    expect(wp.getMapLink()).toEqual(
-      'https://www.google.com/maps/place/45.11315,-123.05945'
-    );
   });
   it('should keep the origin DSC when round-tripping data', () => {
     const wp = waypointFromConfig(testEncodedWaypoint4, 0x1234);

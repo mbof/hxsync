@@ -4,6 +4,7 @@ import { Waypoint } from '../waypoint';
 import { hex } from '../message';
 import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
+import * as L from 'leaflet';
 
 @Component({
     selector: 'waypoint-sheet',
@@ -16,21 +17,145 @@ export class WaypointSheetComponent {
   @ViewChild(WaypointEditorComponent) waypointEditor!: WaypointEditorComponent;
   configSubscription?: Subscription;
 
+  private map?: L.Map;
+  private markers: Map<Waypoint, L.Marker> = new Map();
+  selectedWaypoint: Waypoint | null = null;
+
   constructor(public deviceMgr: DevicemgrService) {}
 
   ngOnInit() {
     this.deviceMgr.configSession.deviceTaskState$.subscribe(
       (deviceTaskState) => {
         if (deviceTaskState == 'nav-edit' || deviceTaskState == 'nav-save') {
-          this.shown = true;
+          if (!this.shown) {
+            this.shown = true;
+            setTimeout(() => this.initMap(), 0);
+          }
         } else {
           this.shown = false;
+          if (this.map) {
+            this.map.remove();
+            this.map = undefined;
+          }
+          this.markers.clear();
         }
       }
     );
     this.configSubscription = this.deviceMgr.configSession.config
       .asObservable()
-      .subscribe();
+      .subscribe(() => {
+        if (this.shown) {
+          this.updateMapMarkers();
+        }
+      });
+  }
+
+  private initMap() {
+    if (!document.getElementById('waypoint-map')) return;
+
+    this.map = L.map('waypoint-map');
+
+    // OpenStreetMap Base Layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      maxZoom: 19,
+      attribution: '© OpenStreetMap'
+    }).addTo(this.map);
+
+    // OpenSeaMap Overlay
+    L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
+      attribution: 'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
+    }).addTo(this.map);
+
+    // NOAA WMS Layer
+    L.tileLayer.wms('https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/WMTS', {
+      layers: '0',
+      format: 'image/png',
+      transparent: true,
+      attribution: 'NOAA Office of Coast Survey'
+    }).addTo(this.map);
+
+    this.map.on('contextmenu', (e: L.LeafletMouseEvent) => {
+      const latStr = e.latlng.lat.toFixed(5);
+      const lonStr = e.latlng.lng.toFixed(5);
+      
+      const popupContent = document.createElement('div');
+      popupContent.innerHTML = '<button style="padding: 5px 10px; cursor: pointer; border: none; background: #007bff; color: white; border-radius: 4px; font-weight: bold;">Add waypoint here</button>';
+      
+      popupContent.querySelector('button')?.addEventListener('click', () => {
+        this.map?.closePopup();
+        this.draftAddWaypointWithCoords(latStr, lonStr);
+      });
+
+      L.popup()
+        .setLatLng(e.latlng)
+        .setContent(popupContent)
+        .openOn(this.map!);
+    });
+
+    this.updateMapMarkers();
+
+    setTimeout(() => {
+      this.map?.invalidateSize();
+    }, 100);
+  }
+
+  private updateMapMarkers() {
+    if (!this.map) return;
+
+    const waypoints = this.getDraftWaypoints()?.waypoints || [];
+    
+    // Remove old markers
+    this.markers.forEach((marker) => marker.remove());
+    this.markers.clear();
+
+    const bounds = L.latLngBounds([]);
+
+    waypoints.forEach((wp) => {
+      const lat = wp.getLatDecimal();
+      const lon = wp.getLonDecimal();
+      if (lat !== undefined && lon !== undefined) {
+        const customIcon = L.divIcon({
+          className: 'waypoint-marker',
+          html: `<div style="background-color: #007bff; width: 14px; height: 14px; border-radius: 50%; border: 2px solid white; box-shadow: 0 0 3px rgba(0,0,0,0.5);"></div>`,
+          iconSize: [18, 18],
+          iconAnchor: [9, 9],
+          popupAnchor: [0, -9]
+        });
+
+        const marker = L.marker([lat, lon], { icon: customIcon }).addTo(this.map!);
+        marker.bindPopup(`<b>${wp.wp.name}</b>`);
+        
+        marker.on('click', () => {
+          this.selectWaypoint(wp);
+        });
+
+        this.markers.set(wp, marker);
+        bounds.extend([lat, lon]);
+      }
+    });
+
+    if (waypoints.length > 0 && bounds.isValid()) {
+      this.map.fitBounds(bounds, { padding: [20, 20] });
+    } else {
+      this.map.setView([20, 0], 2);
+    }
+  }
+
+  selectWaypoint(wp: Waypoint) {
+    this.selectedWaypoint = wp;
+    
+    // Highlight table row (managed via template binding)
+    const row = document.getElementById('wp-row-' + wp.wp.name);
+    if (row) {
+      row.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    // Open marker popup
+    const marker = this.markers.get(wp);
+    if (marker && this.map) {
+      marker.openPopup();
+      this.map.setView(marker.getLatLng(), this.map.getZoom() || 13);
+    }
   }
 
   getDraftWaypoints() {
@@ -39,27 +164,37 @@ export class WaypointSheetComponent {
   draftEditWaypoint(wp: Waypoint) {
     const draftWaypoints = this.getDraftWaypoints();
     if (draftWaypoints) {
-      this.waypointEditor.editWaypoint(wp, (wpFormData) =>
+      this.waypointEditor.editWaypoint(wp, (wpFormData) => {
         draftWaypoints?.editWaypoint(
           wp,
           wpFormData.name,
           wpFormData.lat,
           wpFormData.lon
-        )
-      );
+        );
+        this.updateMapMarkers();
+      });
     }
   }
   draftDeleteWaypoint(wp: Waypoint) {
     const draftWaypoints = this.getDraftWaypoints();
     if (draftWaypoints) {
       draftWaypoints.deleteWaypoint(wp);
+      this.updateMapMarkers();
     }
   }
   draftAddWaypoint() {
     const draftWaypoints = this.getDraftWaypoints();
-    this.waypointEditor.createWaypoint((wpFormData) =>
-      draftWaypoints?.addWaypoint(wpFormData)
-    );
+    this.waypointEditor.createWaypoint((wpFormData) => {
+      draftWaypoints?.addWaypoint(wpFormData);
+      this.updateMapMarkers();
+    });
+  }
+  draftAddWaypointWithCoords(lat: string, lon: string) {
+    const draftWaypoints = this.getDraftWaypoints();
+    this.waypointEditor.createWaypoint((wpFormData) => {
+      draftWaypoints?.addWaypoint(wpFormData);
+      this.updateMapMarkers();
+    }, { lat, lon });
   }
   draftCancel() {
     this.deviceMgr.configSession.cancelNavInfoDraft();

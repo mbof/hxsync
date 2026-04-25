@@ -2,8 +2,9 @@
   <div class="veil">
     <div class="modal">
       <div class="contents">
-        <div class="waypoints">
-          <div class="list">
+        <div class="left-pane">
+          <div class="waypoints">
+            <div class="list">
             @if (!getDraftWaypoints()?.waypoints?.length) {
               No waypoints!
             } @else {
@@ -14,14 +15,9 @@
                   <th>Longitude</th>
                 </tr>
                 @for (wp of getDraftWaypoints()!.waypoints; track wp) {
-                  <tr>
+                  <tr [id]="'wp-row-' + wp.wp.name" [class.selected]="wp === selectedWaypoint" (click)="selectWaypoint(wp)">
                     <td>
-                      <a
-                        href="{{ wp.getMapLink() }}"
-                        target="_blank"
-                        data-umami-event="Waypoint map link"
-                        >{{ wp.wp.name }} ↗</a
-                      >
+                      {{ wp.wp.name }}
                     </td>
                     <td>{{ wp.getLat() }}</td>
                     <td>{{ wp.getLon() }}</td>
@@ -51,7 +47,16 @@
             </button>
           </div>
         </div>
-        <waypoint-editor />
+        </div>
+        <div class="right-pane">
+          <div class="map-hint">Right-click the map to add a waypoint</div>
+          <div id="waypoint-map"></div>
+          @if (!getDraftWaypoints()?.waypoints?.length) {
+            <div class="map-zero-state">
+              Add waypoints to get started
+            </div>
+          }
+        </div>
       </div>
       <div class="controls">
         <button (click)="draftCancel()" data-umami-event="Waypoints cancel">
@@ -66,6 +71,7 @@
           Save
         </button>
       </div>
+      <waypoint-editor />
     </div>
   </div>
 }

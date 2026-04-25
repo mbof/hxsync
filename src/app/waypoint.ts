@@ -45,14 +45,13 @@ export class Waypoint {
     }
     return `${this.wp.lon_deg}° ${lon_min_int}.${lon_min_flt}’ ${this.wp.lon_dir}`;
   }
-  getMapLink() {
-    const lat_flt =
-      (this.wp.lat_dir == 'N' ? 1 : -1) *
+  getLatDecimal() {
+    return (this.wp.lat_dir == 'N' ? 1 : -1) *
       (this.wp.lat_deg + this.wp.lat_min / 10000 / 60);
-    const lon_flt =
-      (this.wp.lon_dir == 'E' ? 1 : -1) *
+  }
+  getLonDecimal() {
+    return (this.wp.lon_dir == 'E' ? 1 : -1) *
       (this.wp.lon_deg + this.wp.lon_min / 10000 / 60);
-    return `https://www.google.com/maps/place/${lat_flt},${lon_flt}`;
   }
   fillConfig(dest: Uint8Array, destAddressBase: number): void {
     if (!this.wp.address) {

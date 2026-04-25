@@ -20,4 +20,15 @@ describe('WaypointEditorComponent', () => {
   it('should create', () => {
     expect(component).toBeTruthy();
   });
+
+  it('should initialize createWaypoint with optional coordinates', () => {
+    component.createWaypoint(undefined, { lat: '33.123', lon: '-118.456' });
+    expect(component.wpFormData).toEqual({
+      name: '',
+      lat: '33.123',
+      lon: '-118.456'
+    });
+    expect(component.shown).toBeTrue();
+    expect(component.editing).toBeFalse();
+  });
 });
