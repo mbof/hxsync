@@ -53,7 +53,9 @@ export class WaypointSheetComponent {
   private initMap() {
     if (!document.getElementById('waypoint-map')) return;
 
-    this.map = L.map('waypoint-map');
+    this.map = L.map('waypoint-map', {
+      worldCopyJump: true
+    });
 
     // OpenStreetMap Base Layer
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
