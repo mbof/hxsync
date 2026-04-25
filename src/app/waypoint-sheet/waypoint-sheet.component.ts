@@ -92,14 +92,14 @@ export class WaypointSheetComponent {
         .openOn(this.map!);
     });
 
-    this.updateMapMarkers();
+    this.updateMapMarkersAndFitBounds();
 
     setTimeout(() => {
       this.map?.invalidateSize();
     }, 100);
   }
 
-  private updateMapMarkers() {
+  private updateMapMarkers(): L.LatLngBounds | undefined {
     if (!this.map) return;
 
     const waypoints = this.getDraftWaypoints()?.waypoints || [];
@@ -134,6 +134,14 @@ export class WaypointSheetComponent {
       }
     });
 
+    return bounds;
+  }
+
+  private updateMapMarkersAndFitBounds() {
+    const bounds = this.updateMapMarkers();
+    if (!this.map || !bounds) return;
+
+    const waypoints = this.getDraftWaypoints()?.waypoints || [];
     if (waypoints.length > 0 && bounds.isValid()) {
       this.map.fitBounds(bounds, { padding: [20, 20] });
     } else {
@@ -171,7 +179,7 @@ export class WaypointSheetComponent {
           wpFormData.lat,
           wpFormData.lon
         );
-        this.updateMapMarkers();
+        this.updateMapMarkersAndFitBounds();
       });
     }
   }
@@ -179,14 +187,14 @@ export class WaypointSheetComponent {
     const draftWaypoints = this.getDraftWaypoints();
     if (draftWaypoints) {
       draftWaypoints.deleteWaypoint(wp);
-      this.updateMapMarkers();
+      this.updateMapMarkersAndFitBounds();
     }
   }
   draftAddWaypoint() {
     const draftWaypoints = this.getDraftWaypoints();
     this.waypointEditor.createWaypoint((wpFormData) => {
       draftWaypoints?.addWaypoint(wpFormData);
-      this.updateMapMarkers();
+      this.updateMapMarkersAndFitBounds();
     });
   }
   draftAddWaypointWithCoords(lat: string, lon: string) {
