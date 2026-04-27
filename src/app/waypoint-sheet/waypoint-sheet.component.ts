@@ -79,6 +79,7 @@ export class WaypointSheetComponent {
     const noaaLayer = L.tileLayer.wms(
       'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
       {
+        bounds: [ [-20, -230], [80, -60] ],
         format: 'image/png',
         transparent: true,
         attribution: 'NOAA Office of Coast Survey'
