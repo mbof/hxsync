@@ -75,6 +75,16 @@ export class WaypointSheetComponent {
       }
     );
 
+    // Norwegian Hydrographic Service (tiles licensed CC-BY 4.0)
+    const kartverketLayer = L.tileLayer(
+      'https://cache.kartverket.no/v1/wmts/1.0.0/sjokartraster/default/webmercator/{z}/{y}/{x}.png',
+      {
+        bounds: [ [56, -14], [82, 38] ],
+        maxNativeZoom: 16,
+        attribution: '© <a href="https://www.kartverket.no/en">Kartverket</a>'
+      }
+    );
+
     // NOAA WMS Layer
     const noaaLayer = L.tileLayer.wms(
       'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
@@ -88,6 +98,7 @@ export class WaypointSheetComponent {
 
     osmBase.addTo(this.map);
     openSeaMap.addTo(this.map);
+    kartverketLayer.addTo(this.map);
     noaaLayer.addTo(this.map);
 
     const baseMaps = {
@@ -96,6 +107,7 @@ export class WaypointSheetComponent {
 
     const overlayMaps = {
       '🌐 OpenSeaMap': openSeaMap,
+      '🇳🇴 Kartverket': kartverketLayer,
       '🇺🇸 NOAA Charts': noaaLayer
     };
 
