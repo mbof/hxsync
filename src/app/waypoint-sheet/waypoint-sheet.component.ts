@@ -21,7 +21,7 @@ export class WaypointSheetComponent {
   private markers: Map<Waypoint, L.Marker> = new Map();
   selectedWaypoint: Waypoint | null = null;
 
-  constructor(public deviceMgr: DevicemgrService) {}
+  constructor(public deviceMgr: DevicemgrService) { }
 
   ngOnInit() {
     this.deviceMgr.configSession.deviceTaskState$.subscribe(
@@ -58,29 +58,50 @@ export class WaypointSheetComponent {
     });
 
     // OpenStreetMap Base Layer
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      maxZoom: 19,
-      attribution: '© OpenStreetMap'
-    }).addTo(this.map);
+    const osmBase = L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      {
+        maxZoom: 19,
+        attribution: '© OpenStreetMap',
+        detectRetina: true
+      }
+    );
 
     // OpenSeaMap Overlay
-    L.tileLayer('https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png', {
-      attribution:
-        'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
-    }).addTo(this.map);
+    const openSeaMap = L.tileLayer(
+      'https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
+      {
+        attribution:
+          'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors',
+        detectRetina: true
+      }
+    );
 
     // NOAA WMS Layer
-    L.tileLayer
-      .wms(
-        'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
-        {
-          layers: '0',
-          format: 'image/png',
-          transparent: true,
-          attribution: 'NOAA Office of Coast Survey'
-        }
-      )
-      .addTo(this.map);
+    const noaaLayer = L.tileLayer.wms(
+      'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
+      {
+        format: 'image/png',
+        transparent: true,
+        attribution: 'NOAA Office of Coast Survey',
+        detectRetina: true
+      }
+    );
+
+    osmBase.addTo(this.map);
+    openSeaMap.addTo(this.map);
+    noaaLayer.addTo(this.map);
+
+    const baseMaps = {
+      OpenStreetMap: osmBase
+    };
+
+    const overlayMaps = {
+      OpenSeaMap: openSeaMap,
+      'NOAA Charts': noaaLayer
+    };
+
+    L.control.layers(baseMaps, overlayMaps).addTo(this.map);
 
     this.map.on('contextmenu', (e: L.LeafletMouseEvent) => {
       const latStr = e.latlng.lat.toFixed(5);
