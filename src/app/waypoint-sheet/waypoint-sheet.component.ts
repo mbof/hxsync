@@ -95,8 +95,8 @@ export class WaypointSheetComponent {
     };
 
     const overlayMaps = {
-      OpenSeaMap: openSeaMap,
-      'NOAA Charts': noaaLayer
+      '🌐 OpenSeaMap': openSeaMap,
+      '🇺🇸 NOAA Charts': noaaLayer
     };
 
     L.control.layers(baseMaps, overlayMaps).addTo(this.map);
