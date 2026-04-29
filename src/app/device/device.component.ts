@@ -144,7 +144,7 @@ export class DeviceComponent {
 
   async saveDat() {
     const dat = await this.deviceMgr.configSession.readDat();
-    const file = new Blob([dat], {
+    const file = new Blob([dat as Uint8Array<ArrayBuffer>], {
       type: 'application/octet-stream'
     });
     saveAs(
