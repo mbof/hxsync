@@ -1,2 +1,4 @@
-window.Buffer = require('buffer/').Buffer;
-window.process = require('process');
+import { Buffer } from 'buffer';
+(window as any).Buffer = Buffer;
+import * as process from 'process';
+(window as any).process = process;

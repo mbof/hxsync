@@ -1,9 +1,8 @@
-import { NodeBase } from 'yaml/dist/nodes/Node';
 import { ConfigBatchReader, BatchReaderResults } from '../config-batch-reader';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { Config } from './device-configs';
 import { DeviceModel } from './device-configs';
-import { Document, Node, YAMLMap } from 'yaml';
+import { Document, Node, YAMLMap, Range } from 'yaml';
 
 export interface ConfigModuleConstructor {
   new (deviceModel: DeviceModel): ConfigModuleInterface;
@@ -11,7 +10,7 @@ export interface ConfigModuleConstructor {
 
 export type Warnings = Array<{
   message: string;
-  range: NodeBase['range'];
+  range: Range | null | undefined;
 }>;
 
 export type YamlDiagnostics = {

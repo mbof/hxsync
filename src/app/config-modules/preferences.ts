@@ -6,7 +6,7 @@ import {
   YamlContext
 } from './config-module-interface';
 import { Config, DeviceModel } from './device-configs';
-import { Document, Node, Scalar, YAMLMap } from 'yaml';
+import { Document, Node, Scalar, YAMLMap, Range } from 'yaml';
 import {
   controlKnobsData,
   makePreferenceControlKnobs
@@ -16,7 +16,6 @@ import {
   EnumControlBase,
   NumberControlBase
 } from './preferences-base';
-import { NodeBase } from 'yaml/dist/nodes/Node';
 
 export class PreferencesConfig implements ConfigModuleInterface {
   private readonly deviceModel: DeviceModel;
@@ -110,13 +109,13 @@ export class PreferencesConfig implements ConfigModuleInterface {
 type ControlDiagnostic = (
   w: Warnings,
   c: ControlKnob,
-  r: NodeBase['range']
+  r: Range | null | undefined
 ) => void;
 
 function volumeDiagnostic(
   warnings: Warnings,
   controlKnob: ControlKnob,
-  range: NodeBase['range']
+  range: Range | null | undefined
 ) {
   if (
     controlKnob instanceof NumberControlBase &&
@@ -133,7 +132,7 @@ function volumeDiagnostic(
 function squelchDiagnostics(
   warnings: Warnings,
   controlKnob: ControlKnob,
-  range: NodeBase['range']
+  range: Range | null | undefined
 ) {
   if (
     controlKnob instanceof NumberControlBase &&
@@ -160,7 +159,7 @@ function squelchDiagnostics(
 function contrastDiagnostics(
   warnings: Warnings,
   controlKnob: ControlKnob,
-  range: NodeBase['range']
+  range: Range | null | undefined
 ) {
   if (
     controlKnob instanceof NumberControlBase &&
@@ -180,7 +179,7 @@ function contrastDiagnostics(
 function backlightDiagnostics(
   warnings: Warnings,
   controlKnob: ControlKnob,
-  range: NodeBase['range']
+  range: Range | null | undefined
 ) {
   if (
     controlKnob instanceof NumberControlBase &&
@@ -201,7 +200,7 @@ function backlightDiagnostics(
 function gpsDiagnostics(
   warnings: Warnings,
   controlKnob: ControlKnob,
-  range: NodeBase['range']
+  range: Range | null | undefined
 ) {
   if (
     controlKnob instanceof EnumControlBase &&
@@ -237,7 +236,7 @@ const controlDiagnostics: ControlDiagnostic[] = [
 function maybeAddDiagnostics(
   ctx: YamlContext,
   controlKnob: ControlKnob,
-  node: NodeBase
+  node: Node
 ) {
   if (!ctx.diagnosticsLog) {
     ctx.diagnosticsLog = {};
