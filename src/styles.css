@@ -39,11 +39,10 @@ button:disabled:hover {
   background-color: rgb(151, 151, 151);
 }
 
-button lucide-icon {
+button svg {
   display: inline-block;
   margin-left: -5px;
   margin-right: 5px;
-  transform: translateY(2px);
 }
 
 body {
