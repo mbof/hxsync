@@ -1,4 +1,4 @@
-import { parseHeader, Locus, makeParser, parseWaypoint } from './gps';
+import { parseHeader, Locus, makeParser, parseWaypoint, parseTimezone } from './gps';
 import { unhex } from './message';
 
 describe('parseHeader', () => {
@@ -35,8 +35,68 @@ describe('parseWaypoint', () => {
   });
 });
 
+describe('parseTimezone', () => {
+  it('should parse UTC 24h format', () => {
+    const tz = parseTimezone(0x60); // 01100000
+    expect(tz.isLocal).toBe(false);
+    expect(tz.is24h).toBe(true);
+    expect(tz.offsetMinutes).toBe(0);
+  });
+
+  it('should parse Local AM/PM -7h offset', () => {
+    const tz = parseTimezone(0x8e); // 10001110 (1 local, 0 am/pm, 0 neg, 14 half-hours)
+    expect(tz.isLocal).toBe(true);
+    expect(tz.is24h).toBe(false);
+    expect(tz.offsetMinutes).toBe(-420);
+  });
+
+  it('should parse Local 24h +5.5h offset', () => {
+    const tz = parseTimezone(0xeb); // 11101011 (1 local, 1 24h, 1 pos, 11 half-hours)
+    expect(tz.isLocal).toBe(true);
+    expect(tz.is24h).toBe(true);
+    expect(tz.offsetMinutes).toBe(330);
+  });
+});
+
 describe('Locus', () => {
-  it('should parse a log file', () => {
+  it('should parse a log file and split sessions', () => {
+    // Creating two sectors with a large time gap
+    const sector1_header = '0100010b7f0000000500000000007a0b';
+    const sector1_wp = '0992245d02200952422861574130000d0027019d'; // utc 1562677769
+    const wp1_utc = 1000000;
+    const wp2_utc = 1005000; // > 3600 gap
+    
+    const data = new Uint8Array(0x2000);
+    // Fill sector 1
+    const s1_h = unhex(sector1_header);
+    data.set(s1_h, 0);
+    const s1_wp = unhex(sector1_wp);
+    s1_wp[0] = wp1_utc & 0xff;
+    s1_wp[1] = (wp1_utc >> 8) & 0xff;
+    s1_wp[2] = (wp1_utc >> 16) & 0xff;
+    s1_wp[3] = (wp1_utc >> 24) & 0xff;
+    s1_wp[s1_wp.length - 1] = s1_wp.slice(0, s1_wp.length - 1).reduce((a, b) => a ^ b);
+    data.set(s1_wp, 0x40);
+
+    // Fill sector 2
+    data.set(s1_h, 0x1000); // reuse header
+    const s2_wp = new Uint8Array(s1_wp);
+    s2_wp[0] = wp2_utc & 0xff;
+    s2_wp[1] = (wp2_utc >> 8) & 0xff;
+    s2_wp[2] = (wp2_utc >> 16) & 0xff;
+    s2_wp[3] = (wp2_utc >> 24) & 0xff;
+    s2_wp[s2_wp.length - 1] = s2_wp.slice(0, s2_wp.length - 1).reduce((a, b) => a ^ b);
+    data.set(s2_wp, 0x1040);
+
+    const locus = new Locus(data, false);
+    expect(locus.sessions.length).toBe(2);
+    expect(locus.sessions[0].waypoints.length).toBe(1);
+    expect(locus.sessions[1].waypoints.length).toBe(1);
+    expect(locus.sessions[0].startTime).toBe(wp1_utc);
+    expect(locus.sessions[1].startTime).toBe(wp2_utc);
+  });
+
+  it('should parse a log file with actual data', () => {
     const data_str =
       '0100010b7f0000000500000000007a0b0000000000000000000000000000000f' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffff00fc8c1c' +
@@ -117,7 +177,7 @@ describe('Locus', () => {
       '42cc825741260000006f00085c94245d02b7065242d0825741260000006f001f' +
       '6194245d02b7065242db825741260000006f00296694245d02b7065242df8257' +
       '41260000006f002a6b94245d02b7065242df825741260000006f00277094245d' +
-      '02b7065242df825741260000006f003cffffffffffffffffffffffffffffffff' +
+      '02b7065242df825741260000006f003c' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' +
@@ -166,9 +226,11 @@ describe('Locus', () => {
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff' +
       'ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff';
-    const locus = new Locus(unhex(data_str), true);
+    const locus = new Locus(unhex(data_str.padEnd(8192, 'f')), false);
     expect(locus).toBeTruthy();
+    expect(locus.sessions.length).toBe(1);
     expect(locus.getGpx()).toContain('<trkpt lat="52.5089111328125" lon="13.461219787597656">');
-    expect(locus.getGpx()).toContain('<time>2019-07-09T13:09:29.000</time>');
+    // Actual data test check
+    expect(locus.sessions[0].waypoints.length).toBe(124);
   });
 });

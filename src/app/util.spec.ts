@@ -1,4 +1,4 @@
-import { fillPaddedString, readPaddedString } from './util';
+import { fillPaddedString, readPaddedString, haversine } from './util';
 
 describe('readPaddedString', () => {
   it('should read a string with some padding', () => {
@@ -43,5 +43,19 @@ describe('fillPaddedString', () => {
     const test = new Uint8Array(3);
     fillPaddedString(test, '');
     expect(test).toEqual(new Uint8Array([0xff, 0xff, 0xff]));
+  });
+});
+
+describe('haversine', () => {
+  it('should calculate distance between two points correctly', () => {
+    // Distance between London (51.5074, -0.1278) and Paris (48.8566, 2.3522)
+    // is approximately 343.5 km.
+    const dist = haversine(51.5074, -0.1278, 48.8566, 2.3522);
+    expect(dist / 1000).toBeCloseTo(343.5, 0);
+  });
+
+  it('should return 0 for the same point', () => {
+    const dist = haversine(51.5074, -0.1278, 51.5074, -0.1278);
+    expect(dist).toBe(0);
   });
 });

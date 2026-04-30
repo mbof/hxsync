@@ -12,6 +12,7 @@ import { BusyStateModalComponent } from '../busy-state-modal/busy-state-modal.co
 import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.component';
 import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
 import { YamlSheetComponent } from '../yaml-sheet/yaml-sheet.component';
+import { GpsLogSheetComponent } from '../gps-log-sheet/gps-log-sheet.component';
 import {
   LucideChevronsLeftRightEllipsis,
   LucideMapPin,
@@ -34,6 +35,7 @@ import {
     WaypointSheetComponent,
     MmsiSheetComponent,
     YamlSheetComponent,
+    GpsLogSheetComponent,
     LucideChevronsLeftRightEllipsis,
     LucideMapPin,
     LucideNotebookTabs,
@@ -93,13 +95,6 @@ export class DeviceComponent {
   }
   async readGpslog() {
     await this.deviceMgr.configSession.readGpsLog();
-    const gpx = new Locus(
-      this.deviceMgr.configSession.config.getValue().gpslog!
-    ).getGpx();
-    const file = new Blob(gpx, {
-      type: 'application/xml'
-    });
-    saveAs(file, `gpslog.gpx`);
   }
 
   async connectUsb(event: MouseEvent) {

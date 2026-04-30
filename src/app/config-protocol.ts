@@ -39,6 +39,8 @@ export interface ConfigProtocolInterface {
     progressCallback: (offset: number) => void
   ): Promise<void>;
   waitForGps(): Promise<void>;
+  clearGpsLog(): Promise<void>;
+  getGpsLogStatus(): Promise<number>;
 }
 
 export class ConfigProtocol implements ConfigProtocolInterface {
@@ -188,6 +190,49 @@ export class ConfigProtocol implements ConfigProtocolInterface {
   public async waitForGps() {
     await asyncWithTimeout(this.waitForGps_(), 1000);
   }
+
+  public async clearGpsLog() {
+    await this.waitForGps();
+    await this.sendMessage('$PMTK', ['182', '6', '1']);
+    let ans = await this.receiveMessage();
+    if (
+      ans.type != '$PMTK' ||
+      ans.args.length != 3 ||
+      ans.args[0] != '001' ||
+      ans.args[1] != '182' ||
+      ans.args[2] != '3'
+    ) {
+      throw new Error(`Unexpected ClearLog acknowledgement ${ans.toString()}`);
+    }
+  }
+
+  public async getGpsLogStatus(): Promise<number> {
+    await this.waitForGps();
+    await this.sendMessage('$PMTK', ['183']);
+    let ans = await this.receiveMessage();
+
+    // The Message parser uses a fixed 5-char type for NMEA ($PMTK), 
+    // so $PMTKLOG results in type='$PMTK' and args[0]='LOG'.
+    if (ans.type != '$PMTK' || ans.args[0] != 'LOG' || ans.args.length < 11) {
+      throw new Error(`Unexpected LogStatus response ${ans.toString()}`);
+    }
+    
+    // Percent is at index 10 (LOG is at 0, Serial# at 1, ..., Percent at 10)
+    const percent = parseInt(ans.args[10], 10);
+
+    // Some devices send an ACK ($PMTK001,183,3) after the data message.
+    // We try to consume it to avoid leaving it in the buffer for the next command.
+    try {
+      let ack = await this.receiveMessage(100);
+      if (ack.type == '$PMTK' && ack.args[0] == '001' && ack.args[1] == '183') {
+        console.log('Consumed LogStatus ACK');
+      }
+    } catch (e) {
+      // Ignore timeout, maybe no ACK is coming
+    }
+
+    return percent;
+  }
 }
 
 // This class operates on a binary image in memory directly.
@@ -227,5 +272,11 @@ export class DatConfigProtocol implements ConfigProtocolInterface {
   ): Promise<void> {
     progressCallback(data.length);
     this.datImage.subarray(address).set(data);
+  }
+  async clearGpsLog(): Promise<void> {
+    return;
+  }
+  async getGpsLogStatus(): Promise<number> {
+    return 0;
   }
 }
