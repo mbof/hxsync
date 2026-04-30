@@ -13,16 +13,15 @@ import { WaypointSheetComponent } from '../waypoint-sheet/waypoint-sheet.compone
 import { MmsiSheetComponent } from '../mmsi-sheet/mmsi-sheet.component';
 import { YamlSheetComponent } from '../yaml-sheet/yaml-sheet.component';
 import {
-  LucideAngularModule,
-  ChevronsLeftRightEllipsis,
-  MapPin,
-  NotebookTabs,
-  Code,
-  Route,
-  ArrowDownToLine,
-  ArrowUpFromLine,
-  X
-} from 'lucide-angular';
+  LucideChevronsLeftRightEllipsis,
+  LucideMapPin,
+  LucideNotebookTabs,
+  LucideCode,
+  LucideRoute,
+  LucideArrowDownToLine,
+  LucideArrowUpFromLine,
+  LucideX
+} from '@lucide/angular';
 
 // debug with: x = ng.getComponent(document.querySelector('app-device'))
 
@@ -35,7 +34,14 @@ import {
     WaypointSheetComponent,
     MmsiSheetComponent,
     YamlSheetComponent,
-    LucideAngularModule
+    LucideChevronsLeftRightEllipsis,
+    LucideMapPin,
+    LucideNotebookTabs,
+    LucideCode,
+    LucideRoute,
+    LucideArrowDownToLine,
+    LucideArrowUpFromLine,
+    LucideX
   ]
 })
 export class DeviceComponent {
@@ -44,14 +50,14 @@ export class DeviceComponent {
   configSubscription?: Subscription;
   config: BehaviorSubject<Config>;
   deviceTaskState: DeviceTaskState;
-  readonly ChevronsLeftRightEllipsis = ChevronsLeftRightEllipsis;
-  readonly MapPin = MapPin;
-  readonly NotebookTabs = NotebookTabs;
-  readonly Code = Code;
-  readonly Route = Route;
-  readonly ArrowDownToLine = ArrowDownToLine;
-  readonly ArrowUpFromLine = ArrowUpFromLine;
-  readonly X = X;
+  readonly ChevronsLeftRightEllipsis = LucideChevronsLeftRightEllipsis;
+  readonly MapPin = LucideMapPin;
+  readonly NotebookTabs = LucideNotebookTabs;
+  readonly Code = LucideCode;
+  readonly Route = LucideRoute;
+  readonly ArrowDownToLine = LucideArrowDownToLine;
+  readonly ArrowUpFromLine = LucideArrowUpFromLine;
+  readonly X = LucideX;
 
   @ViewChild(WaypointSheetComponent) waypointSheet!: WaypointSheetComponent;
   @ViewChild(MmsiSheetComponent) mmsiSheet!: MmsiSheetComponent;
@@ -138,7 +144,7 @@ export class DeviceComponent {
 
   async saveDat() {
     const dat = await this.deviceMgr.configSession.readDat();
-    const file = new Blob([dat], {
+    const file = new Blob([dat as Uint8Array<ArrayBuffer>], {
       type: 'application/octet-stream'
     });
     saveAs(

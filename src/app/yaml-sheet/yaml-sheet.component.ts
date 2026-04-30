@@ -2,15 +2,15 @@ import { Component, ElementRef, ViewChild } from '@angular/core';
 import { FormControl, FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { ConfigSession } from '../config-session';
 import { DevicemgrService } from '../devicemgr.service';
-import { NodeBase } from 'yaml/dist/nodes/Node';
+import { Node } from 'yaml';
 import { debounceTime } from 'rxjs/operators';
 import { YamlDiagnostics } from '../config-modules/config-module-interface';
 
 @Component({
-    selector: 'yaml-sheet',
-    imports: [FormsModule, ReactiveFormsModule],
-    templateUrl: './yaml-sheet.component.html',
-    styleUrl: './yaml-sheet.component.css'
+  selector: 'yaml-sheet',
+  imports: [FormsModule, ReactiveFormsModule],
+  templateUrl: './yaml-sheet.component.html',
+  styleUrl: './yaml-sheet.component.css'
 })
 export class YamlSheetComponent {
   shown = false;
@@ -121,7 +121,7 @@ function offsetToLineAndColumn(data: string, offset: number) {
 export class YamlError extends Error {
   constructor(
     public msg: string,
-    public node: NodeBase
+    public node: Node
   ) {
     super(msg);
   }
