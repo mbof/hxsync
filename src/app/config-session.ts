@@ -45,7 +45,7 @@ export type DeviceTaskState =
 
 /*
  * State machine transitions:
- * idle --readGps()--> gpslog-read --(wait)--> idle
+ * idle --readGps()--> gpslog-read --(wait)--> gpslog-view (success) / idle (error)
  * idle --readNavInfo()--> nav-read --(wait)--> nav-edit (success) / idle (error)
  * nav-edit --writeNavInfoDraft()--> nav-save --(wait)--> idle
  * nav-edit --cancelNavInfoDraft()--> idle
@@ -60,7 +60,7 @@ export type DeviceTaskState =
 
 export class ConfigSession {
   public _deviceConfig?: DeviceConfig;
-  constructor(private _configProtocol: ConfigProtocolInterface) {}
+  constructor(private _configProtocol: ConfigProtocolInterface) { }
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
   yamlText: BehaviorSubject<string> = new BehaviorSubject('');
@@ -407,7 +407,7 @@ export class ConfigSession {
     const timezoneData = await this._configProtocol.readConfigMemory(
       0x0053,
       1,
-      () => {}
+      () => { }
     );
     const timezone = parseTimezone(timezoneData[0]);
 
