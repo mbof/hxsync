@@ -46,7 +46,6 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 12px;
 }
 
 .title-row h2 {
@@ -250,6 +249,12 @@
   justify-content: space-between;
   align-items: center;
   background-color: white;
+}
+
+.storage-group {
+  display: flex;
+  align-items: center;
+  gap: 24px;
 }
 
 button {

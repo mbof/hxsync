@@ -9,20 +9,6 @@
           </button>
         </div>
 
-        <div class="storage-info">
-          @if (
-            deviceMgr.configSession.config.getValue().gpsLogData?.storageStatus;
-            as status
-          ) {
-            <div class="storage-label">Storage used: {{ status.used }}%</div>
-            <div class="storage-bar">
-              <div
-                class="storage-fill"
-                [style.width.%]="getStoragePercent()"
-              ></div>
-            </div>
-          }
-        </div>
       </div>
 
       <div class="contents">
@@ -117,9 +103,25 @@
         <button class="secondary" (click)="downloadAll()">
           <svg lucideDownload [size]="18"></svg> Download all sessions
         </button>
-        <button class="danger" (click)="clearLogs()">
-          <svg lucideTrash2 [size]="18"></svg> Clear device logs
-        </button>
+        <div class="storage-group">
+          <div class="storage-info">
+            @if (
+              deviceMgr.configSession.config.getValue().gpsLogData?.storageStatus;
+              as status
+            ) {
+              <div class="storage-label">Storage used: {{ status.used }}%</div>
+              <div class="storage-bar">
+                <div
+                  class="storage-fill"
+                  [style.width.%]="getStoragePercent()"
+                ></div>
+              </div>
+            }
+          </div>
+          <button class="danger" (click)="clearLogs()">
+            <svg lucideTrash2 [size]="18"></svg> Clear device logs
+          </button>
+        </div>
       </div>
     </div>
   </div>
