@@ -56,11 +56,25 @@ export function getMapLayers() {
     '🇺🇸 NOAA Charts': noaaLayer
   };
 
-  return { osmBase, openSeaMap, kartverketLayer, noaaLayer, baseMaps, overlayMaps };
+  return {
+    osmBase,
+    openSeaMap,
+    kartverketLayer,
+    noaaLayer,
+    baseMaps,
+    overlayMaps
+  };
 }
 
 export function initMapLayers(map: L.Map) {
-  const { osmBase, openSeaMap, kartverketLayer, noaaLayer, baseMaps, overlayMaps } = getMapLayers();
+  const {
+    osmBase,
+    openSeaMap,
+    kartverketLayer,
+    noaaLayer,
+    baseMaps,
+    overlayMaps
+  } = getMapLayers();
 
   osmBase.addTo(map);
   openSeaMap.addTo(map);

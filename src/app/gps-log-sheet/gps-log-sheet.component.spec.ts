@@ -21,9 +21,7 @@ describe('GpsLogSheetComponent', () => {
 
     await TestBed.configureTestingModule({
       imports: [GpsLogSheetComponent],
-      providers: [
-        { provide: DevicemgrService, useValue: mockDeviceMgr }
-      ]
+      providers: [{ provide: DevicemgrService, useValue: mockDeviceMgr }]
     }).compileComponents();
 
     fixture = TestBed.createComponent(GpsLogSheetComponent);
@@ -46,7 +44,7 @@ describe('GpsLogSheetComponent', () => {
           timezone: { isLocal: true, is24h: true, offsetMinutes: 330 }
         }
       });
-      
+
       const utc = 1714464000; // 2024-04-30T08:00:00Z
       const result = component.formatTime(utc);
       // 08:00 + 05:30 = 13:30
@@ -62,7 +60,7 @@ describe('GpsLogSheetComponent', () => {
           timezone: { isLocal: true, is24h: false, offsetMinutes: -420 }
         }
       });
-      
+
       const utc = 1714464000; // 2024-04-30T08:00:00Z
       const result = component.formatTime(utc);
       // 08:00 - 07:00 = 01:00

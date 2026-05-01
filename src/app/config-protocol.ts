@@ -211,12 +211,12 @@ export class ConfigProtocol implements ConfigProtocolInterface {
     await this.sendMessage('$PMTK', ['183']);
     let ans = await this.receiveMessage();
 
-    // The Message parser uses a fixed 5-char type for NMEA ($PMTK), 
+    // The Message parser uses a fixed 5-char type for NMEA ($PMTK),
     // so $PMTKLOG results in type='$PMTK' and args[0]='LOG'.
     if (ans.type != '$PMTK' || ans.args[0] != 'LOG' || ans.args.length < 11) {
       throw new Error(`Unexpected LogStatus response ${ans.toString()}`);
     }
-    
+
     // Percent is at index 10 (LOG is at 0, Serial# at 1, ..., Percent at 10)
     const percent = parseInt(ans.args[10], 10);
 

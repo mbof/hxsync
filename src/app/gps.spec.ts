@@ -1,4 +1,10 @@
-import { parseHeader, Locus, makeParser, parseWaypoint, parseTimezone } from './gps';
+import {
+  parseHeader,
+  Locus,
+  makeParser,
+  parseWaypoint,
+  parseTimezone
+} from './gps';
 import { unhex } from './message';
 
 describe('parseHeader', () => {
@@ -11,7 +17,8 @@ describe('parseHeader', () => {
     expect(header.loggingMode).toBe(11);
   });
   it('should reject an invalid header', () => {
-    const header = () => parseHeader(unhex('0100010B7F0000000500000000007AFF'), true);
+    const header = () =>
+      parseHeader(unhex('0100010B7F0000000500000000007AFF'), true);
     expect(header).toThrow();
   });
 });
@@ -19,7 +26,11 @@ describe('parseHeader', () => {
 describe('parseWaypoint', () => {
   it('should parse a waypoint', () => {
     const parser = makeParser(0x7f);
-    const waypoint = parseWaypoint(parser, unhex('0992245D02200952422861574130000D0027019D'), true);
+    const waypoint = parseWaypoint(
+      parser,
+      unhex('0992245D02200952422861574130000D0027019D'),
+      true
+    );
     expect(waypoint.utc).toBe(1562677769);
     expect(waypoint.valid).toBe(2);
     expect(waypoint.lat).toBeCloseTo(52.50891);
@@ -30,7 +41,12 @@ describe('parseWaypoint', () => {
   });
   it('should reject a bad waypoint', () => {
     const parser = makeParser(0x7f);
-    const waypoint = () => parseWaypoint(parser, unhex('0992245D02200952422861574130000D00270188'), true);
+    const waypoint = () =>
+      parseWaypoint(
+        parser,
+        unhex('0992245D02200952422861574130000D00270188'),
+        true
+      );
     expect(waypoint).toThrow();
   });
 });
@@ -65,7 +81,7 @@ describe('Locus', () => {
     const sector1_wp = '0992245d02200952422861574130000d0027019d'; // utc 1562677769
     const wp1_utc = 1000000;
     const wp2_utc = 1005000; // > 3600 gap
-    
+
     const data = new Uint8Array(0x2000);
     // Fill sector 1
     const s1_h = unhex(sector1_header);
@@ -75,7 +91,9 @@ describe('Locus', () => {
     s1_wp[1] = (wp1_utc >> 8) & 0xff;
     s1_wp[2] = (wp1_utc >> 16) & 0xff;
     s1_wp[3] = (wp1_utc >> 24) & 0xff;
-    s1_wp[s1_wp.length - 1] = s1_wp.slice(0, s1_wp.length - 1).reduce((a, b) => a ^ b);
+    s1_wp[s1_wp.length - 1] = s1_wp
+      .slice(0, s1_wp.length - 1)
+      .reduce((a, b) => a ^ b);
     data.set(s1_wp, 0x40);
 
     // Fill sector 2
@@ -85,7 +103,9 @@ describe('Locus', () => {
     s2_wp[1] = (wp2_utc >> 8) & 0xff;
     s2_wp[2] = (wp2_utc >> 16) & 0xff;
     s2_wp[3] = (wp2_utc >> 24) & 0xff;
-    s2_wp[s2_wp.length - 1] = s2_wp.slice(0, s2_wp.length - 1).reduce((a, b) => a ^ b);
+    s2_wp[s2_wp.length - 1] = s2_wp
+      .slice(0, s2_wp.length - 1)
+      .reduce((a, b) => a ^ b);
     data.set(s2_wp, 0x1040);
 
     const locus = new Locus(data, false);
@@ -229,7 +249,9 @@ describe('Locus', () => {
     const locus = new Locus(unhex(data_str.padEnd(8192, 'f')), false);
     expect(locus).toBeTruthy();
     expect(locus.sessions.length).toBe(1);
-    expect(locus.getGpx()).toContain('<trkpt lat="52.5089111328125" lon="13.461219787597656">');
+    expect(locus.getGpx()).toContain(
+      '<trkpt lat="52.5089111328125" lon="13.461219787597656">'
+    );
     // Actual data test check
     expect(locus.sessions[0].waypoints.length).toBe(124);
   });

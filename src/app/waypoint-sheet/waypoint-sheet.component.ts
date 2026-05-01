@@ -22,7 +22,7 @@ export class WaypointSheetComponent {
   private markers: Map<Waypoint, L.Marker> = new Map();
   selectedWaypoint: Waypoint | null = null;
 
-  constructor(public deviceMgr: DevicemgrService) { }
+  constructor(public deviceMgr: DevicemgrService) {}
 
   ngOnInit() {
     this.deviceMgr.configSession.deviceTaskState$.subscribe(

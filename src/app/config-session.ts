@@ -60,7 +60,7 @@ export type DeviceTaskState =
 
 export class ConfigSession {
   public _deviceConfig?: DeviceConfig;
-  constructor(private _configProtocol: ConfigProtocolInterface) { }
+  constructor(private _configProtocol: ConfigProtocolInterface) {}
 
   config: BehaviorSubject<Config> = new BehaviorSubject({});
   yamlText: BehaviorSubject<string> = new BehaviorSubject('');
@@ -407,7 +407,7 @@ export class ConfigSession {
     const timezoneData = await this._configProtocol.readConfigMemory(
       0x0053,
       1,
-      () => { }
+      () => {}
     );
     const timezone = parseTimezone(timezoneData[0]);
 
@@ -491,7 +491,9 @@ export class ConfigSession {
 
   async clearGpsLog() {
     if (this._deviceTaskState.getValue() != 'gpslog-view') {
-      throw new Error(`Can't clear GPS log from state ${this._deviceTaskState.getValue()}`);
+      throw new Error(
+        `Can't clear GPS log from state ${this._deviceTaskState.getValue()}`
+      );
     }
     this._deviceTaskState.next('gpslog-read'); // Re-use read state for busy indication
     this._progress.next(0);
