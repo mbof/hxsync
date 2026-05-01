@@ -52,21 +52,13 @@
       <div class="connected-buttons">
         @if (deviceMgr.configSession._deviceConfig?.waypoints) {
           <button (click)="readWaypoints()" data-umami-event="Waypoints edit">
-            <svg
-              lucideMapPin
-              class="map-pin"
-              [size]="20"
-            ></svg>
+            <svg lucideMapPin class="map-pin" [size]="20"></svg>
             Waypoints
           </button>
         }
         @if (deviceMgr.configSession._deviceConfig?.dsc) {
           <button (click)="readMmsi()" data-umami-event="MMSI edit">
-            <svg
-              lucideNotebookTabs
-              class="notebook-tabs"
-              [size]="20"
-            ></svg>
+            <svg lucideNotebookTabs class="notebook-tabs" [size]="20"></svg>
             MMSI Directory
           </button>
         }
@@ -124,4 +116,5 @@
 <waypoint-sheet />
 <mmsi-sheet />
 <yaml-sheet />
+<gps-log-sheet />
 <busy-state-modal />

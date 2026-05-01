@@ -1,0 +1,128 @@
+@if (shown) {
+  <div class="veil">
+    <div class="modal">
+      <div class="header">
+        <div class="title-row">
+          <h2><svg lucideRoute [size]="24"></svg> GPS log explorer</h2>
+          <button class="close-btn" (click)="close()">
+            <svg lucideX [size]="20"></svg>
+          </button>
+        </div>
+
+      </div>
+
+      <div class="contents">
+        <div class="left-pane">
+          <div class="session-list">
+            @for (
+              session of deviceMgr.configSession.config.getValue().gpsLogData
+                ?.locus?.sessions;
+              track session
+            ) {
+              <div
+                class="session-item"
+                [class.selected]="selectedSession === session"
+                (click)="selectSession(session)"
+              >
+                <div class="session-time">
+                  {{ formatTime(session.startTime) }}
+                </div>
+                <div class="session-meta">
+                  <span>{{ formatDistance(session.distance) }}</span>
+                  <span>avg {{ formatSpeed(session.avgSpeed) }}</span>
+                </div>
+              </div>
+            } @empty {
+              <div class="empty-state">No GPS tracks found on device.</div>
+            }
+          </div>
+        </div>
+
+        <div class="center-pane">
+          <div id="gps-log-map"></div>
+        </div>
+
+        <div class="right-pane">
+          @if (selectedSession) {
+            <div class="details-panel">
+              <h3>Session details</h3>
+              <div class="panel-actions">
+                <button
+                  class="primary"
+                  (click)="downloadSession(selectedSession)"
+                >
+                  <svg lucideDownload [size]="18"></svg> Download GPX
+                </button>
+              </div>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-label">Start</span>
+                  <span class="stat-value">{{
+                    formatTime(selectedSession.startTime)
+                  }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">End</span>
+                  <span class="stat-value">{{
+                    formatTime(selectedSession.endTime)
+                  }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Distance</span>
+                  <span class="stat-value">{{
+                    formatDistance(selectedSession.distance)
+                  }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average speed</span>
+                  <span class="stat-value">{{
+                    formatSpeed(selectedSession.avgSpeed)
+                  }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Max speed</span>
+                  <span class="stat-value">{{
+                    formatSpeed(selectedSession.maxSpeed)
+                  }}</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Points</span>
+                  <span class="stat-value">{{
+                    selectedSession.waypoints.length
+                  }}</span>
+                </div>
+              </div>
+            </div>
+          } @else {
+            <div class="details-empty">Select a session to view details</div>
+          }
+        </div>
+      </div>
+
+      <div class="footer-actions">
+        <button class="secondary" (click)="downloadAll()">
+          <svg lucideDownload [size]="18"></svg> Download all sessions
+        </button>
+        <div class="storage-group">
+          <div class="storage-info">
+            @if (
+              deviceMgr.configSession.config.getValue().gpsLogData?.storageStatus;
+              as status
+            ) {
+              <div class="storage-label">Storage used: {{ status.used }}%</div>
+              <div class="storage-bar">
+                <div
+                  class="storage-fill"
+                  [style.width.%]="getStoragePercent()"
+                ></div>
+              </div>
+            }
+          </div>
+          <button class="danger" (click)="clearLogs()">
+            <svg lucideTrash2 [size]="18"></svg> Clear device logs
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+}

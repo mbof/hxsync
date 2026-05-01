@@ -5,6 +5,7 @@ import { hex } from '../message';
 import { DevicemgrService } from '../devicemgr.service';
 import { Subscription } from 'rxjs';
 import * as L from 'leaflet';
+import { initMapLayers } from '../util/map-layers';
 
 @Component({
   selector: 'waypoint-sheet',
@@ -21,7 +22,7 @@ export class WaypointSheetComponent {
   private markers: Map<Waypoint, L.Marker> = new Map();
   selectedWaypoint: Waypoint | null = null;
 
-  constructor(public deviceMgr: DevicemgrService) { }
+  constructor(public deviceMgr: DevicemgrService) {}
 
   ngOnInit() {
     this.deviceMgr.configSession.deviceTaskState$.subscribe(
@@ -57,61 +58,7 @@ export class WaypointSheetComponent {
       worldCopyJump: true
     });
 
-    // OpenStreetMap Base Layer
-    const osmBase = L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      {
-        maxZoom: 19,
-        attribution: '© OpenStreetMap'
-      }
-    );
-
-    // OpenSeaMap Overlay
-    const openSeaMap = L.tileLayer(
-      'https://tiles.openseamap.org/seamark/{z}/{x}/{y}.png',
-      {
-        attribution:
-          'Map data: &copy; <a href="http://www.openseamap.org">OpenSeaMap</a> contributors'
-      }
-    );
-
-    // Norwegian Hydrographic Service (tiles licensed CC-BY 4.0)
-    const kartverketLayer = L.tileLayer(
-      'https://cache.kartverket.no/v1/wmts/1.0.0/sjokartraster/default/webmercator/{z}/{y}/{x}.png',
-      {
-        bounds: [ [56, -14], [82, 38] ],
-        maxNativeZoom: 16,
-        attribution: '© <a href="https://www.kartverket.no/en">Kartverket</a>'
-      }
-    );
-
-    // NOAA WMS Layer
-    const noaaLayer = L.tileLayer.wms(
-      'https://gis.charttools.noaa.gov/arcgis/rest/services/MCS/NOAAChartDisplay/MapServer/exts/MaritimeChartService/WMSServer',
-      {
-        bounds: [ [-20, -230], [80, -60] ],
-        format: 'image/png',
-        transparent: true,
-        attribution: 'NOAA Office of Coast Survey'
-      }
-    );
-
-    osmBase.addTo(this.map);
-    openSeaMap.addTo(this.map);
-    kartverketLayer.addTo(this.map);
-    noaaLayer.addTo(this.map);
-
-    const baseMaps = {
-      OpenStreetMap: osmBase
-    };
-
-    const overlayMaps = {
-      '🌐 OpenSeaMap': openSeaMap,
-      '🇳🇴 Kartverket': kartverketLayer,
-      '🇺🇸 NOAA Charts': noaaLayer
-    };
-
-    L.control.layers(baseMaps, overlayMaps).addTo(this.map);
+    initMapLayers(this.map);
 
     this.map.on('contextmenu', (e: L.LeafletMouseEvent) => {
       const latStr = e.latlng.lat.toFixed(5);

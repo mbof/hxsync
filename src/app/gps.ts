@@ -1,5 +1,6 @@
 import { Parser } from 'binary-parser';
 import { hexarr } from './message';
+import { haversine } from './util';
 
 function checksum(data: Uint8Array): number {
   return data.reduce((x, y) => x ^ y);
@@ -18,10 +19,7 @@ enum LocusContent {
 }
 
 export function makeParser(content: number): Parser {
-  let content_size = 0;
   let parser = new Parser().endianness('little');
-  const attributes: string[] = [];
-  const labels: string[] = [];
   if (content & LocusContent.UTC) {
     parser.int32('utc');
   }
@@ -128,7 +126,11 @@ function parseWaypointsLog(header: any, data: Uint8Array) {
         data.slice(offset, offset + parser.sizeOf()),
         true
       );
-      waypoints.push(waypoint);
+      if (waypoint) {
+        waypoints.push(waypoint);
+      } else {
+        break;
+      }
     } catch (error) {
       if (error instanceof LocusError) {
         break;
@@ -147,10 +149,123 @@ export class LocusSector {
   waypoints: any[] = [];
 
   constructor(data: Uint8Array, verify: boolean = true) {
-    this.header = parseHeader(data.slice(0, 0x12), verify);
-    this.mask = data.slice(0x11, 0x3c);
+    this.header = parseHeader(data.slice(0, 0x10), verify);
+    this.mask = data.slice(0x10, 0x3c);
     this.unknown_3c = data.slice(0x3c, 0x40);
     this.waypoints = parseWaypointsLog(this.header, data.slice(0x40));
+  }
+}
+
+export interface TimezoneInfo {
+  isLocal: boolean;
+  is24h: boolean;
+  offsetMinutes: number;
+}
+
+export function parseTimezone(byte: number): TimezoneInfo {
+  const isLocal = (byte & 0x80) !== 0;
+  const is24h = (byte & 0x40) !== 0;
+  const isPositive = (byte & 0x20) !== 0;
+  const offsetHalfHours = byte & 0x1f;
+  return {
+    isLocal,
+    is24h,
+    offsetMinutes: (isPositive ? 1 : -1) * offsetHalfHours * 30
+  };
+}
+
+export class LocusSession {
+  waypoints: any[] = [];
+  startTime: number = 0;
+  endTime: number = 0;
+  distance: number = 0; // in nautical miles
+  maxSpeed: number = 0; // in knots
+  avgSpeed: number = 0; // in knots
+
+  constructor(waypoints: any[]) {
+    this.waypoints = waypoints;
+    if (waypoints.length > 0) {
+      this.startTime = waypoints[0].utc;
+      this.endTime = waypoints[waypoints.length - 1].utc;
+      this.calculateStats();
+    }
+  }
+
+  private calculateStats() {
+    let totalDistMeters = 0;
+    let maxSpeedKnots = 0;
+    const METERS_PER_NM = 1852;
+
+    for (let i = 0; i < this.waypoints.length; i++) {
+      const wp = this.waypoints[i];
+      let impliedSpeedKnots = 0;
+
+      if (i > 0) {
+        const prev = this.waypoints[i - 1];
+        const distMeters = haversine(prev.lat, prev.lon, wp.lat, wp.lon);
+        totalDistMeters += distMeters;
+      }
+
+      // Calculate implied speed using central difference if possible,
+      // otherwise use segment speed.
+      if (i > 0 && i < this.waypoints.length - 1) {
+        const prev = this.waypoints[i - 1];
+        const next = this.waypoints[i + 1];
+        const distMeters = haversine(prev.lat, prev.lon, next.lat, next.lon);
+        const timeDiffSeconds = next.utc - prev.utc;
+        if (timeDiffSeconds > 0) {
+          const speedMps = distMeters / timeDiffSeconds;
+          impliedSpeedKnots = (speedMps * 3600) / METERS_PER_NM;
+        }
+      } else if (i > 0) {
+        // Last point segment speed
+        const prev = this.waypoints[i - 1];
+        const distMeters = haversine(prev.lat, prev.lon, wp.lat, wp.lon);
+        const timeDiffSeconds = wp.utc - prev.utc;
+        if (timeDiffSeconds > 0) {
+          const speedMps = distMeters / timeDiffSeconds;
+          impliedSpeedKnots = (speedMps * 3600) / METERS_PER_NM;
+        }
+      } else if (this.waypoints.length > 1) {
+        // First point segment speed
+        const next = this.waypoints[1];
+        const distMeters = haversine(wp.lat, wp.lon, next.lat, next.lon);
+        const timeDiffSeconds = next.utc - wp.utc;
+        if (timeDiffSeconds > 0) {
+          const speedMps = distMeters / timeDiffSeconds;
+          impliedSpeedKnots = (speedMps * 3600) / METERS_PER_NM;
+        }
+      }
+
+      wp.impliedSpeedKnots = impliedSpeedKnots;
+
+      if (impliedSpeedKnots > maxSpeedKnots) {
+        maxSpeedKnots = impliedSpeedKnots;
+      }
+    }
+
+    this.distance = totalDistMeters / METERS_PER_NM;
+    this.maxSpeed = maxSpeedKnots;
+    const durationSeconds = this.endTime - this.startTime;
+    if (durationSeconds > 0) {
+      this.avgSpeed = this.distance / (durationSeconds / 3600);
+    }
+  }
+
+  getGpx() {
+    let gpx: string[] = [
+      `<?xml version="1.0" encoding="UTF-8"?>
+<gpx version="1.1" creator="Nghx" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+ xmlns="http://www.topografix.com/GPX/1/1"
+ xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
+`
+    ];
+    gpx.push('<trk><trkseg>');
+    for (let waypoint of this.waypoints) {
+      pushGpxWaypoint(gpx, waypoint);
+    }
+    gpx.push('</trkseg></trk></gpx>');
+    return gpx;
   }
 }
 
@@ -160,18 +275,16 @@ function pushGpxWaypoint(dest: string[], waypoint: any) {
   dest.push(
     `<time>${new Date(waypoint.utc * 1000).toISOString().replace('Z', '')}</time>`
   );
-  // Stashing extra information into the comment element.
-  if (waypoint.spd || waypoint.trk) {
-    let comment: { spd?: number; trk?: number } = {};
-    if (waypoint.spd) {
-      comment.spd = waypoint.spd;
+  if (waypoint.impliedSpeedKnots || waypoint.trk) {
+    let comment: { speed_knots?: number; trk?: number } = {};
+    if (waypoint.impliedSpeedKnots) {
+      comment.speed_knots = Number(waypoint.impliedSpeedKnots.toFixed(2));
     }
     if (waypoint.trk) {
       comment.trk = waypoint.trk;
     }
     dest.push(`<cmt>${JSON.stringify(comment)}</cmt>`);
   }
-  // Not sure how to map the fix quality to the fix type aside from this case.
   if (waypoint.valid == FixQuality.DGPS) {
     dest.push(`<fix>dgps</fix>`);
   }
@@ -186,16 +299,38 @@ function pushGpxWaypoint(dest: string[], waypoint: any) {
 
 export class Locus {
   sectors: LocusSector[];
+  sessions: LocusSession[] = [];
 
   constructor(data: Uint8Array, verify: boolean = true) {
     this.sectors = [];
+    let allWaypoints: any[] = [];
     for (
       let sector_offset = 0;
       sector_offset + 0x1000 <= data.length;
       sector_offset += 0x1000
     ) {
       const sector_data = data.slice(sector_offset, sector_offset + 0x1000);
-      this.sectors.push(new LocusSector(sector_data, verify));
+      const sector = new LocusSector(sector_data, verify);
+      this.sectors.push(sector);
+      allWaypoints.push(...sector.waypoints);
+    }
+
+    // Split into sessions (1 hour gap)
+    if (allWaypoints.length > 0) {
+      allWaypoints.sort((a, b) => a.utc - b.utc);
+      let currentSessionPoints: any[] = [allWaypoints[0]];
+      for (let i = 1; i < allWaypoints.length; i++) {
+        const wp = allWaypoints[i];
+        const prev = allWaypoints[i - 1];
+        if (wp.utc - prev.utc > 3600) {
+          this.sessions.push(new LocusSession(currentSessionPoints));
+          currentSessionPoints = [];
+        }
+        currentSessionPoints.push(wp);
+      }
+      if (currentSessionPoints.length > 0) {
+        this.sessions.push(new LocusSession(currentSessionPoints));
+      }
     }
   }
 
@@ -207,15 +342,14 @@ export class Locus {
  xsi:schemaLocation="http://www.topografix.com/GPX/1/1 http://www.topografix.com/GPX/1/1/gpx.xsd">
 `
     ];
-    gpx.push('<trk><trkseg>');
-    for (let sector of this.sectors) {
-      for (let waypoint of sector.waypoints) {
-        if (waypoint) {
-          pushGpxWaypoint(gpx, waypoint);
-        }
+    for (let session of this.sessions) {
+      gpx.push('<trk><trkseg>');
+      for (let waypoint of session.waypoints) {
+        pushGpxWaypoint(gpx, waypoint);
       }
+      gpx.push('</trkseg></trk>');
     }
-    gpx.push('</trkseg></trk></gpx>');
+    gpx.push('</gpx>');
     return gpx;
   }
 }

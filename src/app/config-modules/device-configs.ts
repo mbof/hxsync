@@ -14,6 +14,13 @@ import {
 } from './extra-channels';
 import { PreferenceConfig, PreferenceRangeId } from './preferences-knobs';
 import { FmPresetConfig } from './fm';
+import { Locus, TimezoneInfo } from '../gps';
+
+export interface GpsLogData {
+  locus: Locus;
+  storageStatus: { used: number; total: number };
+  timezone: TimezoneInfo;
+}
 
 export type DeviceModel = 'HX890' | 'HX870' | 'GX1400' | 'HX891BT';
 export const DEVICES: DeviceModel[] = ['HX870', 'HX890', 'GX1400', 'HX891BT'];
@@ -97,6 +104,7 @@ export type Config = {
   draftWaypoints?: NavInfoDraft;
   atis?: string;
   gpslog?: Uint8Array;
+  gpsLogData?: GpsLogData;
   mmsiDirectory?: MmsiDirectory;
   channelGroups?: ChannelGroup[];
   currentChannelGroup?: MarineChannelSection;

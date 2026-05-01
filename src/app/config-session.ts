@@ -22,6 +22,7 @@ import { YamlError } from './yaml-sheet/yaml-sheet.component';
 import { DscDeviceConfig } from './config-modules/dsc';
 import { Config } from './config-modules/device-configs';
 import { YamlDiagnostics } from './config-modules/config-module-interface';
+import { Locus, parseTimezone } from './gps';
 
 // TODO: refactor this into
 // a distinct class for each of nav / mmsi / yaml
@@ -29,6 +30,7 @@ import { YamlDiagnostics } from './config-modules/config-module-interface';
 export type DeviceTaskState =
   | 'idle'
   | 'gpslog-read'
+  | 'gpslog-view'
   | 'nav-read'
   | 'nav-edit'
   | 'nav-save'
@@ -43,7 +45,7 @@ export type DeviceTaskState =
 
 /*
  * State machine transitions:
- * idle --readGps()--> gpslog-read --(wait)--> idle
+ * idle --readGps()--> gpslog-read --(wait)--> gpslog-view (success) / idle (error)
  * idle --readNavInfo()--> nav-read --(wait)--> nav-edit (success) / idle (error)
  * nav-edit --writeNavInfoDraft()--> nav-save --(wait)--> idle
  * nav-edit --cancelNavInfoDraft()--> idle
@@ -397,6 +399,22 @@ export class ConfigSession {
     }
     this._deviceTaskState.next('gpslog-read');
     this._progress.next(0);
+
+    // 1. Ensure GPS is ready before any commands
+    await this._configProtocol.waitForGps();
+
+    // 2. Read timezone from 0x0053
+    const timezoneData = await this._configProtocol.readConfigMemory(
+      0x0053,
+      1,
+      () => {}
+    );
+    const timezone = parseTimezone(timezoneData[0]);
+
+    // 2. Query log fullness
+    const storageStatus = await this._configProtocol.getGpsLogStatus();
+
+    // 3. Download log
     await this._configProtocol.waitForGps();
     let rawGpslog: Uint8Array[] = [];
     this._configProtocol.sendMessage('$PMTK', ['622', '1']);
@@ -457,7 +475,38 @@ export class ConfigSession {
     ) {
       throw new Error(`Unexpected ReadLog acknowledgement ${ans.toString()}`);
     }
-    this.config.next({ ...this.config.getValue(), gpslog: gpslog });
+
+    const locus = new Locus(gpslog);
+    this.config.next({
+      ...this.config.getValue(),
+      gpslog: gpslog,
+      gpsLogData: {
+        locus,
+        storageStatus: { used: storageStatus, total: 100 },
+        timezone
+      }
+    });
+    this._deviceTaskState.next('gpslog-view');
+  }
+
+  async clearGpsLog() {
+    if (this._deviceTaskState.getValue() != 'gpslog-view') {
+      throw new Error(
+        `Can't clear GPS log from state ${this._deviceTaskState.getValue()}`
+      );
+    }
+    this._deviceTaskState.next('gpslog-read'); // Re-use read state for busy indication
+    this._progress.next(0);
+    await this._configProtocol.clearGpsLog();
+    this.config.next({
+      ...this.config.getValue(),
+      gpslog: undefined,
+      gpsLogData: undefined
+    });
+    this._deviceTaskState.next('idle');
+  }
+
+  cancelGpsLogView() {
     this._deviceTaskState.next('idle');
   }
 
