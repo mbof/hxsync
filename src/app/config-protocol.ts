@@ -44,7 +44,7 @@ export interface ConfigProtocolInterface {
 }
 
 export class ConfigProtocol implements ConfigProtocolInterface {
-  constructor(private dev: DevicemgrService) {}
+  constructor(private dev: DevicemgrService) { }
   public supportsMessaging(): boolean {
     return true;
   }
@@ -193,13 +193,13 @@ export class ConfigProtocol implements ConfigProtocolInterface {
 
   public async clearGpsLog() {
     await this.waitForGps();
-    await this.sendMessage('$PMTK', ['182', '6', '1']);
+    await this.sendMessage('$PMTK', ['184', '1']);
     let ans = await this.receiveMessage();
     if (
       ans.type != '$PMTK' ||
       ans.args.length != 3 ||
       ans.args[0] != '001' ||
-      ans.args[1] != '182' ||
+      ans.args[1] != '184' ||
       ans.args[2] != '3'
     ) {
       throw new Error(`Unexpected ClearLog acknowledgement ${ans.toString()}`);
@@ -237,7 +237,7 @@ export class ConfigProtocol implements ConfigProtocolInterface {
 
 // This class operates on a binary image in memory directly.
 export class DatConfigProtocol implements ConfigProtocolInterface {
-  constructor(public datImage: Uint8Array) {}
+  constructor(public datImage: Uint8Array) { }
   public supportsMessaging(): boolean {
     return false;
   }
