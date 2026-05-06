@@ -17,6 +17,7 @@ export type YamlDiagnostics = {
   dsc_individual?: {
     used: number;
     remaining: number;
+    skipped?: number;
   };
   dsc_group?: {
     used: number;

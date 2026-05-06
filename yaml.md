@@ -111,6 +111,20 @@ Only the directives provided will be written.
 Provide the directory of MMSI numbers to be used for DSC individual calls. MMSIs
 must be wrapped in quotes.
 
+When reading from a device that has its own MMSI programmed, hxsync displays it
+as a comment at the top of this section for reference:
+
+```
+# Own MMSI: 123456789
+- individual_directory:
+    - Boat 1: "987654321"
+```
+
+If an entry in `individual_directory` happens to match the device's own MMSI,
+it is silently skipped when programming the device, since a radio cannot call
+itself anyway. A configuration file can then be shared with multiple devices
+without having to edit it before programming each device.
+
 Example:
 
 ```

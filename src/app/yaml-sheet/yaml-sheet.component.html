@@ -35,6 +35,9 @@
               Individual directory:
               {{ yamlDiagnostics.dsc_individual.used }} used,
               {{ yamlDiagnostics.dsc_individual.remaining }} left.
+              @if (yamlDiagnostics.dsc_individual.skipped) {
+                {{ yamlDiagnostics.dsc_individual.skipped }} skipped (own MMSI).
+              }
             </span>
           }
           @if (yamlDiagnostics.dsc_group) {

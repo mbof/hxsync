@@ -11,8 +11,10 @@ import {
 import { ConfigModuleInterface, YamlContext } from './config-module-interface';
 import { ConfigBatchWriter } from '../config-batch-writer';
 import { YamlError } from '../yaml-sheet/yaml-sheet.component';
+import { hexarr } from '../message';
 
 export type DscDeviceConfig = {
+  ownMmsiAddress: number;
   individualNamesAddress: number;
   individualNumbersAddress: number;
   individualNum: number;
@@ -25,6 +27,7 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
   [
     'HX890',
     {
+      ownMmsiAddress: 0x00b0,
       individualNamesAddress: 0x4500,
       individualNumbersAddress: 0x4200,
       individualNum: 100,
@@ -36,6 +39,7 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
   [
     'HX870',
     {
+      ownMmsiAddress: 0x00b0,
       individualNamesAddress: 0x3730,
       individualNumbersAddress: 0x3500,
       individualNum: 100,
@@ -47,6 +51,7 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
   [
     'GX1400',
     {
+      ownMmsiAddress: 0x0060,
       individualNamesAddress: 0x940,
       individualNumbersAddress: 0x800,
       individualNum: 60,
@@ -58,6 +63,7 @@ export const DSC_DEVICE_CONFIGS: Map<DeviceModel, DscDeviceConfig> = new Map([
   [
     'HX891BT',
     {
+      ownMmsiAddress: 0x00b0,
       individualNamesAddress: 0x4500,
       individualNumbersAddress: 0x4200,
       individualNum: 100,
@@ -108,30 +114,36 @@ export class DscConfig implements ConfigModuleInterface {
           this.deviceConfig!.groupNum
         );
       }
-      ctx.configOut.mmsiDirectory.individualMmsis = dsc_dir.items.map(
-        (node) => {
-          if (
-            node instanceof YAMLMap &&
-            node.items.length == 1 &&
-            node.items[0].key instanceof Scalar &&
-            node.items[0].value instanceof Scalar
-          ) {
-            const name = node.items[0].key.value;
-            const mmsi = node.items[0].value.value;
-            if (typeof name == 'string' && typeof mmsi == 'string') {
-              try {
-                return new Mmsi(name, mmsi);
-              } catch (e: Error | any) {
-                throw new YamlError(e?.message || 'Error parsing MMSI', node);
-              }
+      const ownMmsi = ctx.previousConfig.mmsi;
+      let parsedMmsis = dsc_dir.items.map((node) => {
+        if (
+          node instanceof YAMLMap &&
+          node.items.length == 1 &&
+          node.items[0].key instanceof Scalar &&
+          node.items[0].value instanceof Scalar
+        ) {
+          const name = node.items[0].key.value;
+          const mmsi = node.items[0].value.value;
+          if (typeof name == 'string' && typeof mmsi == 'string') {
+            try {
+              return new Mmsi(name, mmsi);
+            } catch (e: Error | any) {
+              throw new YamlError(e?.message || 'Error parsing MMSI', node);
             }
           }
-          throw new YamlError(
-            `Invalid MMSI. Expected a string of 9 numbers between quotes, like "123456789"`,
-            node
-          );
         }
-      );
+        throw new YamlError(
+          `Invalid MMSI. Expected a string of 9 numbers between quotes, like "123456789"`,
+          node
+        );
+      });
+      const skipped = ownMmsi
+        ? parsedMmsis.filter((mmsi) => mmsi.number === ownMmsi).length
+        : 0;
+      if (skipped > 0) {
+        parsedMmsis = parsedMmsis.filter((mmsi) => mmsi.number !== ownMmsi);
+      }
+      ctx.configOut.mmsiDirectory.individualMmsis = parsedMmsis;
       const individualMmsiNamesData = new Uint8Array(
         this.individualMmsiNamesSize
       );
@@ -158,7 +170,8 @@ export class DscConfig implements ConfigModuleInterface {
           used: ctx.configOut.mmsiDirectory.individualMmsis.length,
           remaining:
             ctx.configOut.mmsiDirectory.maxIndividualMmsis -
-            ctx.configOut.mmsiDirectory.individualMmsis.length
+            ctx.configOut.mmsiDirectory.individualMmsis.length,
+          ...(skipped > 0 ? { skipped } : {})
         }
       };
       return true;
@@ -229,6 +242,11 @@ export class DscConfig implements ConfigModuleInterface {
     const groupMmsiNamesSize = MMSI_NAME_BYTE_SIZE * groupMmsiNum;
     const groupMmsiNumbersSize = numberOffsetFromIndex(groupMmsiNum);
     configBatchReader.addRange(
+      'own_mmsi',
+      this.deviceConfig.ownMmsiAddress,
+      this.deviceConfig.ownMmsiAddress + 5
+    );
+    configBatchReader.addRange(
       'individual_mmsi_names',
       this.deviceConfig.individualNamesAddress,
       this.deviceConfig.individualNamesAddress + individualMmsiNamesSize
@@ -254,6 +272,17 @@ export class DscConfig implements ConfigModuleInterface {
     config: Config,
     yaml: Document<Node, true>
   ) {
+    // Decode own MMSI (10 BCD nibbles, trailing nibble zero)
+    const ownMmsiData = results.get('own_mmsi')!;
+    const ownMmsiRaw = hexarr(ownMmsiData.subarray(0, 5)).slice(0, 9);
+    const ownMmsi =
+      ownMmsiRaw !== '000000000' && ownMmsiRaw !== 'FFFFFFFFF'
+        ? ownMmsiRaw
+        : undefined;
+    if (ownMmsi) {
+      config.mmsi = ownMmsi;
+    }
+
     const mmsiDirectory = new MmsiDirectory(
       this.deviceConfig!.individualNum,
       this.deviceConfig!.groupNum
@@ -270,6 +299,9 @@ export class DscConfig implements ConfigModuleInterface {
     }));
     const dsc = yaml.createNode({ individual_directory });
     dsc.spaceBefore = true;
+    if (ownMmsi) {
+      dsc.commentBefore = ` Own MMSI: ${ownMmsi}`;
+    }
     yaml.add(dsc);
 
     const group_directory = mmsiDirectory.groupMmsis.map((mmsi) => ({
