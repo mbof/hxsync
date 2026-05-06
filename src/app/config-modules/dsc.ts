@@ -115,7 +115,7 @@ export class DscConfig implements ConfigModuleInterface {
         );
       }
       const ownMmsi = ctx.previousConfig.mmsi;
-      let parsedMmsis = dsc_dir.items.map((node) => {
+      const parsedMmsis = dsc_dir.items.map((node) => {
         if (
           node instanceof YAMLMap &&
           node.items.length == 1 &&
@@ -137,13 +137,11 @@ export class DscConfig implements ConfigModuleInterface {
           node
         );
       });
-      const skipped = ownMmsi
-        ? parsedMmsis.filter((mmsi) => mmsi.number === ownMmsi).length
-        : 0;
-      if (skipped > 0) {
-        parsedMmsis = parsedMmsis.filter((mmsi) => mmsi.number !== ownMmsi);
-      }
-      ctx.configOut.mmsiDirectory.individualMmsis = parsedMmsis;
+      const filteredMmsis = parsedMmsis.filter(
+        (mmsi) => mmsi.number != ownMmsi
+      );
+      const skipped = parsedMmsis.length - filteredMmsis.length;
+      ctx.configOut.mmsiDirectory.individualMmsis = filteredMmsis;
       const individualMmsiNamesData = new Uint8Array(
         this.individualMmsiNamesSize
       );
@@ -171,7 +169,7 @@ export class DscConfig implements ConfigModuleInterface {
           remaining:
             ctx.configOut.mmsiDirectory.maxIndividualMmsis -
             ctx.configOut.mmsiDirectory.individualMmsis.length,
-          ...(skipped > 0 ? { skipped } : {})
+          skipped
         }
       };
       return true;
