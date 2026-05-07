@@ -114,7 +114,11 @@ describe('DscConfig', () => {
 
   it('should request the correct ranges to read', () => {
     dscConfigModule.addRangesToRead(configBatchReader);
-    expect(configBatchReader.ranges.size).toBe(4);
+    expect(configBatchReader.ranges.size).toBe(5);
+    expect(configBatchReader.ranges.get('own_mmsi')).toEqual({
+      start: 0x00b0,
+      end: 0x00b5
+    });
     expect(configBatchReader.ranges.get('individual_mmsi_names')).toEqual({
       start: 0x4500,
       end: 0x4b40
@@ -138,13 +142,17 @@ describe('DscConfig', () => {
     datFile.set(DSC_DIRECTORY_NUMBERS_BINARY, 0x4200);
     datFile.set(DSC_DIRECTORY_NAMES_BINARY, 0x5100);
     datFile.set(GROUP_DIRECTORY_NUMBERS_BINARY, 0x5000);
+    // Own MMSI: 123456789 encoded as BCD (10 nibbles, trailing zero nibble)
+    datFile.set(unhex('1234567890'), 0x00b0);
     dscConfigModule.addRangesToRead(configBatchReader);
     const results = await configBatchReader.read(() => {});
     const yaml = new Document();
     yaml.contents = new YAMLSeq();
     const config: Config = {};
     dscConfigModule.updateConfig(results, config, yaml);
+    expect(config.mmsi).toBe('123456789');
     expect(yaml.toString()).toBe(`
+# Own MMSI: 123456789
 - individual_directory:
     - AAA: "876543210"
     - BBB: "888888888"

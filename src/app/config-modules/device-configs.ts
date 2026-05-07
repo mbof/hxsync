@@ -115,6 +115,7 @@ export type Config = {
 };
 
 export type MemoryRangeId =
+  | 'own_mmsi'
   | 'individual_mmsi_names'
   | 'individual_mmsi_numbers'
   | 'group_mmsi_names'
