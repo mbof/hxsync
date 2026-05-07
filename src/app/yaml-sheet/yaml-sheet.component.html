@@ -1,81 +1,92 @@
 @if (shown) {
-<div class="veil">
-  <div class="modal">
-    <h2>Yaml Editor</h2>
-    <div class="info">
-      Edit the radio's configuration as a YAML file.
-      <a href="https://github.com/mbof/hxsync/blob/main/yaml.md" target="_blank">Documentation</a>
-    </div>
-    <div class="contents">
-      <textarea #yamlText [formControl]="yamlControl"></textarea>
-    </div>
-    @if (yamlError) {
-    <div class="error">
-      {{ yamlError.msg }}
-      @if (yamlError.range) {
-      (at
-      {{ getLocationText(yamlError.range[0]) }}) -
-      <a (click)="selectRange(yamlError.range)" href="#" data-umami-event="Error link">show me ↗</a>
+  <div class="veil">
+    <div class="modal">
+      <h2>Yaml Editor</h2>
+      <div class="info">
+        Edit the radio's configuration as a YAML file.
+        <a
+          href="https://github.com/mbof/hxsync/blob/main/yaml.md"
+          target="_blank"
+          >Documentation</a
+        >
+      </div>
+      <div class="contents">
+        <textarea #yamlText [formControl]="yamlControl"></textarea>
+      </div>
+      @if (yamlError) {
+        <div class="error">
+          {{ yamlError.msg }}
+          @if (yamlError.range) {
+            (at
+            {{ getLocationText(yamlError.range[0]) }}) -
+            <a
+              (click)="selectRange(yamlError.range)"
+              href="#"
+              data-umami-event="Error link"
+              >show me ↗</a
+            >
+          }
+        </div>
       }
-    </div>
-    }
-    @if (hasDiagnostics()) {
-    <div class="diagnostics">
-      @if (yamlDiagnostics.dsc_individual) {
-      <span class="diagnostic">
-        Individual directory:
-        {{ yamlDiagnostics.dsc_individual.used }} used,
-        {{ yamlDiagnostics.dsc_individual.remaining }} left.
-        @if (yamlDiagnostics.dsc_individual.skipped > 0) {
-        {{ yamlDiagnostics.dsc_individual.skipped }} will be skipped (own MMSI).
-        }
-      </span>
+      @if (hasDiagnostics()) {
+        <div class="diagnostics">
+          @if (yamlDiagnostics.dsc_individual) {
+            <span class="diagnostic">
+              Individual directory:
+              {{ yamlDiagnostics.dsc_individual.used }} used,
+              {{ yamlDiagnostics.dsc_individual.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.dsc_group) {
+            <span class="diagnostic">
+              Group directory:
+              {{ yamlDiagnostics.dsc_group.used }} used,
+              {{ yamlDiagnostics.dsc_group.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.waypoints) {
+            <span class="diagnostic">
+              Waypoints:
+              {{ yamlDiagnostics.waypoints.used }} used,
+              {{ yamlDiagnostics.waypoints.remaining }} left.
+            </span>
+          }
+          @if (yamlDiagnostics.routes) {
+            <span class="diagnostic">
+              Routes:
+              {{ yamlDiagnostics.routes.used }} used,
+              {{ yamlDiagnostics.routes.remaining }} left.
+            </span>
+          }
+          @for (warning of yamlDiagnostics.warnings; track warning) {
+            <span class="warning">
+              {{ warning.message }}
+              @if (warning.range) {
+                (<a
+                  (click)="selectRange(warning.range)"
+                  href="#"
+                  data-umami-event="Warning link"
+                  >show me</a
+                >).
+              }
+            </span>
+          }
+        </div>
       }
-      @if (yamlDiagnostics.dsc_group) {
-      <span class="diagnostic">
-        Group directory:
-        {{ yamlDiagnostics.dsc_group.used }} used,
-        {{ yamlDiagnostics.dsc_group.remaining }} left.
-      </span>
+      @if (clipboardConfirmation) {
+        <div class="copy-confirm">{{ clipboardConfirmation }}</div>
       }
-      @if (yamlDiagnostics.waypoints) {
-      <span class="diagnostic">
-        Waypoints:
-        {{ yamlDiagnostics.waypoints.used }} used,
-        {{ yamlDiagnostics.waypoints.remaining }} left.
-      </span>
-      }
-      @if (yamlDiagnostics.routes) {
-      <span class="diagnostic">
-        Routes:
-        {{ yamlDiagnostics.routes.used }} used,
-        {{ yamlDiagnostics.routes.remaining }} left.
-      </span>
-      }
-      @for (warning of yamlDiagnostics.warnings; track warning) {
-      <span class="warning">
-        {{ warning.message }}
-        @if (warning.range) {
-        (<a (click)="selectRange(warning.range)" href="#" data-umami-event="Warning link">show me</a>).
-        }
-      </span>
-      }
-    </div>
-    }
-    @if (clipboardConfirmation) {
-    <div class="copy-confirm">{{ clipboardConfirmation }}</div>
-    }
-    <div class="controls">
-      <button (click)="cancel()" data-umami-event="Cancel YAML">
-        Cancel
-      </button>
-      <button (click)="save()" data-umami-event="Save YAML" class="primary">
-        Save
-      </button>
-      <button (click)="share()" data-umami-event="Share YAML">
-        Share as link
-      </button>
+      <div class="controls">
+        <button (click)="cancel()" data-umami-event="Cancel YAML">
+          Cancel
+        </button>
+        <button (click)="save()" data-umami-event="Save YAML" class="primary">
+          Save
+        </button>
+        <button (click)="share()" data-umami-event="Share YAML">
+          Share as link
+        </button>
+      </div>
     </div>
   </div>
-</div>
 }
