@@ -35,9 +35,16 @@ export class ChannelGroup {
   }
 }
 
-export function parseChannelGroupData(data: Uint8Array) {
+export function parseChannelGroupData(
+  data: Uint8Array
+): ChannelGroup | undefined {
+  const name = readPaddedString(data.subarray(3, 7));
+  if (name.length == 0) {
+    // Uninitialized / empty channel group slot — skip it.
+    return undefined;
+  }
   return new ChannelGroup({
-    name: readPaddedString(data.subarray(3, 7)),
+    name,
     enable: data[0] != 0,
     enable_dsc: data[1] != 0,
     enable_atis: data[2] != 0,

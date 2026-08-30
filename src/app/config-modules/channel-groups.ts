@@ -137,7 +137,9 @@ export class ChannelGroupConfig implements ConfigModuleInterface {
           (i + 1) * this.deviceConfig.bytesPerChannelGroup
         )
       );
-      channelGroups.push(channelGroup);
+      if (channelGroup) {
+        channelGroups.push(channelGroup);
+      }
     }
     config.channelGroups = channelGroups;
     /*
