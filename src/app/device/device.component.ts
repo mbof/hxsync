@@ -117,23 +117,41 @@ export class DeviceComponent {
       window.alert('This functionality requires Chrome, Edge, or Opera.');
       return;
     }
-    const [handle] = await window.showOpenFilePicker({
-      multiple: false,
-      types: [
-        {
-          description: 'DAT files',
-          accept: {
-            'application/octet-stream': ['.dat', '.bin', '.DAT', '.bin']
-          }
-        }
-      ]
-    });
-    const f = await handle.getFile();
-    const dat = await f.arrayBuffer();
     try {
-      this.deviceMgr.connectDat(new Uint8Array(dat));
+      const [handle] = await window.showOpenFilePicker({
+        multiple: false,
+        types: [
+          {
+            description: 'DAT files',
+            accept: {
+              'application/octet-stream': ['.dat', '.bin', '.DAT', '.bin']
+            }
+          }
+        ]
+      });
+      let f: File;
+      try {
+        f = await handle.getFile();
+      } catch (e) {
+        window.alert(
+          `Could not read the selected file.\n\n` +
+            `If you are on Windows, check that "Controlled Folder Access" ` +
+            `(Windows Security → Ransomware protection) is not blocking your browser, ` +
+            `or try moving the file to a folder like C:\\Temp.\n\nError: ${e}`
+        );
+        return;
+      }
+      const dat = await f.arrayBuffer();
+      try {
+        this.deviceMgr.connectDat(new Uint8Array(dat));
+      } catch (e) {
+        window.alert(e);
+      }
     } catch (e) {
-      window.alert(e);
+      if (e instanceof DOMException && e.name === 'AbortError') {
+        return; // User cancelled the picker — not an error.
+      }
+      window.alert(`Unexpected error opening file picker:\n\n${e}`);
     }
   }
 
