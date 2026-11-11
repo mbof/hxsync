@@ -11,7 +11,7 @@
         >
       </div>
       <div class="contents">
-        <textarea #yamlText [formControl]="yamlControl"></textarea>
+        <textarea #yamlText [formControl]="yamlControl" spellcheck="false"></textarea>
       </div>
       @if (yamlError) {
         <div class="error">
